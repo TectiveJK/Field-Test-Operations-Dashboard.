@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { newId } from "@/lib/format";
+import { applyHardware, fetchHardwareItems, SNAPSHOT_HARDWARE } from "@/lib/hardware";
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
 import { applySimLastRun, readSimStore } from "@/lib/sim-import";
 import { fetchUpcomingEntries, planFromUpcoming } from "@/lib/upcoming";
@@ -91,10 +92,11 @@ function subscribe(listener: () => void) {
   listeners.add(listener);
   if (!clientAttached) {
     clientAttached = true;
-    memory = applySimLastRun(readPersisted(), readSimStore());
+    memory = applyHardware(applySimLastRun(readPersisted(), readSimStore()), SNAPSHOT_HARDWARE);
     persist(memory);
     queueMicrotask(emit);
     void refreshUpcoming();
+    void refreshHardware();
   }
   return () => {
     listeners.delete(listener);
@@ -110,6 +112,15 @@ async function refreshUpcoming() {
     }));
   } catch {
     // Keep the snapshot already in seed / local storage when offline.
+  }
+}
+
+async function refreshHardware() {
+  try {
+    const items = await fetchHardwareItems();
+    write((current) => applyHardware(current, items));
+  } catch {
+    // Keep the locator snapshot already applied when the sheet is unreachable.
   }
 }
 
@@ -300,10 +311,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const reset = useCallback(() => {
-    memory = applySimLastRun(cloneSeed(), readSimStore());
+    memory = applyHardware(applySimLastRun(cloneSeed(), readSimStore()), SNAPSHOT_HARDWARE);
     persist(memory);
     emit();
     void refreshUpcoming();
+    void refreshHardware();
   }, []);
 
   const value = useMemo<StoreApi>(

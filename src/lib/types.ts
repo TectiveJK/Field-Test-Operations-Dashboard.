@@ -63,6 +63,9 @@ export type Drone = {
   parameters: string;
   hours: number;
   notes: string;
+  location: string;
+  holder: string;
+  gimbal: string;
 };
 
 export type TestCase = {
@@ -149,6 +152,8 @@ export type ChecklistItem = {
   done: boolean;
   by: string;
   at: string | null;
+  location: string;
+  holder: string;
 };
 
 export type KnowledgeNote = {

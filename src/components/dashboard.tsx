@@ -62,7 +62,7 @@ export function Dashboard() {
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-slate-800">
               {state.decisionReason ||
-                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Reporter equipment list. Tests are the SIM Flight Testing catalog."}
+                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Reporter list with Hardware locator locations. Tests are the SIM Flight Testing catalog."}
             </p>
           </div>
           <div className="flex w-full flex-col gap-2 sm:max-w-md">
@@ -262,7 +262,12 @@ export function Dashboard() {
               ) : (
                 drones.map((drone) => (
                   <div key={drone.id} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="font-mono truncate">{drone.name}</span>
+                    <div className="min-w-0">
+                      <span className="font-mono truncate">{drone.name}</span>
+                      {drone.location ? (
+                        <p className="truncate text-xs text-slate-600">{drone.location}</p>
+                      ) : null}
+                    </div>
                     <StatusBadge value={drone.status} />
                   </div>
                 ))
@@ -274,7 +279,7 @@ export function Dashboard() {
 
       <section>
         <h3 className="mb-3 text-sm font-semibold text-slate-700">Existing tools — do not replace</h3>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {EXISTING_APPS.map((app) => (
             <Card key={app.name} size="sm" className="bg-white">
               <CardHeader>

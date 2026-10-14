@@ -1,3 +1,4 @@
+import { applyHardware, SNAPSHOT_HARDWARE } from "@/lib/hardware";
 import { SNAPSHOT_ENTRIES, planFromUpcoming } from "@/lib/upcoming";
 import { SUITE } from "@/lib/sim-suite";
 import type { ChecklistItem, Drone, HubState, SoftwareBuild, TestCase } from "@/lib/types";
@@ -71,6 +72,12 @@ export const EXISTING_APPS = [
     href: "https://tectivejk.github.io/sim-testing-app/",
     note: "20 SkyCommand simulator missions. Failed and blocked items from the last run appear under Issues.",
   },
+  {
+    name: "Hardware locator",
+    area: "Locations",
+    href: "https://tectivejk.github.io/Updating-hardware/",
+    note: "Live company list of where each airframe, pack, hive and rotator is. Change locations there; this hub only reads them.",
+  },
 ] as const;
 
 const simBuild: SoftwareBuild = {
@@ -96,6 +103,9 @@ function dronesFromReporter(): Drone[] {
     parameters: "",
     hours: 0,
     notes: "Listed in Drone Flight Test Reporter equipment.",
+    location: "",
+    holder: "",
+    gimbal: "",
   }));
 }
 
@@ -120,6 +130,8 @@ function checklistFromReporter(): ChecklistItem[] {
       done: false,
       by: "",
       at: null,
+      location: "",
+      holder: "",
     })
   );
   const batteries = BATTERIES.map((name, index) => ({
@@ -129,40 +141,45 @@ function checklistFromReporter(): ChecklistItem[] {
     done: false,
     by: "",
     at: null,
+    location: "",
+    holder: "",
   }));
   const ground: ChecklistItem[] = [
-    { id: "g1", group: "Ground", label: "rotator 25", done: false, by: "", at: null },
-    { id: "g2", group: "Ground", label: "Hive + tracking antenna", done: false, by: "", at: null },
-    { id: "g3", group: "Ground", label: "Starlink + generator + fuel", done: false, by: "", at: null },
+    { id: "g1", group: "Ground", label: "rotator 25", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "g2", group: "Ground", label: "Hive + tracking antenna", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "g3", group: "Ground", label: "Starlink + generator + fuel", done: false, by: "", at: null, location: "", holder: "" },
   ];
   const gcs: ChecklistItem[] = [
-    { id: "s1", group: "GCS", label: "QGC + joysticks + cables", done: false, by: "", at: null },
-    { id: "s2", group: "GCS", label: "SIM / GCS laptop", done: false, by: "", at: null },
-    { id: "s3", group: "GCS", label: "SIM packages (web-ground-control, mission-planner, tective-simulator)", done: false, by: "", at: null },
+    { id: "s1", group: "GCS", label: "QGC + joysticks + cables", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "s2", group: "GCS", label: "SIM / GCS laptop", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "s3", group: "GCS", label: "SIM packages (web-ground-control, mission-planner, tective-simulator)", done: false, by: "", at: null, location: "", holder: "" },
   ];
   const site: ChecklistItem[] = [
-    { id: "t1", group: "Site", label: "Weather, NOTAM, range brief", done: false, by: "", at: null },
-    { id: "t2", group: "Site", label: "Safety: observers, abort line, fire extinguisher", done: false, by: "", at: null },
+    { id: "t1", group: "Site", label: "Weather, NOTAM, range brief", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "t2", group: "Site", label: "Safety: observers, abort line, fire extinguisher", done: false, by: "", at: null, location: "", holder: "" },
   ];
   return [...aircraft, ...batteries, ...ground, ...gcs, ...site];
 }
 
 export function buildHubState(): HubState {
-  return {
-    site: "Tective",
-    decision: "GO",
-    decisionReason: "",
-    weather: "",
-    operator: "John Kokotinis",
-    builds: [simBuild],
-    drones: dronesFromReporter(),
-    testCases: testsFromSim(),
-    runs: [],
-    issues: [],
-    reports: [],
-    evidence: [],
-    plan: planFromUpcoming(SNAPSHOT_ENTRIES),
-    checklist: checklistFromReporter(),
-    knowledge: [],
-  };
+  return applyHardware(
+    {
+      site: "Tective",
+      decision: "GO",
+      decisionReason: "",
+      weather: "",
+      operator: "John Kokotinis",
+      builds: [simBuild],
+      drones: dronesFromReporter(),
+      testCases: testsFromSim(),
+      runs: [],
+      issues: [],
+      reports: [],
+      evidence: [],
+      plan: planFromUpcoming(SNAPSHOT_ENTRIES),
+      checklist: checklistFromReporter(),
+      knowledge: [],
+    },
+    SNAPSHOT_HARDWARE
+  );
 }

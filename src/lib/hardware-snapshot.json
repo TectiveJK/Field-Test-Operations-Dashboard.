@@ -1,0 +1,204 @@
+{
+  "items": [
+    {
+      "name": "refly-ibb-010",
+      "location": "In hive",
+      "gimbal": "On Drone",
+      "person": "",
+      "note": "",
+      "type": "drone"
+    },
+    {
+      "name": "refly-ibb-015",
+      "location": "In factory downstairs",
+      "gimbal": "On Drone",
+      "person": "",
+      "note": "",
+      "type": "drone"
+    },
+    {
+      "name": "refly-ibb-007",
+      "location": "In factory downstairs",
+      "gimbal": "On Drone",
+      "person": "",
+      "note": "",
+      "type": "drone"
+    },
+    {
+      "name": "rotator 25",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "without dish and antenna cone",
+      "type": "rotator"
+    },
+    {
+      "name": "skyhive-sf-004",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "Small problem with the z-arm/battery grippe at the moment but usable",
+      "type": "hive"
+    },
+    {
+      "name": "refly-sf-007",
+      "location": "In hive",
+      "gimbal": "Removed",
+      "person": "",
+      "note": "Slow GPS, keep an eye out for this",
+      "type": "drone"
+    },
+    {
+      "name": "refly-sf-010",
+      "location": "In factory downstairs",
+      "gimbal": "On Drone",
+      "person": "",
+      "note": "Gimbal pitch stop needs to be replaced. Cannot see jetson in network while we can connect to silvus and gimbal (about 70% of the time). Currently getting mobo swapped",
+      "type": "drone"
+    },
+    {
+      "name": "refly-sf-031",
+      "location": "In factory downstairs",
+      "gimbal": "On Drone",
+      "person": "",
+      "note": "",
+      "type": "drone"
+    },
+    {
+      "name": "refly-sf-032",
+      "location": "In factory downstairs",
+      "gimbal": "Removed",
+      "person": "",
+      "note": "Motherboard changed end Aug.  USED FOR BATTERY PORT TESTING WITH ITS OWN BATTERIES",
+      "type": "drone"
+    },
+    {
+      "name": "refly-sf-033",
+      "location": "In office upstairs",
+      "gimbal": "On Drone",
+      "person": "",
+      "note": "Motherboard changed end Aug. Fitted with Arctus motors, one did not work.",
+      "type": "drone"
+    },
+    {
+      "name": "battery 96",
+      "location": "In hive",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 63",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 3",
+      "location": "In hive",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 39",
+      "location": "In hive",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 99",
+      "location": "In hive",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 97",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 118",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 82",
+      "location": "In hive",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 93",
+      "location": "In hive",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 86",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "In rotator\u2019s case",
+      "type": "battery"
+    },
+    {
+      "name": "battery 43",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 17",
+      "location": "In hive",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "battery 62",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "Battery 12",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    },
+    {
+      "name": "Battery 107",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "battery"
+    }
+  ]
+}

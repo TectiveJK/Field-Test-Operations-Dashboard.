@@ -25,7 +25,12 @@ export function FleetBoard() {
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return state.drones.filter((drone) => {
-      return !q || `${drone.name} ${drone.family} ${drone.hardware} ${drone.notes}`.toLowerCase().includes(q);
+      return (
+        !q ||
+        `${drone.name} ${drone.family} ${drone.hardware} ${drone.location} ${drone.holder} ${drone.notes}`
+          .toLowerCase()
+          .includes(q)
+      );
     });
   }, [state.drones, query]);
 
@@ -43,6 +48,9 @@ export function FleetBoard() {
         ["Autonomy", buildA?.autonomyNode, buildB?.autonomyNode],
         ["Jenkins", buildA?.jenkins, buildB?.jenkins],
         ["Hardware", a.hardware, b.hardware],
+        ["Location", a.location, b.location],
+        ["Holder", a.holder, b.holder],
+        ["Gimbal", a.gimbal, b.gimbal],
         ["Parameters", a.parameters, b.parameters],
       ] as const
     : [];
@@ -52,15 +60,15 @@ export function FleetBoard() {
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Fleet, builds & configuration</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Airframes from the Drone Flight Test Reporter equipment list. Maintenance Assistant
-          has no stored fleet yet. Compare two airframes when you start recording builds.
+          Airframes from the Drone Flight Test Reporter equipment list. Locations come from the
+          Hardware locator. Change a location there; Out of service is treated as grounded here.
         </p>
       </div>
 
       <Input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search airframe, GPS module, notes…"
+        placeholder="Search airframe, location, notes…"
         className="bg-white"
       />
 
@@ -82,6 +90,7 @@ export function FleetBoard() {
                       <CardTitle className="font-mono">{drone.name}</CardTitle>
                       <CardDescription>
                         {drone.family}
+                        {drone.location ? ` · ${drone.location}` : ""}
                         {drone.hours ? ` · ${drone.hours.toFixed(1)} h` : ""}
                       </CardDescription>
                     </div>
@@ -93,6 +102,15 @@ export function FleetBoard() {
                     {build?.label ?? "No build"}
                     {build?.jenkins ? ` · Jenkins ${build.jenkins}` : ""}
                   </p>
+                  {drone.location ? (
+                    <p className="text-sm font-medium text-slate-900">
+                      {drone.location}
+                      {drone.holder ? ` · ${drone.holder}` : ""}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-500">No location from Hardware locator yet.</p>
+                  )}
+                  {drone.gimbal ? <p className="text-xs text-slate-600">Gimbal {drone.gimbal}</p> : null}
                   <p className="text-slate-700">{drone.notes}</p>
                   {drone.family !== "Ground" ? (
                     <Select

@@ -1,4 +1,4 @@
-const CACHE = "ftod-shell-v4";
+const CACHE = "ftod-shell-v5";
 const BASE = self.location.pathname.replace(/\/sw\.js$/, "");
 const SHELL = [
   "/",

@@ -121,6 +121,7 @@ export function dailySummary(state: HubState) {
   const remaining = upcomingPlan(state).filter(
     (item) => item.status === "Planned" || item.status === "In progress"
   );
+  const missing = state.drones.filter((drone) => drone.family !== "Ground" && drone.status === "Grounded");
   const site = state.site || "Tective";
   const weather = state.weather ? ` ${state.weather}` : "";
   const lines = [
@@ -139,6 +140,11 @@ export function dailySummary(state: HubState) {
           .map((item) => `${item.date} ${item.window} ${planLabel(item, state)}`)
           .join("; ")}.`
       : "No remaining planned flights or tests on the Upcoming board.",
+    missing.length
+      ? `Grounded from Hardware locator / status: ${missing
+          .map((drone) => `${drone.name}${drone.location ? ` (${drone.location})` : ""}`)
+          .join(", ")}.`
+      : "No airframes marked grounded.",
   ];
   return lines.join(" ");
 }
