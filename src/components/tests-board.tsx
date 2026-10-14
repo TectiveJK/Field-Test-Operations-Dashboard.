@@ -19,7 +19,7 @@ import { RUN_RESULTS, type RunResult } from "@/lib/types";
 
 export function TestsBoard() {
   const { state, setRunResult } = useHub();
-  const [caseId, setCaseId] = useState(state.testCases[4]?.id ?? state.testCases[0].id);
+  const [caseId, setCaseId] = useState(state.testCases[0]?.id ?? "");
   const runs = runsForCase(state, caseId);
   const [left, setLeft] = useState(runs[0]?.id ?? "");
   const [right, setRight] = useState(runs[1]?.id ?? runs[0]?.id ?? "");
@@ -39,8 +39,8 @@ export function TestsBoard() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight">Regression tests & runs</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            Reusable cases for corridor, ROI, Go To, Resume, GNSS-denied, AprilTag and kill-switch.
-            Record a run against a Jenkins build. Compare two runs of the same mission.
+            Catalog from SIM Flight Testing: 20 SkyCommand simulator missions. Record a run
+            here if you want it on this hub. Per-tester SIM results stay in that app.
           </p>
         </div>
         <RecordRunDialog />
@@ -102,7 +102,10 @@ export function TestsBoard() {
                           </p>
                           <p className="truncate text-xs text-slate-600">
                             {formatDate(run.startedAt)} {formatTime(run.startedAt)} · {drone?.name} ·
-                            Jenkins {build?.jenkins} · {run.environment}
+                            {build?.jenkins
+                              ? `Jenkins ${build.jenkins}`
+                              : build?.label ?? "No build"}{" "}
+                            · {run.environment}
                           </p>
                           {run.notes ? <p className="text-xs text-slate-500">{run.notes}</p> : null}
                         </div>
@@ -248,8 +251,9 @@ function RunCard({
       </CardHeader>
       <CardContent className="grid gap-2 text-sm text-slate-700">
         <p>
-          <span className="text-slate-500">Jenkins </span>
-          {build?.jenkins} ({build?.label})
+          <span className="text-slate-500">Build </span>
+          {build?.label || "—"}
+          {build?.jenkins ? ` · Jenkins ${build.jenkins}` : ""}
         </p>
         <p>
           <span className="text-slate-500">PX4 </span>

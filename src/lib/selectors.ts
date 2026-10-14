@@ -1,5 +1,5 @@
-import { TODAY } from "@/lib/seed";
-import type { HubState, NextAction, RunResult } from "@/lib/types";
+import { todayIso } from "@/lib/format";
+import type { HubState, NextAction, PlanItem, RunResult } from "@/lib/types";
 
 export function droneById(state: HubState, id: string | null) {
   return state.drones.find((drone) => drone.id === id) ?? null;
@@ -9,7 +9,8 @@ export function buildById(state: HubState, id: string | null) {
   return state.builds.find((build) => build.id === id) ?? null;
 }
 
-export function caseById(state: HubState, id: string) {
+export function caseById(state: HubState, id: string | null) {
+  if (!id) return null;
   return state.testCases.find((testCase) => testCase.id === id) ?? null;
 }
 
@@ -17,15 +18,28 @@ export function issueById(state: HubState, id: string) {
   return state.issues.find((issue) => issue.id === id) ?? null;
 }
 
-export function todayPlan(state: HubState) {
+export function planLabel(item: PlanItem, state: HubState) {
+  const testCase = caseById(state, item.testCaseId);
+  if (testCase) return `${testCase.code} ${testCase.name}`;
+  return item.title;
+}
+
+export function upcomingPlan(state: HubState) {
+  const today = todayIso();
   return [...state.plan]
-    .filter((item) => item.date === TODAY)
-    .sort((a, b) => a.window.localeCompare(b.window));
+    .filter((item) => item.date >= today || (item.status !== "Done" && item.status !== "Skipped"))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.window.localeCompare(b.window));
+}
+
+export function todayPlan(state: HubState) {
+  const today = todayIso();
+  return upcomingPlan(state).filter((item) => item.date === today);
 }
 
 export function todayRuns(state: HubState) {
+  const today = todayIso();
   return [...state.runs]
-    .filter((run) => run.startedAt.startsWith(TODAY))
+    .filter((run) => run.startedAt.startsWith(today))
     .sort((a, b) => a.startedAt.localeCompare(b.startedAt));
 }
 
@@ -41,9 +55,11 @@ export function failedCases(state: HubState) {
 
 export function counts(state: HubState) {
   const drones = state.drones.filter((drone) => drone.family !== "Ground");
+  const remaining = upcomingPlan(state).filter(
+    (item) => item.status === "Planned" || item.status === "In progress"
+  );
   return {
-    planned: todayPlan(state).filter((item) => item.status === "Planned" || item.status === "In progress")
-      .length,
+    planned: remaining.length,
     available: drones.filter((drone) => drone.status === "Available").length,
     underTest: drones.filter((drone) => drone.status === "Under test").length,
     grounded: drones.filter((drone) => drone.status === "Grounded").length,
@@ -56,13 +72,15 @@ export function counts(state: HubState) {
 
 export function nextActions(state: HubState): NextAction[] {
   const actions: NextAction[] = [];
-  const inProgress = todayPlan(state).find((item) => item.status === "In progress");
+  const queue = upcomingPlan(state).filter(
+    (item) => item.status === "In progress" || item.status === "Planned"
+  );
+  const inProgress = queue.find((item) => item.status === "In progress");
   if (inProgress) {
-    const testCase = caseById(state, inProgress.testCaseId);
     const drone = droneById(state, inProgress.droneId);
     actions.push({
-      title: `Finish ${testCase?.code ?? "sortie"} on ${drone?.name}`,
-      why: inProgress.notes,
+      title: `Finish ${planLabel(inProgress, state)}${drone ? ` on ${drone.name}` : ""}`,
+      why: inProgress.notes || `${inProgress.date} ${inProgress.window}`,
       href: "/plan",
       priority: "now",
     });
@@ -81,13 +99,11 @@ export function nextActions(state: HubState): NextAction[] {
     });
   }
 
-  const planned = todayPlan(state).filter((item) => item.status === "Planned");
-  for (const item of planned.slice(0, 2)) {
-    const testCase = caseById(state, item.testCaseId);
+  for (const item of queue.filter((entry) => entry.status === "Planned").slice(0, 3)) {
     const drone = droneById(state, item.droneId);
     actions.push({
-      title: `${item.window} ${testCase?.code} ${testCase?.name}`,
-      why: `${drone?.name}. ${item.notes}`,
+      title: `${item.date} ${item.window} ${planLabel(item, state)}`,
+      why: [drone?.name, item.notes].filter(Boolean).join(". ") || "From Upcoming flights & tests.",
       href: "/plan",
       priority: "next",
     });
@@ -102,26 +118,27 @@ export function dailySummary(state: HubState) {
   const pass = done.filter((run) => run.result === "Pass" || run.result === "Pass with observations");
   const fail = done.filter((run) => run.result === "Fail" || run.result === "Aborted");
   const open = openIssues(state);
-  const tomorrow = todayPlan(state).filter(
+  const remaining = upcomingPlan(state).filter(
     (item) => item.status === "Planned" || item.status === "In progress"
   );
+  const site = state.site || "Tective";
+  const weather = state.weather ? ` ${state.weather}` : "";
   const lines = [
-    `${state.site}. Decision ${state.decision}. ${state.weather}`,
-    `Completed ${done.length} of ${runs.length} recorded runs today (${pass.length} pass / observations, ${fail.length} fail / aborted).`,
+    `${site}. Decision ${state.decision}.${weather}`,
+    done.length || runs.length
+      ? `Completed ${done.length} of ${runs.length} recorded runs today (${pass.length} pass / observations, ${fail.length} fail / aborted).`
+      : "No test runs recorded in this hub yet. Record them here, or keep using SIM Flight Testing and the Flight Test Reporter.",
     open.length
       ? `${open.length} unresolved issues. Ready for retest: ${open
           .filter((issue) => issue.status === "READY FOR RETEST")
           .map((issue) => issue.id)
           .join(", ") || "none"}.`
-      : "No open issues.",
-    tomorrow.length
-      ? `Still on the card: ${tomorrow
-          .map((item) => {
-            const testCase = caseById(state, item.testCaseId);
-            return `${item.window} ${testCase?.code}`;
-          })
-          .join(", ")}.`
-      : "No remaining planned sorties.",
+      : "No open issues in this hub. Maintenance Assistant has no stored fleet records.",
+    remaining.length
+      ? `Still on the card: ${remaining
+          .map((item) => `${item.date} ${item.window} ${planLabel(item, state)}`)
+          .join("; ")}.`
+      : "No remaining planned flights or tests on the Upcoming board.",
   ];
   return lines.join(" ");
 }
@@ -145,4 +162,12 @@ export function concludedResult(results: RunResult[]): RunResult {
   if (pending.some((result) => result === "Pass with observations")) return "Pass with observations";
   if (pending.some((result) => result === "Blocked")) return "Blocked";
   return pending[0];
+}
+
+export function buildLine(state: HubState, buildId: string | null) {
+  const build = buildById(state, buildId);
+  if (!build) return "";
+  return [build.label, build.jenkins && `Jenkins ${build.jenkins}`, build.gcs, build.skyCommand]
+    .filter(Boolean)
+    .join(" · ");
 }

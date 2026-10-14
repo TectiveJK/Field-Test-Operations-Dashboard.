@@ -23,8 +23,9 @@ import {
   droneById,
   nextActions,
   openIssues,
-  todayPlan,
+  planLabel,
   todayRuns,
+  upcomingPlan,
 } from "@/lib/selectors";
 import { useHub } from "@/lib/store";
 import { GO_DECISIONS, type GoDecision } from "@/lib/types";
@@ -33,7 +34,7 @@ export function Dashboard() {
   const { state, setDecision } = useHub();
   const [reason, setReason] = useState(state.decisionReason);
   const kpi = counts(state);
-  const plan = todayPlan(state);
+  const plan = upcomingPlan(state);
   const runs = todayRuns(state);
   const issues = openIssues(state);
   const actions = nextActions(state);
@@ -59,7 +60,10 @@ export function Dashboard() {
             <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
               What needs attention
             </h2>
-            <p className="mt-2 max-w-3xl text-sm text-slate-800">{state.decisionReason}</p>
+            <p className="mt-2 max-w-3xl text-sm text-slate-800">
+              {state.decisionReason ||
+                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Reporter equipment list. Tests are the SIM Flight Testing catalog."}
+            </p>
           </div>
           <div className="flex w-full flex-col gap-2 sm:max-w-md">
             <div className="flex gap-2">
@@ -100,7 +104,7 @@ export function Dashboard() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Still to fly today", value: kpi.planned, href: "/plan" },
+          { label: "Still on the card", value: kpi.planned, href: "/plan" },
           { label: "Available / under test / grounded", value: `${kpi.available} / ${kpi.underTest} / ${kpi.grounded}`, href: "/fleet" },
           { label: "Open issues", value: kpi.open, href: "/issues" },
           { label: "Ready for retest", value: kpi.readyRetest, href: "/issues" },
@@ -123,21 +127,24 @@ export function Dashboard() {
           href="/plan"
         >
           {plan.length === 0 ? (
-            <Empty>Nothing on the card. Add sorties on Plan.</Empty>
+            <Empty>Nothing on the Upcoming flights & tests board.</Empty>
           ) : (
             <ul className="divide-y">
               {plan.map((item) => {
-                const testCase = caseById(state, item.testCaseId);
                 const drone = droneById(state, item.droneId);
                 return (
                   <li key={item.id} className="flex items-start justify-between gap-3 py-2.5">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-slate-900">
-                        <span className="font-mono text-xs text-slate-500">{item.window}</span>{" "}
-                        {testCase?.code} {testCase?.name}
+                        <span className="font-mono text-xs text-slate-500">
+                          {item.date} {item.window}
+                        </span>{" "}
+                        {planLabel(item, state)}
                       </p>
                       <p className="truncate text-xs text-slate-600">
-                        {drone?.name} · {item.notes}
+                        {item.kind === "flight" ? "Flight" : "Test"}
+                        {drone ? ` · ${drone.name}` : ""}
+                        {item.notes ? ` · ${item.notes}` : ""}
                       </p>
                     </div>
                     <StatusBadge value={item.status} />
@@ -150,7 +157,7 @@ export function Dashboard() {
 
         <QuestionCard index="2" title="What is still unresolved?" href="/issues">
           {issues.length === 0 ? (
-            <Empty>No open bugs. Keep flying the plan.</Empty>
+            <Empty>No open issues. Maintenance Assistant has none stored.</Empty>
           ) : (
             <ul className="divide-y">
               {issues.map((issue) => (
@@ -201,7 +208,7 @@ export function Dashboard() {
         <Card className="bg-white">
           <CardHeader className="border-b">
             <CardTitle>Latest results</CardTitle>
-            <CardDescription>Today’s TestRuns, linked to drone + Jenkins build</CardDescription>
+            <CardDescription>Runs recorded in this hub against Reporter airframes and SIM cases</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {runs.length === 0 ? (
@@ -219,7 +226,9 @@ export function Dashboard() {
                           {testCase?.code} {testCase?.name}
                         </p>
                         <p className="truncate text-xs text-slate-600">
-                          {drone?.name} · Jenkins {build?.jenkins} · {run.environment}
+                          {drone?.name}
+                          {build?.jenkins ? ` · Jenkins ${build.jenkins}` : build?.label ? ` · ${build.label}` : ""}
+                          {` · ${run.environment}`}
                           {run.measurements ? ` · ${run.measurements}` : ""}
                         </p>
                       </div>
@@ -248,12 +257,16 @@ export function Dashboard() {
               <CardTitle>Fleet snapshot</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2">
-              {drones.map((drone) => (
-                <div key={drone.id} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="font-mono truncate">{drone.name}</span>
-                  <StatusBadge value={drone.status} />
-                </div>
-              ))}
+              {drones.length === 0 ? (
+                <p className="text-sm text-slate-600">No airframes in the Reporter equipment list.</p>
+              ) : (
+                drones.map((drone) => (
+                  <div key={drone.id} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="font-mono truncate">{drone.name}</span>
+                    <StatusBadge value={drone.status} />
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </div>

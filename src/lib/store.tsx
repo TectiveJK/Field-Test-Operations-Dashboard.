@@ -10,6 +10,7 @@ import {
 } from "react";
 import { newId } from "@/lib/format";
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
+import { fetchUpcomingEntries, planFromUpcoming } from "@/lib/upcoming";
 import type {
   ChecklistItem,
   DroneStatus,
@@ -78,7 +79,7 @@ function readPersisted(): HubState {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return cloneSeed();
     const parsed = JSON.parse(raw) as HubState;
-    if (!parsed?.drones?.length || !parsed.testCases?.length) return cloneSeed();
+    if (!parsed || !Array.isArray(parsed.testCases) || !Array.isArray(parsed.plan)) return cloneSeed();
     return parsed;
   } catch {
     return cloneSeed();
@@ -91,10 +92,23 @@ function subscribe(listener: () => void) {
     clientAttached = true;
     memory = readPersisted();
     queueMicrotask(emit);
+    void refreshUpcoming();
   }
   return () => {
     listeners.delete(listener);
   };
+}
+
+async function refreshUpcoming() {
+  try {
+    const entries = await fetchUpcomingEntries();
+    write((current) => ({
+      ...current,
+      plan: planFromUpcoming(entries, current.plan),
+    }));
+  } catch {
+    // Keep the snapshot already in seed / local storage when offline.
+  }
 }
 
 function getSnapshot() {

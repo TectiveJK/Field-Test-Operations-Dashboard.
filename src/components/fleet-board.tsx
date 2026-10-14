@@ -52,8 +52,8 @@ export function FleetBoard() {
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Fleet, builds & configuration</h2>
         <p className="mt-1 text-sm text-slate-600">
-          If one airframe passes and another fails, compare PX4, SkyCommand, SkyHive, GCS and
-          parameters instead of guessing.
+          Airframes from the Drone Flight Test Reporter equipment list. Maintenance Assistant
+          has no stored fleet yet. Compare two airframes when you start recording builds.
         </p>
       </div>
 
@@ -81,7 +81,8 @@ export function FleetBoard() {
                     <div>
                       <CardTitle className="font-mono">{drone.name}</CardTitle>
                       <CardDescription>
-                        {drone.family} · {drone.hours ? `${drone.hours.toFixed(1)} h` : "ground kit"}
+                        {drone.family}
+                        {drone.hours ? ` · ${drone.hours.toFixed(1)} h` : ""}
                       </CardDescription>
                     </div>
                     <StatusBadge value={drone.status} />
@@ -89,7 +90,8 @@ export function FleetBoard() {
                 </CardHeader>
                 <CardContent className="grid gap-2 text-sm">
                   <p className="text-xs text-slate-500">
-                    Jenkins {build?.jenkins} · {build?.px4}
+                    {build?.label ?? "No build"}
+                    {build?.jenkins ? ` · Jenkins ${build.jenkins}` : ""}
                   </p>
                   <p className="text-slate-700">{drone.notes}</p>
                   {drone.family !== "Ground" ? (
@@ -122,7 +124,7 @@ export function FleetBoard() {
         <CardHeader>
           <CardTitle>Compare two drones</CardTitle>
           <CardDescription>
-            Example: refly-sf-007 on 1855 versus skyhive-sf-004 still on 1842.
+            Compare two Reporter airframes when firmware or parameters differ.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
@@ -189,7 +191,7 @@ export function FleetBoard() {
           {state.builds.map((build) => (
             <Card key={build.id} size="sm" className="bg-white">
               <CardHeader>
-                <CardDescription>Jenkins {build.jenkins}</CardDescription>
+                <CardDescription>{build.jenkins ? `Jenkins ${build.jenkins}` : "SIM packages"}</CardDescription>
                 <CardTitle>{build.label}</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-1 text-xs text-slate-600">

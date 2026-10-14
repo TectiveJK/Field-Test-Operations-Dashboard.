@@ -65,6 +65,14 @@ export function ReportsBoard() {
       </div>
 
       <section className="grid gap-3">
+        {state.reports.length === 0 ? (
+          <Card className="bg-white">
+            <CardContent className="py-10 text-center text-sm text-slate-600">
+              No Flight Test Reporter JSON in this hub yet. Reports stay in that app until you
+              import one.
+            </CardContent>
+          </Card>
+        ) : null}
         {state.reports.map((report) => (
           <Card key={report.id} className="bg-white">
             <CardHeader>
@@ -120,7 +128,7 @@ export function ReportsBoard() {
               <Input
                 value={filename}
                 onChange={(event) => setFilename(event.target.value)}
-                placeholder="f04_refly-sf-031.ulg"
+                placeholder="ulog or pcap filename"
               />
             </label>
             <label className="grid gap-1 text-sm font-medium">
@@ -176,7 +184,9 @@ export function ReportsBoard() {
             className="bg-slate-50"
           />
           {evidence.length === 0 ? (
-            <p className="py-6 text-sm text-slate-600">No evidence matches.</p>
+            <p className="py-6 text-sm text-slate-600">
+              No evidence names yet. Attach a ULog or pcap filename when you record a run.
+            </p>
           ) : (
             <ul className="divide-y rounded-lg border">
               {evidence.map((item) => (
@@ -198,6 +208,9 @@ export function ReportsBoard() {
       <section>
         <h3 className="mb-3 text-sm font-semibold text-slate-700">Knowledge</h3>
         <div className="grid gap-3 md:grid-cols-3">
+          {state.knowledge.length === 0 ? (
+            <p className="text-sm text-slate-600">No procedure notes stored.</p>
+          ) : null}
           {state.knowledge.map((note) => (
             <Card key={note.id} size="sm" className="bg-white">
               <CardHeader>

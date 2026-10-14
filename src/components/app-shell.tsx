@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="border-t border-slate-300/80 p-3">
           <Button variant="outline" className="w-full justify-start bg-white" onClick={reset}>
             <RotateCcw data-icon="inline-start" />
-            Reset demo data
+            Reset to source apps
           </Button>
         </div>
       </aside>
@@ -137,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <StatusBadge value={state.decision} />
               </div>
               <p className="truncate text-xs text-slate-600">
-                {state.operator} · Jenkins {state.builds.at(-1)?.jenkins} · {state.weather}
+                {[state.operator, state.builds.at(-1)?.label, state.weather].filter(Boolean).join(" · ")}
               </p>
             </div>
             <div className="hidden text-right sm:block">

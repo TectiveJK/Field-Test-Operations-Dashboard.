@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.1.0`
+**Current version:** `0.2.0`
 
 ## Open the app
 
@@ -26,12 +26,12 @@ Repository: https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
 
 Four tools already cover reporting, maintenance, planning and simulator testing:
 
-| Area | Tool | Role |
+| Area | Tool | What this hub uses from it |
 | --- | --- | --- |
-| Reporting | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) | Multi-flight PDF / JSON / evidence ZIP |
-| Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Inspections, batteries, faults, log retrieval |
-| Planning | **This hub → Plan** | Today’s sorties, so nothing is forgotten |
-| Simulator testing | **This hub → Tests** | Regression library, Jenkins builds, retests |
+| Reporting | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) | Equipment list (ReFly / SkyHive / rotator / packs). Saved flight reports stay in that app until imported. |
+| Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Fleet, faults and inspections if that app has any. It currently stores none. |
+| Planning | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) | The live shared board (TALON, ReLION, Arctus, and so on). |
+| Simulator testing | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) | The 20 SkyCommand simulator missions. Per-tester results stay in that app. |
 
 The fifth piece is the operations dashboard: one home screen for the day, with the other modules sharing the same records.
 
@@ -41,7 +41,7 @@ The fifth piece is the operations dashboard: one home screen for the day, with t
 | --- | --- |
 | **Today** | The three questions, GO / CONDITIONAL / NO-GO, daily summary, fleet snapshot, links to the existing apps |
 | **Plan** | Planned flights and tests. Mark Planned / In progress / Done / Skipped |
-| **Tests** | Reusable cases (corridor, ROI, Go To, Resume, GNSS-denied, AprilTag, kill-switch). Record a run. Compare two runs of the same mission |
+| **Tests** | SIM Flight Testing catalog. Record a run here if you want it on this hub |
 | **Fleet** | Drones available, under test or grounded. Jenkins / PX4 / SkyCommand / SkyHive / QGC versions. Compare two airframes |
 | **Issues** | Bug tracker: id, severity, drone, build, steps, expected vs actual, assignee, retest |
 | **Deploy** | Pre-departure checklist: drones, packs, Hive, tracking antenna, Starlink, generator, QGC, joysticks, SIM/GCS laptop, weather and safety. Who ticked it, and when |
@@ -69,7 +69,7 @@ Every module uses the same objects. That is the foundation for adding more later
 - **Evidence organizer**: attach a filename on the pad even when you cannot upload the file
 - **Test comparison**: two runs of the same mission, including result, configuration and measurements (manual entry now; ULog parsing later)
 - **Config diff**: if one drone passes and another fails, compare firmware and parameters instead of guessing
-- Local storage only — no server, no login. **Reset demo data** restores the seeded Marknesse test day
+- Local storage only — no server, no login. **Reset to source apps** reloads Reporter equipment, the SIM catalog, and the Upcoming flights board. It does not invent a test day.
 
 ## Setup
 
@@ -112,7 +112,8 @@ A banner appears when there is no network.
 src/app/            routes: Today, Plan, Tests, Fleet, Issues, Deploy, Reports
 src/components/     boards, dialogs, shell
 src/lib/types.ts    shared records
-src/lib/seed.ts     Marknesse demo day (ReFly / SkyHive / Jenkins 1855)
+src/lib/from-apps.ts  Reporter equipment, SIM catalog, Upcoming board
+src/lib/seed.ts       hub snapshot built from those apps
 src/lib/store.tsx   local persistence
 public/sw.js        offline cache
 ```
@@ -129,7 +130,7 @@ npm run typecheck
 
 ## Status
 
-Active development. Current slice is the operations hub with shared records. Existing Reporter and Maintenance apps stay as they are. Next steps that fit this structure: import Flight Test Reporter JSON, attach real ULogs, and automate daily summary from those files.
+Active development. The hub no longer ships a made-up Marknesse test day. It only shows records that already exist in Flight Test Reporter, Maintenance Assistant, Upcoming flights & tests, and SIM Flight Testing. Next: import Reporter JSON and Maintenance SQLite when those files are available.
 
 ## GitHub
 

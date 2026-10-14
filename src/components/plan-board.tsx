@@ -9,34 +9,41 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusBadge } from "@/components/status-badge";
-import { caseById, droneById, todayPlan } from "@/lib/selectors";
+import { droneById, planLabel, upcomingPlan } from "@/lib/selectors";
 import { useHub } from "@/lib/store";
 import { PLAN_STATUSES, type PlanStatus } from "@/lib/types";
 
 export function PlanBoard() {
   const { state, setPlanStatus } = useHub();
-  const plan = todayPlan(state);
+  const plan = upcomingPlan(state);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Today’s plan</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Upcoming flights and tests</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Planned flights and tests for {state.site}. Tick them as you go so nothing is forgotten
-          when you come back from the pad.
+          Copied from{" "}
+          <a
+            className="underline"
+            href="https://tectivejk.github.io/Upcoming-Test-Flights/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Upcoming flights & tests
+          </a>
+          . Tick status here as you go. Add or remove entries on that board.
         </p>
       </div>
 
       {plan.length === 0 ? (
         <Card className="bg-white">
           <CardContent className="py-12 text-center text-sm text-slate-600">
-            No sorties on the card for today.
+            The Upcoming flights board is empty.
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-3">
           {plan.map((item) => {
-            const testCase = caseById(state, item.testCaseId);
             const drone = droneById(state, item.droneId);
             return (
               <Card key={item.id} className="bg-white">
@@ -44,12 +51,14 @@ export function PlanBoard() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <CardTitle>
-                        <span className="font-mono text-sm text-slate-500">{item.window}</span>{" "}
-                        {testCase?.code} {testCase?.name}
+                        <span className="font-mono text-sm text-slate-500">
+                          {item.date} {item.window}
+                        </span>{" "}
+                        {planLabel(item, state)}
                       </CardTitle>
                       <CardDescription>
-                        {drone?.name} · {drone?.status} · Jenkins{" "}
-                        {state.builds.find((build) => build.id === drone?.buildId)?.jenkins}
+                        {item.kind === "flight" ? "Flight" : "Test"}
+                        {drone ? ` · ${drone.name}` : ""}
                       </CardDescription>
                     </div>
                     <StatusBadge value={item.status} />
@@ -57,14 +66,9 @@ export function PlanBoard() {
                 </CardHeader>
                 <CardContent className="grid gap-3 pt-4 sm:grid-cols-[1fr_12rem]">
                   <div>
-                    <p className="text-sm text-slate-800">{item.notes}</p>
-                    {testCase ? (
-                      <ol className="mt-3 list-decimal space-y-1 pl-4 text-sm text-slate-600">
-                        {testCase.steps.map((step) => (
-                          <li key={step}>{step}</li>
-                        ))}
-                      </ol>
-                    ) : null}
+                    <p className="text-sm text-slate-800">
+                      {item.notes || "No extra note on the board."}
+                    </p>
                   </div>
                   <label className="grid h-fit gap-1 text-sm font-medium">
                     Status

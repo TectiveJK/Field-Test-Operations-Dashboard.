@@ -16,8 +16,8 @@ export function DeployBoard() {
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Field deployment checklist</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Before leaving the office: drones, packs, Hive, tracking antenna, Starlink, generator,
-          QGC, joysticks, SIM/GCS laptop and the 1855 build. Timestamps stay on this device.
+          Aircraft and packs from the Flight Test Reporter equipment list, plus ground and GCS
+          kit. Nothing is pre-ticked. Timestamps stay on this device.
         </p>
         <p className="mt-2 text-sm font-medium text-slate-800">
           {remaining === 0 ? "Checklist complete." : `${remaining} items still open.`}

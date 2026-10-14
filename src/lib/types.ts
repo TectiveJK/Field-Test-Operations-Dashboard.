@@ -133,11 +133,13 @@ export type Evidence = {
 export type PlanItem = {
   id: string;
   date: string;
-  testCaseId: string;
-  droneId: string;
+  testCaseId: string | null;
+  droneId: string | null;
   status: PlanStatus;
   window: string;
   notes: string;
+  title: string;
+  kind: "flight" | "test";
 };
 
 export type ChecklistItem = {

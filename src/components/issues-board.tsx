@@ -45,8 +45,8 @@ export function IssuesBoard() {
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Bugs, fixes & retests</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Recurring failures from simulator and field. Each issue keeps drone, build, steps,
-          expected vs actual, and a retest slot.
+          Issues you log here, plus anything imported from Maintenance Assistant. That app
+          currently has no stored faults.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export function IssuesBoard() {
       {rows.length === 0 ? (
         <Card className="bg-white">
           <CardContent className="py-12 text-center text-sm text-slate-600">
-            No issues in this view. Log one from the header, or switch to All issues.
+            No issues in this view. Maintenance Assistant has none stored. Log one from the header if needed.
           </CardContent>
         </Card>
       ) : (

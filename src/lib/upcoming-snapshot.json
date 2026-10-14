@@ -1,0 +1,60 @@
+{
+  "entries": [
+    {
+      "id": "1f319f5c-8491-47a2-af4b-27afed1d643a",
+      "kind": "flight",
+      "title": "TALON with ESS and other parties",
+      "date": "2026-10-15",
+      "time": "08:00",
+      "owner": "",
+      "notes": "Start early.",
+      "example": false,
+      "createdAt": "2026-10-13T18:30:30.866Z"
+    },
+    {
+      "id": "64c6ed5c-471d-4a49-b523-52677b105509",
+      "kind": "flight",
+      "title": "ReLION",
+      "date": "2026-10-15",
+      "time": "10:00",
+      "owner": "",
+      "notes": "Will drop by.",
+      "example": false,
+      "createdAt": "2026-10-13T18:30:30.866Z"
+    },
+    {
+      "id": "3d8c331e-3d0e-4a6d-b538-3cb6dd3fc117",
+      "kind": "test",
+      "title": "Arctus motor flight test",
+      "date": "2026-10-15",
+      "time": "11:30",
+      "owner": "",
+      "notes": "Stationary, with a fully charged battery.",
+      "example": false,
+      "createdAt": "2026-10-13T18:30:30.866Z"
+    },
+    {
+      "id": "1cea666b-de67-4ef4-a671-5d195f07aeb1",
+      "kind": "test",
+      "title": "Video of our own drone at about 700 m",
+      "date": "2026-10-15",
+      "time": "13:30",
+      "owner": "",
+      "notes": "With specific commands.",
+      "example": false,
+      "createdAt": "2026-10-13T18:30:30.866Z"
+    },
+    {
+      "id": "1d4f0a14-e275-4e0b-9b42-276f79462df0",
+      "kind": "test",
+      "title": "GNSS-denied flight tests with fiducial",
+      "date": "2026-10-15",
+      "time": "15:30",
+      "owner": "",
+      "notes": "",
+      "example": false,
+      "createdAt": "2026-10-13T18:30:30.866Z"
+    }
+  ],
+  "version": 1002
+}

@@ -108,7 +108,8 @@ export function RecordRunDialog() {
                 <SelectContent>
                   {state.builds.map((build) => (
                     <SelectItem key={build.id} value={build.id}>
-                      Jenkins {build.jenkins} ({build.label})
+                      {build.label}
+                      {build.jenkins ? ` · Jenkins ${build.jenkins}` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
