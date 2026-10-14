@@ -8,9 +8,18 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live app. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen).
+That is the live app. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
+
+This hub does **not** invent a test day. It only shows records that already exist in the four Tective apps:
+
+| This hub | Source |
+| --- | --- |
+| **Plan** | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) live board |
+| **Fleet / Deploy** | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) equipment list |
+| **Tests** | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) 20-mission catalog |
+| **Issues / reports / runs** | Empty until [Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) or Reporter JSON has records to import |
 
 This app does **not** replace the existing tools. It connects them into one workspace so you can open it in the morning and immediately answer:
 
@@ -40,7 +49,7 @@ The fifth piece is the operations dashboard: one home screen for the day, with t
 | Screen | What you use it for |
 | --- | --- |
 | **Today** | The three questions, GO / CONDITIONAL / NO-GO, daily summary, fleet snapshot, links to the existing apps |
-| **Plan** | Planned flights and tests. Mark Planned / In progress / Done / Skipped |
+| **Plan** | Copied from Upcoming flights & tests. Mark Planned / In progress / Done / Skipped |
 | **Tests** | SIM Flight Testing catalog. Record a run here if you want it on this hub |
 | **Fleet** | Drones available, under test or grounded. Jenkins / PX4 / SkyCommand / SkyHive / QGC versions. Compare two airframes |
 | **Issues** | Bug tracker: id, severity, drone, build, steps, expected vs actual, assignee, retest |
