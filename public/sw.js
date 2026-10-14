@@ -1,15 +1,16 @@
-const CACHE = "ftod-shell-v1";
+const CACHE = "ftod-shell-v2";
+const BASE = self.location.pathname.replace(/\/sw\.js$/, "");
 const SHELL = [
   "/",
-  "/plan",
-  "/tests",
-  "/fleet",
-  "/issues",
-  "/deploy",
-  "/reports",
+  "/plan/",
+  "/tests/",
+  "/fleet/",
+  "/issues/",
+  "/deploy/",
+  "/reports/",
   "/manifest.webmanifest",
   "/icon.svg",
-];
+].map((path) => `${BASE}${path === "/" ? "/" : path}`);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -35,6 +36,8 @@ self.addEventListener("fetch", (event) => {
         caches.open(CACHE).then((cache) => cache.put(event.request, copy));
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/")))
+      .catch(() =>
+        caches.match(event.request).then((cached) => cached || caches.match(`${BASE}/`))
+      )
   );
 });

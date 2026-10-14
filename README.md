@@ -2,6 +2,8 @@
 
 **Current version:** `0.1.0`
 
+**Live site:** https://tectivejk.github.io/Field-Test-Operations-Dashboard./
+
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
 This app does **not** replace the existing tools. It connects them into one workspace so you can open it in the morning and immediately answer:
@@ -80,9 +82,11 @@ The GitHub repo name ends with a period, so the clone URL has two dots before `g
 
 ### iPhone / iPad
 
-1. Open the same address in **Safari** (not Chrome)
-2. Share → **Add to Home Screen**
-3. The app opens as FTOD. Data stays on that device until you export or reset
+Open this address in **Safari** (not Chrome):
+
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./
+
+Then Share → **Add to Home Screen**. The app opens as FTOD. Data stays on that device until you export or reset.
 
 ### Offline
 
@@ -122,4 +126,7 @@ Active development. Current slice is the operations hub with shared records. Exi
 
 ## GitHub
 
-https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
+- Source: https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
+- Live: https://tectivejk.github.io/Field-Test-Operations-Dashboard./
+
+GitHub Pages deploys from `main` via `.github/workflows/pages.yml`.

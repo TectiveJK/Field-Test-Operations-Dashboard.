@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: "FTOD",
     statusBarStyle: "default",
   },
-  manifest: "/manifest.webmanifest",
+  manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/manifest.webmanifest`,
 };
 
 export const viewport: Viewport = {

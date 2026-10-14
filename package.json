@@ -20,7 +20,7 @@
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0 --port 43180",
     "build": "next build",
-    "start": "next start --hostname 0.0.0.0 --port 43180",
+    "start": "npx --yes serve out --listen tcp://0.0.0.0:43180",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
   },
