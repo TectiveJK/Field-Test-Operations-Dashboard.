@@ -2,11 +2,27 @@
   "name": "field-test-operations-dashboard",
   "version": "0.1.0",
   "private": true,
+  "description": "Daily command center for Tective drone field-test operations. Connects reporting, maintenance, planning and simulator testing without replacing those apps.",
+  "author": {
+    "name": "TectiveJK",
+    "email": "john.kokotinis@tective.nl"
+  },
+  "license": "MIT",
+  "keywords": [
+    "drone",
+    "field-test",
+    "px4",
+    "qgroundcontrol",
+    "skycommand",
+    "skyhive",
+    "refly"
+  ],
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0 --port 43180",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0 --port 43180",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
