@@ -1,0 +1,17 @@
+{
+  "name": "Field Test Operations Dashboard",
+  "short_name": "FTOD",
+  "description": "Daily Tective field-test hub. Works offline on iPhone, iPad and Linux.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e5e7eb",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/components/providers";
@@ -15,9 +15,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tective Field Test Operations",
+  title: "Field Test Operations Dashboard",
   description:
-    "Command board for Tective drone field-test days: go/no-go, sorties, fleet readiness, and issues.",
+    "Daily command center for Tective field testing: what to test today, what is still open, and what to fly next.",
+  appleWebApp: {
+    capable: true,
+    title: "FTOD",
+    statusBarStyle: "default",
+  },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

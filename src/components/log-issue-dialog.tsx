@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { FieldTextarea } from "@/components/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,35 +22,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ISSUE_SEVERITIES, type IssueSeverity } from "@/lib/types";
-import { useOps } from "@/lib/store";
+import { useHub } from "@/lib/store";
 
 export function LogIssueDialog() {
-  const { state, addIssue } = useOps();
+  const { state, addIssue } = useHub();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [severity, setSeverity] = useState<IssueSeverity>("MEDIUM");
-  const [aircraftId, setAircraftId] = useState("none");
-  const [description, setDescription] = useState("");
-  const [action, setAction] = useState("");
+  const [severity, setSeverity] = useState<IssueSeverity>("HIGH");
+  const [droneId, setDroneId] = useState("none");
+  const [missionType, setMissionType] = useState("GNSS Denied");
+  const [steps, setSteps] = useState("");
+  const [expected, setExpected] = useState("");
+  const [actual, setActual] = useState("");
   const [error, setError] = useState("");
 
   function submit() {
-    if (!title.trim()) {
-      setError("Title is required.");
+    if (!title.trim() || !actual.trim()) {
+      setError("Title and actual behaviour are required.");
       return;
     }
     addIssue({
       title: title.trim(),
       severity,
-      aircraftId: aircraftId === "none" ? null : aircraftId,
-      description: description.trim() || "Logged from the operations board.",
-      action: action.trim() || "Assigned to the test-day crew.",
+      droneId: droneId === "none" ? null : droneId,
+      missionType,
+      stepsToReproduce: steps.trim() || "See test card.",
+      expected: expected.trim() || "See test case expected result.",
+      actual: actual.trim(),
     });
     setTitle("");
-    setDescription("");
-    setAction("");
-    setSeverity("MEDIUM");
-    setAircraftId("none");
+    setSteps("");
+    setExpected("");
+    setActual("");
     setError("");
     setOpen(false);
   }
@@ -60,20 +64,20 @@ export function LogIssueDialog() {
         <Plus data-icon="inline-start" />
         Log issue
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Log a field issue</DialogTitle>
+          <DialogTitle>Log a bug from the field</DialogTitle>
           <DialogDescription>
-            Capture an anomaly, inspection fail, or ops blocker for this test day.
+            Same record the dashboard, retest queue and evidence list will use.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-3">
+        <div className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1">
           <label className="grid gap-1 text-sm font-medium">
             Title
             <Input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Short, specific, aircraft-first"
+              placeholder="Airframe-first, e.g. GNSS hold on skyhive-sf-004"
             />
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -81,9 +85,7 @@ export function LogIssueDialog() {
               Severity
               <Select
                 value={severity}
-                onValueChange={(value) => {
-                  if (value) setSeverity(value as IssueSeverity);
-                }}
+                onValueChange={(value) => value && setSeverity(value as IssueSeverity)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -98,23 +100,18 @@ export function LogIssueDialog() {
               </Select>
             </label>
             <label className="grid gap-1 text-sm font-medium">
-              Aircraft
-              <Select
-                value={aircraftId}
-                onValueChange={(value) => {
-                  if (value) setAircraftId(value);
-                }}
-              >
+              Drone
+              <Select value={droneId} onValueChange={(value) => value && setDroneId(value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Unassigned</SelectItem>
-                  {state.aircraft
-                    .filter((asset) => asset.type === "Airframe")
-                    .map((asset) => (
-                      <SelectItem key={asset.id} value={asset.id}>
-                        {asset.name}
+                  {state.drones
+                    .filter((drone) => drone.family !== "Ground")
+                    .map((drone) => (
+                      <SelectItem key={drone.id} value={drone.id}>
+                        {drone.name}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -122,22 +119,23 @@ export function LogIssueDialog() {
             </label>
           </div>
           <label className="grid gap-1 text-sm font-medium">
-            What happened
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={3}
-              className="min-h-20 w-full rounded-lg border border-input bg-background px-2.5 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              placeholder="Observed behaviour, mode, and abort if any."
+            Mission type
+            <Input
+              value={missionType}
+              onChange={(event) => setMissionType(event.target.value)}
             />
           </label>
           <label className="grid gap-1 text-sm font-medium">
-            Immediate action
-            <Input
-              value={action}
-              onChange={(event) => setAction(event.target.value)}
-              placeholder="Hold airframe, pull logs, swap pack…"
-            />
+            Steps to reproduce
+            <FieldTextarea value={steps} onChange={(event) => setSteps(event.target.value)} />
+          </label>
+          <label className="grid gap-1 text-sm font-medium">
+            Expected
+            <Input value={expected} onChange={(event) => setExpected(event.target.value)} />
+          </label>
+          <label className="grid gap-1 text-sm font-medium">
+            Actual
+            <FieldTextarea value={actual} onChange={(event) => setActual(event.target.value)} />
           </label>
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
         </div>

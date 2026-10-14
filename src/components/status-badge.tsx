@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { resultTone } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const tones = {
@@ -10,17 +11,20 @@ const tones = {
 } as const;
 
 export function StatusBadge({
+  value,
   tone,
   children,
   className,
 }: {
-  tone: keyof typeof tones;
-  children: React.ReactNode;
+  value?: string;
+  tone?: keyof typeof tones;
+  children?: React.ReactNode;
   className?: string;
 }) {
+  const resolved = tone ?? (value ? resultTone(value) : "mute");
   return (
-    <Badge variant="outline" className={cn(tones[tone], className)}>
-      {children}
+    <Badge variant="outline" className={cn(tones[resolved], className)}>
+      {children ?? value}
     </Badge>
   );
 }

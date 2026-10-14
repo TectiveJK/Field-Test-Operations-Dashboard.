@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,160 +11,198 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StatusBadge } from "@/components/status-badge";
-import { useOps } from "@/lib/store";
-import { ASSET_STATUSES, type AssetStatus, type BatteryHealth } from "@/lib/types";
-
-function assetTone(status: AssetStatus) {
-  if (status === "Ready") return "pass" as const;
-  if (status === "In use") return "pending" as const;
-  if (status === "Hold" || status === "Inspection due") return "watch" as const;
-  return "fail" as const;
-}
-
-function batteryTone(health: BatteryHealth) {
-  if (health === "Good") return "pass" as const;
-  if (health === "Watch") return "watch" as const;
-  return "fail" as const;
-}
+import { buildById } from "@/lib/selectors";
+import { useHub } from "@/lib/store";
+import { DRONE_STATUSES, type DroneStatus } from "@/lib/types";
 
 export function FleetBoard() {
-  const { state } = useOps();
+  const { state, setDroneStatus } = useHub();
+  const airframes = state.drones.filter((drone) => drone.family !== "Ground");
+  const [left, setLeft] = useState(airframes[0]?.id ?? "");
+  const [right, setRight] = useState(airframes[3]?.id ?? airframes[1]?.id ?? "");
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
 
-  const airframes = useMemo(() => {
+  const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return state.aircraft.filter((asset) => {
-      const matchesQuery =
-        !q ||
-        `${asset.name} ${asset.category} ${asset.notes} ${asset.firmware ?? ""}`
-          .toLowerCase()
-          .includes(q);
-      const matchesStatus = status === "all" || asset.status === status;
-      return matchesQuery && matchesStatus;
+    return state.drones.filter((drone) => {
+      return !q || `${drone.name} ${drone.family} ${drone.hardware} ${drone.notes}`.toLowerCase().includes(q);
     });
-  }, [state.aircraft, query, status]);
+  }, [state.drones, query]);
 
-  const batteries = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return state.batteries.filter((battery) => {
-      return !q || `${battery.label} ${battery.notes}`.toLowerCase().includes(q);
-    });
-  }, [state.batteries, query]);
+  const a = state.drones.find((drone) => drone.id === left);
+  const b = state.drones.find((drone) => drone.id === right);
+  const buildA = buildById(state, a?.buildId ?? null);
+  const buildB = buildById(state, b?.buildId ?? null);
+
+  const diffs = a && b
+    ? [
+        ["PX4", buildA?.px4, buildB?.px4],
+        ["SkyCommand", buildA?.skyCommand, buildB?.skyCommand],
+        ["SkyHive", buildA?.skyHive, buildB?.skyHive],
+        ["QGC", buildA?.gcs, buildB?.gcs],
+        ["Autonomy", buildA?.autonomyNode, buildB?.autonomyNode],
+        ["Jenkins", buildA?.jenkins, buildB?.jenkins],
+        ["Hardware", a.hardware, b.hardware],
+        ["Parameters", a.parameters, b.parameters],
+      ] as const
+    : [];
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Fleet and equipment</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Fleet, builds & configuration</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Refly IBB/SF, Skyhive, rotator 25, and the test-battery rack used by the Flight Test
-          Reporter and Maintenance Assistant.
+          If one airframe passes and another fails, compare PX4, SkyCommand, SkyHive, GCS and
+          parameters instead of guessing.
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute top-2.5 left-2.5 size-4 text-slate-400" />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search airframe, firmware, pack…"
-            className="bg-white pl-8"
-          />
-        </div>
-        <Select
-          value={status}
-          onValueChange={(value) => {
-            if (value) setStatus(value);
-          }}
-        >
-          <SelectTrigger className="w-full bg-white sm:w-52">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {ASSET_STATUSES.map((item) => (
-              <SelectItem key={item} value={item}>
-                {item}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Input
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search airframe, GPS module, notes…"
+        className="bg-white"
+      />
 
-      <section>
-        <h3 className="mb-3 text-sm font-semibold text-slate-700">Airframes and ground kit</h3>
-        {airframes.length === 0 ? (
-          <Card className="bg-white">
-            <CardContent className="py-10 text-center text-sm text-slate-600">
-              No equipment matches that search. Try a tail number such as refly-ibb-010.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {airframes.map((asset) => (
-              <Card key={asset.id} size="sm" className="bg-white">
+      {shown.length === 0 ? (
+        <Card className="bg-white">
+          <CardContent className="py-10 text-center text-sm text-slate-600">
+            No drones match that search.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {shown.map((drone) => {
+            const build = buildById(state, drone.buildId);
+            return (
+              <Card key={drone.id} size="sm" className="bg-white">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <CardTitle className="font-mono">{asset.name}</CardTitle>
+                      <CardTitle className="font-mono">{drone.name}</CardTitle>
                       <CardDescription>
-                        {asset.category}
-                        {asset.hours != null ? ` · ${asset.hours.toFixed(1)} h` : ""}
+                        {drone.family} · {drone.hours ? `${drone.hours.toFixed(1)} h` : "ground kit"}
                       </CardDescription>
                     </div>
-                    <StatusBadge tone={assetTone(asset.status)}>{asset.status}</StatusBadge>
+                    <StatusBadge value={drone.status} />
                   </div>
                 </CardHeader>
-                <CardContent className="grid gap-1 text-sm text-slate-700">
-                  {asset.firmware ? (
-                    <p className="font-mono text-xs text-slate-500">{asset.firmware}</p>
+                <CardContent className="grid gap-2 text-sm">
+                  <p className="text-xs text-slate-500">
+                    Jenkins {build?.jenkins} · {build?.px4}
+                  </p>
+                  <p className="text-slate-700">{drone.notes}</p>
+                  {drone.family !== "Ground" ? (
+                    <Select
+                      value={drone.status}
+                      onValueChange={(value) =>
+                        value && setDroneStatus(drone.id, value as DroneStatus)
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DRONE_STATUSES.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   ) : null}
-                  <p>{asset.notes}</p>
                 </CardContent>
               </Card>
-            ))}
+            );
+          })}
+        </div>
+      )}
+
+      <Card className="bg-white">
+        <CardHeader>
+          <CardTitle>Compare two drones</CardTitle>
+          <CardDescription>
+            Example: refly-sf-007 on 1855 versus skyhive-sf-004 still on 1842.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1 text-sm font-medium">
+              Drone A
+              <Select value={left} onValueChange={(value) => value && setLeft(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {airframes.map((drone) => (
+                    <SelectItem key={drone.id} value={drone.id}>
+                      {drone.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+            <label className="grid gap-1 text-sm font-medium">
+              Drone B
+              <Select value={right} onValueChange={(value) => value && setRight(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {airframes.map((drone) => (
+                    <SelectItem key={drone.id} value={drone.id}>
+                      {drone.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
           </div>
-        )}
-      </section>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b text-xs text-slate-500">
+                  <th className="py-2 pr-3">Field</th>
+                  <th className="py-2 pr-3">{a?.name}</th>
+                  <th className="py-2">{b?.name}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {diffs.map(([field, va, vb]) => (
+                  <tr key={field} className="border-b last:border-0">
+                    <td className="py-2 pr-3 text-slate-500">{field}</td>
+                    <td className="py-2 pr-3">{va}</td>
+                    <td className={va !== vb ? "py-2 font-medium text-amber-900" : "py-2"}>
+                      {vb}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-slate-700">Battery rack</h3>
-        {batteries.length === 0 ? (
-          <Card className="bg-white">
-            <CardContent className="py-10 text-center text-sm text-slate-600">
-              No packs match that search.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="overflow-hidden rounded-xl bg-white ring-1 ring-foreground/10">
-            <div className="grid grid-cols-[1fr_auto_auto] gap-2 border-b px-4 py-2 text-xs font-medium text-slate-500 sm:grid-cols-[1.2fr_1fr_auto_auto_1.4fr]">
-              <span>Pack</span>
-              <span className="hidden sm:block">Assigned</span>
-              <span>Cycles</span>
-              <span>Health</span>
-              <span className="hidden sm:block">Notes</span>
-            </div>
-            {batteries.map((battery) => (
-              <div
-                key={battery.id}
-                className="grid grid-cols-[1fr_auto_auto] items-center gap-2 border-b px-4 py-3 last:border-0 sm:grid-cols-[1.2fr_1fr_auto_auto_1.4fr]"
-              >
-                <div>
-                  <p className="font-mono text-sm font-medium">{battery.label}</p>
-                  <p className="text-xs text-slate-500">{battery.voltage}</p>
-                </div>
-                <p className="hidden text-sm text-slate-700 sm:block">
-                  {battery.assignedTo ?? "Unassigned"}
-                </p>
-                <p className="font-mono text-sm">{battery.cycles}</p>
-                <StatusBadge tone={batteryTone(battery.health)}>{battery.health}</StatusBadge>
-                <p className="hidden text-xs text-slate-600 sm:block">{battery.notes}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        <h3 className="mb-3 text-sm font-semibold text-slate-700">Software builds</h3>
+        <div className="grid gap-3 md:grid-cols-3">
+          {state.builds.map((build) => (
+            <Card key={build.id} size="sm" className="bg-white">
+              <CardHeader>
+                <CardDescription>Jenkins {build.jenkins}</CardDescription>
+                <CardTitle>{build.label}</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-1 text-xs text-slate-600">
+                <p>{build.px4}</p>
+                <p>{build.skyCommand}</p>
+                <p>{build.skyHive}</p>
+                <p>{build.gcs}</p>
+                <p>{build.autonomyNode}</p>
+                <p className="pt-1 text-slate-700">{build.notes}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </section>
     </div>
   );
