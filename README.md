@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app. GitHub `main` and the Origin copy stay in sync when you `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (**0.2.4**). GitHub `main` and Origin are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. Publish Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.4`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -64,9 +64,9 @@ The operations dashboard is the home screen for the day, with the other modules 
 | **Today** | The three questions, GO / CONDITIONAL / NO-GO, daily summary, fleet snapshot, links to the existing apps |
 | **Plan** | Copied from Upcoming flights & tests. Mark Planned / In progress / Done / Skipped |
 | **Tests** | SIM Flight Testing catalog. Record a run here if you want it on this hub |
-| **Fleet** | Drones available, under test or grounded, plus Hardware locator location / holder / gimbal. Compare two airframes |
+| **Fleet** | Drones available, under test or grounded. **Update location** / **Add hardware** writes the company Hardware locator list. Compare two airframes |
 | **Issues** | Bug tracker: id, severity, drone, build, steps, expected vs actual, assignee, retest |
-| **Deploy** | Pre-departure checklist with live locations on aircraft and packs |
+| **Deploy** | Pre-departure checklist with live locations; **Update location** on aircraft, packs and rotator |
 | **Reports** | Flight-report index, evidence organizer (ULog / QGC / pcap names), knowledge notes |
 
 A failed simulator or field run can create an issue, keep the ULog against that drone and build, show on Today as an outstanding retest, and later be compared with the next Jenkins build.
@@ -95,7 +95,8 @@ Every module uses the same objects. That is the foundation for adding more later
 - **Evidence organizer**: attach a filename on the pad even when you cannot upload the file
 - **Test comparison**: two runs of the same mission, including result, configuration and measurements (manual entry now; ULog parsing later)
 - **Config diff**: if one drone passes and another fails, compare firmware and parameters instead of guessing
-- Local storage only — no server, no login. **Reset to source apps** reloads Reporter equipment, Hardware locator locations, the SIM catalog, the Upcoming flights board, and the last SIM FAIL / BLOCKED items. It does not invent a test day.
+- **Update location** on Fleet and Deploy writes the company Hardware locator list (phones still see it). The locator app is not modified.
+- Local storage only for hub ticks and issues — no login. **Reset to source apps** reloads Reporter equipment, Hardware locator locations, the SIM catalog, the Upcoming flights board, and the last SIM FAIL / BLOCKED items. It does not invent a test day.
 
 ## Clone from GitHub
 
@@ -186,7 +187,7 @@ The first online load caches the app shell. After that you can still:
 - record a test result
 - log an issue and attach evidence names
 
-A banner appears when there is no network. Hardware locations and the Upcoming board refresh when you are online again.
+**Update location** and **Add hardware** need a network connection (they write the shared company list). A banner appears when there is no network. Hardware locations and the Upcoming board refresh when you are online again.
 
 ## Project structure
 
@@ -195,7 +196,8 @@ src/app/              routes: Today, Plan, Tests, Fleet, Issues, Deploy, Reports
 src/components/       boards, dialogs, shell
 src/lib/types.ts      shared records
 src/lib/from-apps.ts  Reporter equipment, SIM catalog, Upcoming board, locator
-src/lib/hardware.ts   live Hardware locator list (read-only)
+src/lib/hardware.ts   Hardware locator list: read and write the existing company sheet
+src/components/hardware-dialog.tsx  Update location / Add hardware
 src/lib/sim-import.ts last SIM FAIL / BLOCKED run → issues, runs, reports
 src/lib/seed.ts       hub snapshot built from those apps
 src/lib/store.tsx     local persistence
@@ -214,7 +216,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.4** can update Hardware locator locations from Fleet and Deploy without changing the locator app. The hub does not invent a test day. Plan comes from Upcoming flights & tests. Tests are the SIM catalog. Issues include FAIL / BLOCKED missions from the last SIM Flight Testing run in this browser. Next: edit Upcoming flights from Plan.
+**0.2.4 is live on GitHub Pages.** You can update Hardware locator locations from Fleet and Deploy without changing the locator app. The hub does not invent a test day. Plan comes from Upcoming flights & tests. Tests are the SIM catalog. Issues include FAIL / BLOCKED missions from the last SIM Flight Testing run in this browser. Next: edit Upcoming flights from Plan.
 
 ## Links
 
