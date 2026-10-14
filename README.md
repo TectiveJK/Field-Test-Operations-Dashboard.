@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (0.2.3). GitHub `main` and the Origin copy are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,12 +31,12 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase is kept in two places. GitHub is the public source of truth and publishes Pages. Origin is the private Cursor copy used by agents.
+The same codebase lives in two places. They are in sync at `0.2.3`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
 | **Live app** | https://tectivejk.github.io/Field-Test-Operations-Dashboard./ | GitHub Pages site |
-| **GitHub** | https://github.com/TectiveJK/Field-Test-Operations-Dashboard. | Public source, CI, Pages |
+| **GitHub** | https://github.com/TectiveJK/Field-Test-Operations-Dashboard. | Public source of truth, CI, Pages |
 | **Origin** | https://cursor.com/codebase/john-kokotinis/field-test-dashboard | Private Cursor copy |
 
 Origin visibility is **private**. Change that in settings on the browse page.
@@ -91,7 +91,7 @@ Every module uses the same objects. That is the foundation for adding more later
 
 ## Features that matter in the field
 
-- Automatic **daily summary**: completed tests, failures, open issues, remaining plan
+- Automatic **daily summary**: completed tests, failures, open issues, remaining plan, grounded airframes
 - **Evidence organizer**: attach a filename on the pad even when you cannot upload the file
 - **Test comparison**: two runs of the same mission, including result, configuration and measurements (manual entry now; ULog parsing later)
 - **Config diff**: if one drone passes and another fails, compare firmware and parameters instead of guessing
@@ -140,7 +140,24 @@ npm install
 npm run dev
 ```
 
-### Keep GitHub and Origin on the same commit
+### Publish Origin commits to GitHub Pages
+
+This is the path that works from an Origin clone. Add the GitHub remote once, then push `main`:
+
+```bash
+cd field-test-dashboard
+git remote add github https://github.com/TectiveJK/Field-Test-Operations-Dashboard..git
+git push github main
+```
+
+If the `github` remote already exists:
+
+```bash
+git pull
+git push github main
+```
+
+GitHub Actions then publishes https://tectivejk.github.io/Field-Test-Operations-Dashboard./
 
 From a GitHub clone, after Origin has newer commits:
 
@@ -169,7 +186,7 @@ The first online load caches the app shell. After that you can still:
 - record a test result
 - log an issue and attach evidence names
 
-A banner appears when there is no network.
+A banner appears when there is no network. Hardware locations and the Upcoming board refresh when you are online again.
 
 ## Project structure
 
@@ -197,11 +214,12 @@ npm run typecheck
 
 ## Status
 
-Active development. The hub does not invent a test day. Plan, fleet, locations and the SIM catalog come from the Tective apps. Issues also include FAIL / BLOCKED missions from the last SIM Flight Testing run stored in this browser (same GitHub Pages origin). Next: import Reporter JSON and Maintenance SQLite when those files are available.
+**0.2.3 is live on GitHub Pages.** The hub does not invent a test day. Plan comes from Upcoming flights & tests. Fleet and Deploy combine the Reporter equipment list with live Hardware locator locations. Tests are the SIM catalog. Issues include FAIL / BLOCKED missions from the last SIM Flight Testing run in this browser. Next: import Reporter JSON and Maintenance SQLite when those files are available.
 
 ## Links
 
 - Live: https://tectivejk.github.io/Field-Test-Operations-Dashboard./
 - GitHub: https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
 - Origin: https://cursor.com/codebase/john-kokotinis/field-test-dashboard
+- Hardware locator: https://tectivejk.github.io/Updating-hardware/
 - Origin CLI: https://cursor.com/docs/origin/cli
