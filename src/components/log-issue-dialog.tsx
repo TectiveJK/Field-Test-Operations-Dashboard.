@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ISSUE_SEVERITIES, type IssueSeverity } from "@/lib/types";
+import { ISSUE_SEVERITIES, isAirframe, type IssueSeverity } from "@/lib/types";
 import { useHub } from "@/lib/store";
 
 export function LogIssueDialog() {
@@ -108,7 +108,7 @@ export function LogIssueDialog() {
                 <SelectContent>
                   <SelectItem value="none">Unassigned</SelectItem>
                   {state.drones
-                    .filter((drone) => drone.family !== "Ground")
+                    .filter(isAirframe)
                     .map((drone) => (
                       <SelectItem key={drone.id} value={drone.id}>
                         {drone.name}

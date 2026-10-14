@@ -1,5 +1,5 @@
 import { todayIso } from "@/lib/format";
-import type { HubState, NextAction, PlanItem, RunResult } from "@/lib/types";
+import { isAirframe, type HubState, type NextAction, type PlanItem, type RunResult } from "@/lib/types";
 
 export function droneById(state: HubState, id: string | null) {
   return state.drones.find((drone) => drone.id === id) ?? null;
@@ -54,7 +54,7 @@ export function failedCases(state: HubState) {
 }
 
 export function counts(state: HubState) {
-  const drones = state.drones.filter((drone) => drone.family !== "Ground");
+  const drones = state.drones.filter(isAirframe);
   const remaining = upcomingPlan(state).filter(
     (item) => item.status === "Planned" || item.status === "In progress"
   );
@@ -121,7 +121,7 @@ export function dailySummary(state: HubState) {
   const remaining = upcomingPlan(state).filter(
     (item) => item.status === "Planned" || item.status === "In progress"
   );
-  const missing = state.drones.filter((drone) => drone.family !== "Ground" && drone.status === "Grounded");
+  const missing = state.drones.filter((drone) => isAirframe(drone) && drone.status === "Grounded");
   const site = state.site || "Tective";
   const weather = state.weather ? ` ${state.weather}` : "";
   const lines = [

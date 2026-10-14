@@ -1,5 +1,5 @@
 import snapshot from "@/lib/hardware-snapshot.json";
-import type { ChecklistItem, Drone, HubState } from "@/lib/types";
+import { isAirframe, type ChecklistItem, type Drone, type HubState } from "@/lib/types";
 
 export const HARDWARE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbz3KiLyly5nRN7-y9iyJvL-z6xLpJKtNH02faJ4NeH1j0BvYUhlbvUVOXqckLtIIGqcuw/exec";
@@ -214,6 +214,7 @@ function classify(name: string) {
 
 function familyOf(name: string): Drone["family"] {
   const lower = name.toLowerCase();
+  if (lower.includes("battery")) return "Battery";
   if (lower.includes("ibb")) return "ReFly IBB";
   if (lower.includes("skyhive") || lower.includes("hive")) return "SkyHive SF";
   if (lower.includes("rotator")) return "Ground";
@@ -230,13 +231,8 @@ function statusFromLocation(location: string, current: Drone["status"]): Drone["
   return current;
 }
 
-function hardwareNotes(item: HardwareItem, previous: string) {
-  const parts = [item.note, item.gimbal ? `Gimbal ${item.gimbal}` : "", item.person ? `With ${item.person}` : ""].filter(
-    Boolean
-  );
-  if (parts.length) return parts.join(". ");
-  if (previous && !previous.startsWith("Listed in Drone Flight Test Reporter")) return previous;
-  return previous || "Listed in Hardware locator.";
+function hardwareNotes(item: HardwareItem) {
+  return item.note.trim();
 }
 
 function checklistGroup(type: string, name: string) {
@@ -265,26 +261,26 @@ export function applyHardware(hub: HubState, items: HardwareItem[]): HubState {
       holder: item.person,
       gimbal: item.gimbal,
       locatorNote: item.note,
-      notes: hardwareNotes(item, drone.notes),
-      status: drone.family === "Ground" ? drone.status : statusFromLocation(item.location, drone.status),
+      notes: hardwareNotes(item),
+      status: isAirframe(drone) ? statusFromLocation(item.location, drone.status) : drone.status,
     };
   });
 
   const known = new Set(drones.map((drone) => normalizeHardwareName(drone.name)));
   const extras: Drone[] = [];
   for (const item of items) {
-    if (item.type === "battery" || item.name.toLowerCase().includes("battery")) continue;
     if (known.has(normalizeHardwareName(item.name))) continue;
+    const family = familyOf(item.name);
     extras.push({
       id: slug(item.name),
       name: item.name,
-      family: familyOf(item.name),
-      status: statusFromLocation(item.location, "Available"),
-      buildId: hub.builds[0]?.id ?? "",
+      family,
+      status: isAirframe({ family }) ? statusFromLocation(item.location, "Available") : "Available",
+      buildId: isAirframe({ family }) ? (hub.builds[0]?.id ?? "") : "",
       hardware: item.name,
       parameters: "",
       hours: 0,
-      notes: hardwareNotes(item, ""),
+      notes: hardwareNotes(item),
       location: item.location,
       holder: item.person,
       gimbal: item.gimbal,

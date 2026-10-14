@@ -1,7 +1,7 @@
 import { applyHardware, SNAPSHOT_HARDWARE } from "@/lib/hardware";
 import { SNAPSHOT_ENTRIES, planFromUpcoming } from "@/lib/upcoming";
 import { SUITE } from "@/lib/sim-suite";
-import type { ChecklistItem, Drone, HubState, SoftwareBuild, TestCase } from "@/lib/types";
+import { isAirframe, type ChecklistItem, type Drone, type HubState, type SoftwareBuild, type TestCase } from "@/lib/types";
 
 /** Equipment names from Drone Flight Test Reporter (ios-app equipment list). */
 export const REPORTER_EQUIPMENT = [
@@ -37,8 +37,9 @@ const BATTERIES = REPORTER_EQUIPMENT.filter((name) => name.toLowerCase().include
 
 function familyOf(name: string): Drone["family"] {
   const lower = name.toLowerCase();
+  if (lower.includes("battery")) return "Battery";
   if (lower.includes("ibb")) return "ReFly IBB";
-  if (lower.includes("skyhive")) return "SkyHive SF";
+  if (lower.includes("skyhive") || lower.includes("hive")) return "SkyHive SF";
   if (lower.includes("rotator")) return "Ground";
   return "ReFly SF";
 }
@@ -93,21 +94,24 @@ const simBuild: SoftwareBuild = {
 };
 
 function dronesFromReporter(): Drone[] {
-  return AIRFRAMES.map((name) => ({
-    id: slug(name),
-    name,
-    family: familyOf(name),
-    status: "Available" as const,
-    buildId: simBuild.id,
-    hardware: familyOf(name) === "Ground" ? "Tracking antenna rotator" : name,
-    parameters: "",
-    hours: 0,
-    notes: "Listed in Drone Flight Test Reporter equipment.",
-    location: "",
-    holder: "",
-    gimbal: "",
-    locatorNote: "",
-  }));
+  return REPORTER_EQUIPMENT.map((name) => {
+    const family = familyOf(name);
+    return {
+      id: slug(name),
+      name,
+      family,
+      status: "Available" as const,
+      buildId: isAirframe({ family }) ? simBuild.id : "",
+      hardware: family === "Ground" ? "Tracking antenna rotator" : name,
+      parameters: "",
+      hours: 0,
+      notes: "Listed in Drone Flight Test Reporter equipment.",
+      location: "",
+      holder: "",
+      gimbal: "",
+      locatorNote: "",
+    };
+  });
 }
 
 function testsFromSim(): TestCase[] {

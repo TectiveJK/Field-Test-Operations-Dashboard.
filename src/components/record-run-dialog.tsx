@@ -22,14 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useHub } from "@/lib/store";
-import { RUN_RESULTS, type RunResult } from "@/lib/types";
+import { RUN_RESULTS, isAirframe, type RunResult } from "@/lib/types";
 
 export function RecordRunDialog() {
   const { state, addRun } = useHub();
   const [open, setOpen] = useState(false);
   const [testCaseId, setTestCaseId] = useState(state.testCases[0]?.id ?? "");
   const [droneId, setDroneId] = useState(
-    state.drones.find((drone) => drone.family !== "Ground")?.id ?? ""
+    state.drones.find(isAirframe)?.id ?? ""
   );
   const [buildId, setBuildId] = useState(state.builds.at(-1)?.id ?? "");
   const [environment, setEnvironment] = useState<"Field" | "Simulator">("Field");
@@ -90,7 +90,7 @@ export function RecordRunDialog() {
                 </SelectTrigger>
                 <SelectContent>
                   {state.drones
-                    .filter((drone) => drone.family !== "Ground")
+                    .filter(isAirframe)
                     .map((drone) => (
                       <SelectItem key={drone.id} value={drone.id}>
                         {drone.name}

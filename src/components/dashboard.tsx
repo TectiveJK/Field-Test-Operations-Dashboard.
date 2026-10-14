@@ -28,7 +28,7 @@ import {
   upcomingPlan,
 } from "@/lib/selectors";
 import { useHub } from "@/lib/store";
-import { GO_DECISIONS, type GoDecision } from "@/lib/types";
+import { GO_DECISIONS, isAirframe, type GoDecision } from "@/lib/types";
 
 export function Dashboard() {
   const { state, setDecision } = useHub();
@@ -39,7 +39,7 @@ export function Dashboard() {
   const issues = openIssues(state);
   const actions = nextActions(state);
   const summary = dailySummary(state);
-  const drones = state.drones.filter((drone) => drone.family !== "Ground");
+  const drones = state.drones.filter(isAirframe);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
@@ -62,7 +62,7 @@ export function Dashboard() {
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-slate-800">
               {state.decisionReason ||
-                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Reporter list with Hardware locator locations. Tests are the SIM Flight Testing catalog."}
+                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Hardware locator list (airframes, hive, rotator, batteries). Tests are the SIM Flight Testing catalog."}
             </p>
           </div>
           <div className="flex w-full flex-col gap-2 sm:max-w-md">

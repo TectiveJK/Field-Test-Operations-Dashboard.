@@ -53,10 +53,12 @@ export type SoftwareBuild = {
   notes: string;
 };
 
+export type DroneFamily = "ReFly IBB" | "ReFly SF" | "SkyHive SF" | "Ground" | "Battery";
+
 export type Drone = {
   id: string;
   name: string;
-  family: "ReFly IBB" | "ReFly SF" | "SkyHive SF" | "Ground";
+  family: DroneFamily;
   status: DroneStatus;
   buildId: string;
   hardware: string;
@@ -68,6 +70,10 @@ export type Drone = {
   gimbal: string;
   locatorNote: string;
 };
+
+export function isAirframe(drone: Pick<Drone, "family">) {
+  return drone.family !== "Ground" && drone.family !== "Battery";
+}
 
 export type TestCase = {
   id: string;
