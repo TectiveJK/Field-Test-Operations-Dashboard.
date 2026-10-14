@@ -45,7 +45,7 @@ const nav = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { state, reset, ready } = useHub();
+  const { state, reset } = useHub();
   const now = useNow();
   const [menuOpen, setMenuOpen] = useState(false);
   const open = openIssues(state).length;
@@ -150,15 +150,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 px-3 py-4 sm:px-5">
-          {ready ? (
-            children
-          ) : (
-            <div className="rounded-xl border border-slate-200 bg-white p-8 text-sm text-slate-600">
-              Loading operations hub…
-            </div>
-          )}
-        </main>
+        <main className="flex-1 px-3 py-4 sm:px-5">{children}</main>
 
         <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-slate-300 bg-[#f3f4f6] md:hidden">
           {nav.slice(0, 5).map((item) => {
