@@ -6,6 +6,18 @@ export const HARDWARE_SCRIPT_URL =
 
 export const HARDWARE_APP_URL = "https://tectivejk.github.io/Updating-hardware/";
 
+export const HARDWARE_LOCATIONS = [
+  "In factory downstairs",
+  "In office upstairs",
+  "In hive",
+  "testing",
+  "Out of service",
+] as const;
+
+export function isPresetLocation(value: string) {
+  return (HARDWARE_LOCATIONS as readonly string[]).includes(value);
+}
+
 export type HardwareItem = {
   name: string;
   location: string;
@@ -54,20 +66,141 @@ export function findHardware(items: HardwareItem[], name: string) {
   return items.find((item) => normalizeHardwareName(item.name) === needle) ?? null;
 }
 
-export function parseHardwarePayload(raw: string): HardwareItem[] {
+type HardwareEnvelope = {
+  ok?: boolean;
+  error?: string;
+  items?: unknown;
+  item?: unknown;
+};
+
+function parseHardwareEnvelope(raw: string): HardwareEnvelope {
   const trimmed = raw.trim();
   const wrapped = trimmed.match(/^[a-zA-Z_$][\w.]*\(([\s\S]*)\)\s*;?\s*$/);
   const jsonText = wrapped ? wrapped[1] : trimmed;
-  return itemsFromHardware(JSON.parse(jsonText));
+  const data = JSON.parse(jsonText) as HardwareEnvelope;
+  if (!data || typeof data !== "object") return {};
+  return data;
+}
+
+export function parseHardwarePayload(raw: string): HardwareItem[] {
+  return itemsFromHardware(parseHardwareEnvelope(raw));
+}
+
+let lastHardware: HardwareItem[] = SNAPSHOT_HARDWARE;
+
+function rememberHardware(items: HardwareItem[]) {
+  lastHardware = items;
+}
+
+function upsertRemembered(item: HardwareItem) {
+  const needle = normalizeHardwareName(item.name);
+  lastHardware = [item, ...lastHardware.filter((entry) => normalizeHardwareName(entry.name) !== needle)];
+  return lastHardware;
+}
+
+function hardwareJsonp(action: string, params: Record<string, string>): Promise<HardwareEnvelope> {
+  return new Promise((resolve, reject) => {
+    const callback = `hwcb_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const query = new URLSearchParams({ action, callback, t: String(Date.now()), ...params });
+    const script = document.createElement("script");
+    const timer = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Timed out talking to the company hardware list."));
+    }, 20000);
+    function cleanup() {
+      window.clearTimeout(timer);
+      script.remove();
+      delete (window as unknown as Record<string, unknown>)[callback];
+    }
+    (window as unknown as Record<string, unknown>)[callback] = (data: HardwareEnvelope) => {
+      cleanup();
+      resolve(data && typeof data === "object" ? data : {});
+    };
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Could not reach the company hardware list."));
+    };
+    script.async = true;
+    script.src = `${HARDWARE_SCRIPT_URL}?${query.toString()}`;
+    document.body.appendChild(script);
+  });
+}
+
+async function hardwareRequest(action: string, params: Record<string, string> = {}): Promise<HardwareEnvelope> {
+  try {
+    const query = new URLSearchParams({ action, t: String(Date.now()), ...params });
+    const response = await fetch(`${HARDWARE_SCRIPT_URL}?${query.toString()}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!response.ok) throw new Error("Hardware locator could not be reached.");
+    return parseHardwareEnvelope(await response.text());
+  } catch (error) {
+    if (typeof document === "undefined") throw error;
+    return hardwareJsonp(action, params);
+  }
 }
 
 export async function fetchHardwareItems(): Promise<HardwareItem[]> {
-  const response = await fetch(`${HARDWARE_SCRIPT_URL}?action=list&t=${Date.now()}`, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(12000),
+  const data = await hardwareRequest("list");
+  if (data.ok === false) throw new Error(data.error || "Hardware locator list could not be loaded.");
+  const items = itemsFromHardware(data);
+  rememberHardware(items);
+  return items;
+}
+
+function itemFromUnknown(raw: unknown, fallback: HardwareItem): HardwareItem {
+  const parsed = itemsFromHardware({ items: raw ? [raw] : [] })[0];
+  return parsed ?? fallback;
+}
+
+export async function updateHardware(input: {
+  item: string;
+  location: string;
+  person: string;
+  note: string;
+}): Promise<HardwareItem[]> {
+  const data = await hardwareRequest("update", {
+    item: input.item,
+    newName: "",
+    location: input.location,
+    person: input.person,
+    note: input.note,
   });
-  if (!response.ok) throw new Error("Hardware locator list could not be loaded.");
-  return parseHardwarePayload(await response.text());
+  if (data.ok === false) throw new Error(data.error || "Could not update hardware location.");
+  const saved = itemFromUnknown(data.item, {
+    name: input.item,
+    location: input.location,
+    person: input.person,
+    note: input.note,
+    gimbal: findHardware(lastHardware, input.item)?.gimbal ?? "",
+    type: findHardware(lastHardware, input.item)?.type ?? "",
+  });
+  return upsertRemembered(saved);
+}
+
+export async function addHardware(input: {
+  name: string;
+  location: string;
+  person: string;
+  note: string;
+}): Promise<HardwareItem[]> {
+  const data = await hardwareRequest("add", {
+    item: input.name,
+    location: input.location,
+    person: input.person,
+    note: input.note,
+  });
+  if (data.ok === false) throw new Error(data.error || "Could not add hardware.");
+  const saved = itemFromUnknown(data.item, {
+    name: input.name,
+    location: input.location,
+    person: input.person,
+    note: input.note,
+    gimbal: "",
+    type: classify(input.name),
+  });
+  return upsertRemembered(saved);
 }
 
 function classify(name: string) {
@@ -123,6 +256,7 @@ export function applyHardware(hub: HubState, items: HardwareItem[]): HubState {
         location: drone.location ?? "",
         holder: drone.holder ?? "",
         gimbal: drone.gimbal ?? "",
+        locatorNote: drone.locatorNote ?? "",
       };
     }
     return {
@@ -130,6 +264,7 @@ export function applyHardware(hub: HubState, items: HardwareItem[]): HubState {
       location: item.location,
       holder: item.person,
       gimbal: item.gimbal,
+      locatorNote: item.note,
       notes: hardwareNotes(item, drone.notes),
       status: drone.family === "Ground" ? drone.status : statusFromLocation(item.location, drone.status),
     };
@@ -153,6 +288,7 @@ export function applyHardware(hub: HubState, items: HardwareItem[]): HubState {
       location: item.location,
       holder: item.person,
       gimbal: item.gimbal,
+      locatorNote: item.note,
     });
     known.add(normalizeHardwareName(item.name));
   }
@@ -160,9 +296,9 @@ export function applyHardware(hub: HubState, items: HardwareItem[]): HubState {
   const checklist = hub.checklist.map((row) => {
     const item = findHardware(items, row.label);
     if (!item) {
-      return { ...row, location: row.location ?? "", holder: row.holder ?? "" };
+      return { ...row, location: row.location ?? "", holder: row.holder ?? "", locatorNote: row.locatorNote ?? "" };
     }
-    return { ...row, location: item.location, holder: item.person };
+    return { ...row, location: item.location, holder: item.person, locatorNote: item.note };
   });
 
   const listed = new Set(checklist.map((row) => normalizeHardwareName(row.label)));
@@ -178,6 +314,7 @@ export function applyHardware(hub: HubState, items: HardwareItem[]): HubState {
       at: null,
       location: item.location,
       holder: item.person,
+      locatorNote: item.note,
     });
   }
 

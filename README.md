@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.3`
+**Current version:** `0.2.4`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (0.2.3). GitHub `main` and the Origin copy are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app. GitHub `main` and the Origin copy stay in sync when you `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -17,7 +17,7 @@ This hub does **not** invent a test day. It only shows records that already exis
 | This hub | Source |
 | --- | --- |
 | **Plan** | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) live board |
-| **Fleet / Deploy** | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) equipment list, plus live locations from [Hardware locator](https://tectivejk.github.io/Updating-hardware/) |
+| **Fleet / Deploy** | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) equipment list. Locations are read from and written to the same company list as [Hardware locator](https://tectivejk.github.io/Updating-hardware/). That locator app is not modified. |
 | **Tests** | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) 20-mission catalog |
 | **Issues / reports / runs** | Failed and blocked missions from the last [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) run in this browser. Maintenance Assistant still has none stored. |
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.3`.
+The same codebase lives in two places. Publish Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ Five tools already cover reporting, maintenance, planning, simulator testing and
 | Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Fleet, faults and inspections if that app has any. It currently stores none. |
 | Planning | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) | The live shared board (TALON, ReLION, Arctus, and so on). |
 | Simulator testing | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) | The 20 SkyCommand simulator missions, plus FAIL / BLOCKED items from the last scored run. |
-| Locations | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) | Live company list: where each airframe, pack, hive and rotator is. This hub only reads it. |
+| Locations | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) | Live company list. This hub reads it and can update location / who / note, or add an item. The locator app itself is unchanged; phones keep using it. |
 
 The operations dashboard is the home screen for the day, with the other modules sharing the same records.
 
@@ -73,7 +73,7 @@ A failed simulator or field run can create an issue, keep the ULog against that 
 
 When this hub and SIM Flight Testing share the GitHub Pages origin (`tectivejk.github.io`), FAIL and BLOCKED results from the last SIM run are copied into Issues, Tests and Reports automatically.
 
-Hardware locations refresh from the same Google Sheet the locator app writes. **Out of service** is shown as grounded. Change a location in the locator, not here.
+Hardware locations use the same Google Sheet the locator app writes. You can **Update location** on Fleet or Deploy, or **Add hardware** on Fleet. Phones that still open the locator see those changes. This repo does not change the locator app. **Out of service** is shown as grounded.
 
 ## Shared records
 
@@ -214,7 +214,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.3 is live on GitHub Pages.** The hub does not invent a test day. Plan comes from Upcoming flights & tests. Fleet and Deploy combine the Reporter equipment list with live Hardware locator locations. Tests are the SIM catalog. Issues include FAIL / BLOCKED missions from the last SIM Flight Testing run in this browser. Next: import Reporter JSON and Maintenance SQLite when those files are available.
+**0.2.4** can update Hardware locator locations from Fleet and Deploy without changing the locator app. The hub does not invent a test day. Plan comes from Upcoming flights & tests. Tests are the SIM catalog. Issues include FAIL / BLOCKED missions from the last SIM Flight Testing run in this browser. Next: edit Upcoming flights from Plan.
 
 ## Links
 

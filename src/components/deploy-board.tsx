@@ -1,5 +1,6 @@
 "use client";
 
+import { HardwareDialog } from "@/components/hardware-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,8 @@ export function DeployBoard() {
         <h2 className="text-xl font-semibold tracking-tight">Field deployment checklist</h2>
         <p className="mt-1 text-sm text-slate-600">
           Aircraft and packs from the Flight Test Reporter equipment list, with live locations
-          from the Hardware locator. Nothing is pre-ticked. Timestamps stay on this device.
+          from the Hardware locator. Update a location here; the locator app stays as it is.
+          Nothing is pre-ticked. Timestamps stay on this device.
         </p>
         <p className="mt-2 text-sm font-medium text-slate-800">
           {remaining === 0 ? "Checklist complete." : `${remaining} items still open.`}
@@ -70,6 +72,19 @@ export function DeployBoard() {
                       ) : (
                         <StatusBadge tone="watch">Open</StatusBadge>
                       )}
+                      {item.group === "Aircraft" ||
+                      item.group === "Batteries" ||
+                      item.label.toLowerCase().includes("rotator") ? (
+                        <div className="mt-2">
+                          <HardwareDialog
+                            mode="edit"
+                            itemName={item.label}
+                            location={item.location}
+                            person={item.holder}
+                            note={item.locatorNote}
+                          />
+                        </div>
+                      ) : null}
                     </div>
                   </li>
                 ))}

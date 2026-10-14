@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { HardwareDialog } from "@/components/hardware-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -57,12 +58,16 @@ export function FleetBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">Fleet, builds & configuration</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Airframes from the Drone Flight Test Reporter equipment list. Locations come from the
-          Hardware locator. Change a location there; Out of service is treated as grounded here.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Fleet, builds & configuration</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Airframes from the Reporter equipment list. Update a location here to write the same
+            company list the Hardware locator uses. Phones keep using that app unchanged.
+            Out of service is treated as grounded.
+          </p>
+        </div>
+        <HardwareDialog mode="add" triggerVariant="default" />
       </div>
 
       <Input
@@ -112,6 +117,13 @@ export function FleetBoard() {
                   )}
                   {drone.gimbal ? <p className="text-xs text-slate-600">Gimbal {drone.gimbal}</p> : null}
                   <p className="text-slate-700">{drone.notes}</p>
+                  <HardwareDialog
+                    mode="edit"
+                    itemName={drone.name}
+                    location={drone.location}
+                    person={drone.holder}
+                    note={drone.locatorNote}
+                  />
                   {drone.family !== "Ground" ? (
                     <Select
                       value={drone.status}

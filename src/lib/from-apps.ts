@@ -106,6 +106,7 @@ function dronesFromReporter(): Drone[] {
     location: "",
     holder: "",
     gimbal: "",
+    locatorNote: "",
   }));
 }
 
@@ -132,6 +133,7 @@ function checklistFromReporter(): ChecklistItem[] {
       at: null,
       location: "",
       holder: "",
+      locatorNote: "",
     })
   );
   const batteries = BATTERIES.map((name, index) => ({
@@ -143,20 +145,21 @@ function checklistFromReporter(): ChecklistItem[] {
     at: null,
     location: "",
     holder: "",
+    locatorNote: "",
   }));
   const ground: ChecklistItem[] = [
-    { id: "g1", group: "Ground", label: "rotator 25", done: false, by: "", at: null, location: "", holder: "" },
-    { id: "g2", group: "Ground", label: "Hive + tracking antenna", done: false, by: "", at: null, location: "", holder: "" },
-    { id: "g3", group: "Ground", label: "Starlink + generator + fuel", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "g1", group: "Ground", label: "rotator 25", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
+    { id: "g2", group: "Ground", label: "Hive + tracking antenna", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
+    { id: "g3", group: "Ground", label: "Starlink + generator + fuel", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
   ];
   const gcs: ChecklistItem[] = [
-    { id: "s1", group: "GCS", label: "QGC + joysticks + cables", done: false, by: "", at: null, location: "", holder: "" },
-    { id: "s2", group: "GCS", label: "SIM / GCS laptop", done: false, by: "", at: null, location: "", holder: "" },
-    { id: "s3", group: "GCS", label: "SIM packages (web-ground-control, mission-planner, tective-simulator)", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "s1", group: "GCS", label: "QGC + joysticks + cables", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
+    { id: "s2", group: "GCS", label: "SIM / GCS laptop", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
+    { id: "s3", group: "GCS", label: "SIM packages (web-ground-control, mission-planner, tective-simulator)", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
   ];
   const site: ChecklistItem[] = [
-    { id: "t1", group: "Site", label: "Weather, NOTAM, range brief", done: false, by: "", at: null, location: "", holder: "" },
-    { id: "t2", group: "Site", label: "Safety: observers, abort line, fire extinguisher", done: false, by: "", at: null, location: "", holder: "" },
+    { id: "t1", group: "Site", label: "Weather, NOTAM, range brief", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
+    { id: "t2", group: "Site", label: "Safety: observers, abort line, fire extinguisher", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
   ];
   return [...aircraft, ...batteries, ...ground, ...gcs, ...site];
 }

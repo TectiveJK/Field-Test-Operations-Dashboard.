@@ -66,6 +66,7 @@ export type Drone = {
   location: string;
   holder: string;
   gimbal: string;
+  locatorNote: string;
 };
 
 export type TestCase = {
@@ -154,6 +155,7 @@ export type ChecklistItem = {
   at: string | null;
   location: string;
   holder: string;
+  locatorNote: string;
 };
 
 export type KnowledgeNote = {

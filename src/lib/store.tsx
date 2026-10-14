@@ -9,7 +9,13 @@ import {
   type ReactNode,
 } from "react";
 import { newId } from "@/lib/format";
-import { applyHardware, fetchHardwareItems, SNAPSHOT_HARDWARE } from "@/lib/hardware";
+import {
+  addHardware,
+  applyHardware,
+  fetchHardwareItems,
+  SNAPSHOT_HARDWARE,
+  updateHardware,
+} from "@/lib/hardware";
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
 import { applySimLastRun, readSimStore } from "@/lib/sim-import";
 import { fetchUpcomingEntries, planFromUpcoming } from "@/lib/upcoming";
@@ -59,6 +65,18 @@ type StoreApi = {
     testRunId: string | null;
     notes: string;
   }) => void;
+  saveHardware: (input: {
+    item: string;
+    location: string;
+    person: string;
+    note: string;
+  }) => Promise<void>;
+  addHardwareItem: (input: {
+    name: string;
+    location: string;
+    person: string;
+    note: string;
+  }) => Promise<void>;
   reset: () => void;
 };
 
@@ -310,6 +328,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const saveHardware = useCallback(
+    async (input: { item: string; location: string; person: string; note: string }) => {
+      const items = await updateHardware(input);
+      write((current) => applyHardware(current, items));
+      void refreshHardware();
+    },
+    []
+  );
+
+  const addHardwareItem = useCallback(
+    async (input: { name: string; location: string; person: string; note: string }) => {
+      const items = await addHardware(input);
+      write((current) => applyHardware(current, items));
+      void refreshHardware();
+    },
+    []
+  );
+
   const reset = useCallback(() => {
     memory = applyHardware(applySimLastRun(cloneSeed(), readSimStore()), SNAPSHOT_HARDWARE);
     persist(memory);
@@ -331,6 +367,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addIssue,
       toggleCheck,
       addEvidence,
+      saveHardware,
+      addHardwareItem,
       reset,
     }),
     [
@@ -345,6 +383,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addIssue,
       toggleCheck,
       addEvidence,
+      saveHardware,
+      addHardwareItem,
       reset,
     ]
   );
