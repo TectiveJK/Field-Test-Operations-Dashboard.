@@ -69,7 +69,7 @@ export const EXISTING_APPS = [
     name: "SIM Flight Testing",
     area: "Simulator testing",
     href: "https://tectivejk.github.io/sim-testing-app/",
-    note: "20 SkyCommand simulator missions. Results stay with each tester until recorded here.",
+    note: "20 SkyCommand simulator missions. Failed and blocked items from the last run appear under Issues.",
   },
 ] as const;
 

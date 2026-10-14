@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.0`
+**Current version:** `0.2.1`
 
 ## Open the app
 
@@ -19,7 +19,7 @@ This hub does **not** invent a test day. It only shows records that already exis
 | **Plan** | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) live board |
 | **Fleet / Deploy** | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) equipment list |
 | **Tests** | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) 20-mission catalog |
-| **Issues / reports / runs** | Empty until [Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) or Reporter JSON has records to import |
+| **Issues / reports / runs** | Failed and blocked missions from the last [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) run in this browser. Maintenance Assistant still has none stored. |
 
 This app does **not** replace the existing tools. It connects them into one workspace so you can open it in the morning and immediately answer:
 
@@ -40,7 +40,7 @@ Four tools already cover reporting, maintenance, planning and simulator testing:
 | Reporting | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) | Equipment list (ReFly / SkyHive / rotator / packs). Saved flight reports stay in that app until imported. |
 | Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Fleet, faults and inspections if that app has any. It currently stores none. |
 | Planning | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) | The live shared board (TALON, ReLION, Arctus, and so on). |
-| Simulator testing | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) | The 20 SkyCommand simulator missions. Per-tester results stay in that app. |
+| Simulator testing | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) | The 20 SkyCommand simulator missions, plus FAIL / BLOCKED items from the last scored run. |
 
 The fifth piece is the operations dashboard: one home screen for the day, with the other modules sharing the same records.
 
@@ -139,7 +139,7 @@ npm run typecheck
 
 ## Status
 
-Active development. The hub no longer ships a made-up Marknesse test day. It only shows records that already exist in Flight Test Reporter, Maintenance Assistant, Upcoming flights & tests, and SIM Flight Testing. Next: import Reporter JSON and Maintenance SQLite when those files are available.
+Active development. The hub does not invent a test day. Plan, fleet and the SIM catalog come from the four Tective apps. Issues also include FAIL / BLOCKED missions from the last SIM Flight Testing run stored in this browser (same GitHub Pages origin). Next: import Reporter JSON and Maintenance SQLite when those files are available.
 
 ## GitHub
 

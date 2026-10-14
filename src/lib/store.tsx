@@ -10,6 +10,7 @@ import {
 } from "react";
 import { newId } from "@/lib/format";
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
+import { applySimLastRun, readSimStore } from "@/lib/sim-import";
 import { fetchUpcomingEntries, planFromUpcoming } from "@/lib/upcoming";
 import type {
   ChecklistItem,
@@ -90,7 +91,8 @@ function subscribe(listener: () => void) {
   listeners.add(listener);
   if (!clientAttached) {
     clientAttached = true;
-    memory = readPersisted();
+    memory = applySimLastRun(readPersisted(), readSimStore());
+    persist(memory);
     queueMicrotask(emit);
     void refreshUpcoming();
   }
@@ -298,9 +300,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const reset = useCallback(() => {
-    memory = cloneSeed();
+    memory = applySimLastRun(cloneSeed(), readSimStore());
     persist(memory);
     emit();
+    void refreshUpcoming();
   }, []);
 
   const value = useMemo<StoreApi>(

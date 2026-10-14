@@ -157,7 +157,7 @@ export function Dashboard() {
 
         <QuestionCard index="2" title="What is still unresolved?" href="/issues">
           {issues.length === 0 ? (
-            <Empty>No open issues. Maintenance Assistant has none stored.</Empty>
+            <Empty>No open issues from the last SIM run or Maintenance Assistant.</Empty>
           ) : (
             <ul className="divide-y">
               {issues.map((issue) => (

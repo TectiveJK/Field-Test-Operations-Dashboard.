@@ -45,8 +45,8 @@ export function IssuesBoard() {
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Bugs, fixes & retests</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Issues you log here, plus anything imported from Maintenance Assistant. That app
-          currently has no stored faults.
+          Failed and blocked missions from the last SIM Flight Testing run in this browser,
+          plus anything you log here. Maintenance Assistant still has no stored faults.
         </p>
       </div>
 
@@ -76,7 +76,8 @@ export function IssuesBoard() {
       {rows.length === 0 ? (
         <Card className="bg-white">
           <CardContent className="py-12 text-center text-sm text-slate-600">
-            No issues in this view. Maintenance Assistant has none stored. Log one from the header if needed.
+            No issues in this view. Open this hub on github.io in the same browser as SIM Flight
+            Testing so the last run can be read, or log an issue from the header.
           </CardContent>
         </Card>
       ) : (

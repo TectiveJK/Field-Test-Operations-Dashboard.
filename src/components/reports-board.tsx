@@ -59,8 +59,8 @@ export function ReportsBoard() {
       <div>
         <h2 className="text-xl font-semibold tracking-tight">Reports, evidence & knowledge</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Flight reports stay in the Reporter app. This hub keeps the index: which ULog belongs to
-          which drone, run, build and issue — plus the procedures you actually use on the range.
+          The last SIM Flight Testing run is listed here when this browser has scored it.
+          Flight Test Reporter JSON is still imported separately.
         </p>
       </div>
 
