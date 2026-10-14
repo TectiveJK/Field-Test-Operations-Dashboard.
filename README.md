@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.4** until you publish this commit). GitHub `main` and Origin stay in sync after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (**0.2.5**). GitHub `main` and Origin are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.5`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -215,7 +215,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.5** puts every Hardware locator item on Fleet (aircraft, hive, rotator, batteries), writes gimbal once per card, and drops the drone-compare card. You can update Hardware locator locations from Fleet and Deploy without changing the locator app. The hub does not invent a test day. Plan comes from Upcoming flights & tests. Tests are the SIM catalog. Issues include FAIL / BLOCKED missions from the last SIM Flight Testing run in this browser. Next: edit Upcoming flights from Plan. Push Origin `main` to GitHub to publish.
+**0.2.5 is live on GitHub Pages.** Fleet lists every Hardware locator item (aircraft, hive, rotator, batteries), writes gimbal once per card, and no longer has Compare two drones. You can update Hardware locator locations from Fleet and Deploy without changing the locator app. The hub does not invent a test day. Plan comes from Upcoming flights & tests. Tests are the SIM catalog. Issues include FAIL / BLOCKED missions from the last SIM Flight Testing run in this browser. Next: edit Upcoming flights from Plan.
 
 ## Links
 
