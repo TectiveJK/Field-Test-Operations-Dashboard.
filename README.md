@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.1`
+**Current version:** `0.2.2`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live app. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -29,7 +29,19 @@ This app does **not** replace the existing tools. It connects them into one work
 
 It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the first load it works **offline**, so you can record results on the range without internet.
 
-Repository: https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
+## Repositories
+
+The same codebase is kept in two places. GitHub is the public source of truth and publishes Pages. Origin is the private Cursor copy used by agents.
+
+| Copy | URL | Role |
+| --- | --- | --- |
+| **Live app** | https://tectivejk.github.io/Field-Test-Operations-Dashboard./ | GitHub Pages site |
+| **GitHub** | https://github.com/TectiveJK/Field-Test-Operations-Dashboard. | Public source, CI, Pages |
+| **Origin** | https://cursor.com/codebase/john-kokotinis/field-test-dashboard | Private Cursor copy |
+
+Origin visibility is **private**. Change that in settings on the browse page.
+
+A push to GitHub `main` builds the static app and publishes the `gh-pages` branch.
 
 ## Why this exists
 
@@ -58,6 +70,8 @@ The fifth piece is the operations dashboard: one home screen for the day, with t
 
 A failed simulator or field run can create an issue, keep the ULog against that drone and build, show on Today as an outstanding retest, and later be compared with the next Jenkins build.
 
+When this hub and SIM Flight Testing share the GitHub Pages origin (`tectivejk.github.io`), FAIL and BLOCKED results from the last SIM run are copied into Issues, Tests and Reports automatically.
+
 ## Shared records
 
 Every module uses the same objects. That is the foundation for adding more later without duplicating data.
@@ -78,11 +92,11 @@ Every module uses the same objects. That is the foundation for adding more later
 - **Evidence organizer**: attach a filename on the pad even when you cannot upload the file
 - **Test comparison**: two runs of the same mission, including result, configuration and measurements (manual entry now; ULog parsing later)
 - **Config diff**: if one drone passes and another fails, compare firmware and parameters instead of guessing
-- Local storage only — no server, no login. **Reset to source apps** reloads Reporter equipment, the SIM catalog, and the Upcoming flights board. It does not invent a test day.
+- Local storage only — no server, no login. **Reset to source apps** reloads Reporter equipment, the SIM catalog, the Upcoming flights board, and the last SIM FAIL / BLOCKED items. It does not invent a test day.
 
-## Setup
+## Clone from GitHub
 
-Linux laptop (or any machine with Node 22):
+The GitHub repo name ends with a period, so the clone URL has two dots before `git`.
 
 ```bash
 git clone https://github.com/TectiveJK/Field-Test-Operations-Dashboard..git
@@ -93,7 +107,46 @@ npm run dev
 
 Open http://127.0.0.1:43180
 
-The GitHub repo name ends with a period, so the clone URL has two dots before `git`.
+## Clone from Origin
+
+Private Cursor copy. Origin CLI docs: https://cursor.com/docs/origin/cli
+
+```bash
+# Install the Origin CLI
+curl -fsSL https://downloads.cursor.com/origin/install.sh | sh
+
+# Sign in (also sets up git credentials)
+origin auth login
+
+# Clone the repository
+origin repo clone john-kokotinis/field-test-dashboard
+```
+
+If `origin` is not found after install, persist `~/.local/bin` on PATH:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Then:
+
+```bash
+cd field-test-dashboard
+npm install
+npm run dev
+```
+
+### Keep GitHub and Origin on the same commit
+
+From a GitHub clone, after Origin has newer commits:
+
+```bash
+git remote add origin-cursor https://origin.cursor.com/john-kokotinis/field-test-dashboard.git
+git fetch origin-cursor
+git merge origin-cursor/main
+git push origin main
+```
 
 ### iPhone / iPad
 
@@ -118,13 +171,14 @@ A banner appears when there is no network.
 ## Project structure
 
 ```
-src/app/            routes: Today, Plan, Tests, Fleet, Issues, Deploy, Reports
-src/components/     boards, dialogs, shell
-src/lib/types.ts    shared records
+src/app/              routes: Today, Plan, Tests, Fleet, Issues, Deploy, Reports
+src/components/       boards, dialogs, shell
+src/lib/types.ts      shared records
 src/lib/from-apps.ts  Reporter equipment, SIM catalog, Upcoming board
+src/lib/sim-import.ts last SIM FAIL / BLOCKED run → issues, runs, reports
 src/lib/seed.ts       hub snapshot built from those apps
-src/lib/store.tsx   local persistence
-public/sw.js        offline cache
+src/lib/store.tsx     local persistence
+public/sw.js          offline cache
 ```
 
 ## Scripts
@@ -141,9 +195,9 @@ npm run typecheck
 
 Active development. The hub does not invent a test day. Plan, fleet and the SIM catalog come from the four Tective apps. Issues also include FAIL / BLOCKED missions from the last SIM Flight Testing run stored in this browser (same GitHub Pages origin). Next: import Reporter JSON and Maintenance SQLite when those files are available.
 
-## GitHub
+## Links
 
-- Source: https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
 - Live: https://tectivejk.github.io/Field-Test-Operations-Dashboard./
-
-GitHub Pages is live. A push to `main` builds the static app and publishes the `gh-pages` branch.
+- GitHub: https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
+- Origin: https://cursor.com/codebase/john-kokotinis/field-test-dashboard
+- Origin CLI: https://cursor.com/docs/origin/cli
