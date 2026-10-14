@@ -129,12 +129,4 @@ Active development. Current slice is the operations hub with shared records. Exi
 - Source: https://github.com/TectiveJK/Field-Test-Operations-Dashboard.
 - Live: https://tectivejk.github.io/Field-Test-Operations-Dashboard./
 
-GitHub Pages deploys from `main` via `.github/workflows/pages.yml` (same pattern as the Flight Test Reporter).
-
-The first time this repo is published, GitHub needs Pages switched on once:
-
-1. Open [Settings → Pages](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./settings/pages)
-2. Under **Build and deployment → Source**, choose **GitHub Actions**
-3. Save. The next push to `main` (or a manual **Run workflow** on **GitHub Pages**) publishes the app
-
-Until that switch is on, GitHub shows the generic “There isn’t a GitHub Pages site here.” page. After it is on, the live URL above is the app.
+GitHub Pages is live. A push to `main` builds the static app and publishes the `gh-pages` branch.
