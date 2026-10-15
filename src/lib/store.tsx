@@ -33,7 +33,15 @@ import {
   slimSimStore,
   type SimStore,
 } from "@/lib/sim-import";
-import { fetchUpcomingEntries, planFromUpcoming } from "@/lib/upcoming";
+import {
+  addUpcomingEntry,
+  fetchUpcomingEntries,
+  planFromUpcoming,
+  removeUpcomingEntry,
+  updateUpcomingEntry,
+  validateUpcomingInput,
+  type UpcomingInput,
+} from "@/lib/upcoming";
 import type {
   ChecklistItem,
   DroneStatus,
@@ -92,6 +100,8 @@ type StoreApi = {
     person: string;
     note: string;
   }) => Promise<void>;
+  savePlanEntry: (input: UpcomingInput & { id?: string }) => Promise<void>;
+  removePlanEntry: (id: string) => Promise<void>;
   reset: () => void;
 };
 
@@ -433,6 +443,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const savePlanEntry = useCallback(async (input: UpcomingInput & { id?: string }) => {
+    const checked = validateUpcomingInput(input);
+    if (!checked.ok) throw new Error(checked.error);
+    const entries = input.id
+      ? await updateUpcomingEntry(input.id, checked.value)
+      : await addUpcomingEntry(checked.value);
+    write((current) => ({
+      ...current,
+      plan: planFromUpcoming(entries, current.plan),
+    }));
+  }, []);
+
+  const removePlanEntry = useCallback(async (id: string) => {
+    const entries = await removeUpcomingEntry(id);
+    write((current) => ({
+      ...current,
+      plan: planFromUpcoming(entries, current.plan),
+    }));
+  }, []);
+
   const reset = useCallback(() => {
     localUpdatedAt = "";
     lastSim = slimSimStore(readSimStore());
@@ -457,6 +487,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addEvidence,
       saveHardware,
       addHardwareItem,
+      savePlanEntry,
+      removePlanEntry,
       reset,
     }),
     [
@@ -473,6 +505,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addEvidence,
       saveHardware,
       addHardwareItem,
+      savePlanEntry,
+      removePlanEntry,
       reset,
     ]
   );

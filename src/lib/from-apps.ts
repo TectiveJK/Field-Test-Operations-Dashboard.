@@ -65,7 +65,7 @@ export const EXISTING_APPS = [
     name: "Upcoming flights & tests",
     area: "Planning",
     href: "https://tectivejk.github.io/Upcoming-Test-Flights/",
-    note: "Shared board for the next sorties. This hub copies that list onto Plan.",
+    note: "Shared board for the next sorties. Add, edit or remove flights and tests on Plan; that same board updates.",
   },
   {
     name: "SIM Flight Testing",

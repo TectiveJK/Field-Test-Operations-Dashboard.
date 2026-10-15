@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PlanDialog } from "@/components/plan-dialog";
 import { RecordRunDialog } from "@/components/record-run-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { EXISTING_APPS } from "@/lib/seed";
@@ -62,7 +63,7 @@ export function Dashboard() {
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-slate-800">
               {state.decisionReason ||
-                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Hardware locator list (airframes, hive, rotator, batteries). The last SIM run and hub ticks are shared across laptop and iPhone."}
+                "No invented test day. Plan is the Upcoming flights board — add flights and tests here. Fleet is the Hardware locator list. The last SIM run and hub ticks are shared across laptop and iPhone."}
             </p>
           </div>
           <div className="flex w-full flex-col gap-2 sm:max-w-md">
@@ -125,6 +126,12 @@ export function Dashboard() {
           index="1"
           title="What do I need to test today?"
           href="/plan"
+          extra={
+            <>
+              <PlanDialog mode="add" defaultKind="flight" />
+              <PlanDialog mode="add" defaultKind="test" />
+            </>
+          }
         >
           {plan.length === 0 ? (
             <Empty>Nothing on the Upcoming flights & tests board.</Empty>
@@ -144,6 +151,7 @@ export function Dashboard() {
                       <p className="truncate text-xs text-slate-600">
                         {item.kind === "flight" ? "Flight" : "Test"}
                         {drone ? ` · ${drone.name}` : ""}
+                        {item.owner ? ` · ${item.owner}` : ""}
                         {item.notes ? ` · ${item.notes}` : ""}
                       </p>
                     </div>
@@ -315,11 +323,13 @@ function QuestionCard({
   index,
   title,
   href,
+  extra,
   children,
 }: {
   index: string;
   title: string;
   href: string;
+  extra?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -329,7 +339,8 @@ function QuestionCard({
         <CardTitle className="text-lg leading-snug">{title}</CardTitle>
       </CardHeader>
       <CardContent className="px-4">{children}</CardContent>
-      <div className="border-t px-4 py-3">
+      <div className="flex flex-wrap gap-2 border-t px-4 py-3">
+        {extra}
         <Button variant="outline" nativeButton={false} render={<Link href={href} />}>
           Open module
         </Button>

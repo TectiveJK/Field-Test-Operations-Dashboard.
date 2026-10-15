@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { PlanDialog } from "@/components/plan-dialog";
+import { StatusBadge } from "@/components/status-badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -8,37 +12,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StatusBadge } from "@/components/status-badge";
 import { droneById, planLabel, upcomingPlan } from "@/lib/selectors";
 import { useHub } from "@/lib/store";
+import { UPCOMING_APP_URL } from "@/lib/upcoming";
 import { PLAN_STATUSES, type PlanStatus } from "@/lib/types";
 
 export function PlanBoard() {
-  const { state, setPlanStatus } = useHub();
+  const { state, setPlanStatus, removePlanEntry } = useHub();
   const plan = upcomingPlan(state);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  async function remove(id: string, title: string) {
+    if (!window.confirm(`Remove “${title}” from the shared Upcoming board?`)) return;
+    setRemoving(id);
+    setError("");
+    try {
+      await removePlanEntry(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not remove that item.");
+    } finally {
+      setRemoving(null);
+    }
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">Upcoming flights and tests</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Copied from{" "}
-          <a
-            className="underline"
-            href="https://tectivejk.github.io/Upcoming-Test-Flights/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Upcoming flights & tests
-          </a>
-          . Tick status here as you go. Add or remove entries on that board.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Upcoming flights and tests</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Add, edit or remove items here. They write the same live board as{" "}
+            <a className="underline" href={UPCOMING_APP_URL} target="_blank" rel="noreferrer">
+              Upcoming flights & tests
+            </a>
+            . Tick status here as you go.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <PlanDialog mode="add" defaultKind="flight" />
+          <PlanDialog mode="add" defaultKind="test" />
+        </div>
       </div>
+
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       {plan.length === 0 ? (
         <Card className="bg-white">
           <CardContent className="py-12 text-center text-sm text-slate-600">
-            The Upcoming flights board is empty.
+            The Upcoming flights board is empty. Add a flight or a test above.
           </CardContent>
         </Card>
       ) : (
@@ -58,6 +80,7 @@ export function PlanBoard() {
                       </CardTitle>
                       <CardDescription>
                         {item.kind === "flight" ? "Flight" : "Test"}
+                        {item.owner ? ` · ${item.owner}` : ""}
                         {drone ? ` · ${drone.name}` : ""}
                       </CardDescription>
                     </div>
@@ -65,10 +88,20 @@ export function PlanBoard() {
                   </div>
                 </CardHeader>
                 <CardContent className="grid gap-3 pt-4 sm:grid-cols-[1fr_12rem]">
-                  <div>
-                    <p className="text-sm text-slate-800">
-                      {item.notes || "No extra note on the board."}
-                    </p>
+                  <div className="grid gap-3">
+                    <p className="text-sm text-slate-800">{item.notes || "No extra note on the board."}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <PlanDialog mode="edit" item={item} />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white"
+                        disabled={removing === item.id}
+                        onClick={() => void remove(item.id, item.title)}
+                      >
+                        {removing === item.id ? "Removing…" : "Remove"}
+                      </Button>
+                    </div>
                   </div>
                   <label className="grid h-fit gap-1 text-sm font-medium">
                     Status

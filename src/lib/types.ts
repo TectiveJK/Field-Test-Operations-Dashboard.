@@ -148,6 +148,7 @@ export type PlanItem = {
   status: PlanStatus;
   window: string;
   notes: string;
+  owner: string;
   title: string;
   kind: "flight" | "test";
 };

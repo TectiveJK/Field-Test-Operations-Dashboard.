@@ -80,7 +80,7 @@ export function nextActions(state: HubState): NextAction[] {
     const drone = droneById(state, inProgress.droneId);
     actions.push({
       title: `Finish ${planLabel(inProgress, state)}${drone ? ` on ${drone.name}` : ""}`,
-      why: inProgress.notes || `${inProgress.date} ${inProgress.window}`,
+      why: [inProgress.owner, inProgress.notes].filter(Boolean).join(". ") || `${inProgress.date} ${inProgress.window}`,
       href: "/plan",
       priority: "now",
     });
@@ -103,7 +103,7 @@ export function nextActions(state: HubState): NextAction[] {
     const drone = droneById(state, item.droneId);
     actions.push({
       title: `${item.date} ${item.window} ${planLabel(item, state)}`,
-      why: [drone?.name, item.notes].filter(Boolean).join(". ") || "From Upcoming flights & tests.",
+      why: [drone?.name, item.owner, item.notes].filter(Boolean).join(". ") || "From Upcoming flights & tests.",
       href: "/plan",
       priority: "next",
     });
