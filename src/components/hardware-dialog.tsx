@@ -105,7 +105,11 @@ export function HardwareDialog({
     >
       <DialogTrigger
         render={
-          <Button variant={triggerVariant} size="sm" className={cn("bg-white", triggerClassName)} />
+          <Button
+            variant={triggerVariant}
+            size="sm"
+            className={cn(triggerVariant === "outline" ? "bg-white" : undefined, triggerClassName)}
+          />
         }
       >
         {mode === "add" ? <Plus data-icon="inline-start" /> : <MapPin data-icon="inline-start" />}
