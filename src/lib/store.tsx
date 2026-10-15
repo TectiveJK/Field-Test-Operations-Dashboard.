@@ -16,8 +16,23 @@ import {
   SNAPSHOT_HARDWARE,
   updateHardware,
 } from "@/lib/hardware";
+import {
+  applyRemoteHub,
+  fetchHubSync,
+  publishHubSync,
+  shouldPublish,
+  snapshotForSync,
+  type HubSyncPayload,
+} from "@/lib/hub-sync";
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
-import { applySimLastRun, readSimStore } from "@/lib/sim-import";
+import {
+  applySimLastRun,
+  preferSim,
+  readSimStore,
+  SIM_STORE_KEY,
+  slimSimStore,
+  type SimStore,
+} from "@/lib/sim-import";
 import { fetchUpcomingEntries, planFromUpcoming } from "@/lib/upcoming";
 import type {
   ChecklistItem,
@@ -82,9 +97,14 @@ type StoreApi = {
 
 const StoreContext = createContext<StoreApi | null>(null);
 
+const META_KEY = "tective-ftod-sync-meta-v1";
 const listeners = new Set<() => void>();
 let memory: HubState = seedState;
 let clientAttached = false;
+let lastSim: SimStore | null = null;
+let localUpdatedAt = "";
+let publishTimer: number | null = null;
+let refreshing = false;
 
 function emit() {
   for (const listener of listeners) listener();
@@ -92,6 +112,7 @@ function emit() {
 
 function persist(state: HubState) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  window.localStorage.setItem(META_KEY, JSON.stringify({ updatedAt: localUpdatedAt }));
 }
 
 function readPersisted(): HubState {
@@ -106,39 +127,103 @@ function readPersisted(): HubState {
   }
 }
 
+function readMeta() {
+  try {
+    const raw = window.localStorage.getItem(META_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as { updatedAt?: string };
+    if (typeof parsed.updatedAt === "string") localUpdatedAt = parsed.updatedAt;
+  } catch {
+    localUpdatedAt = "";
+  }
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener);
   if (!clientAttached) {
     clientAttached = true;
-    memory = applyHardware(applySimLastRun(readPersisted(), readSimStore()), SNAPSHOT_HARDWARE);
+    readMeta();
+    lastSim = slimSimStore(readSimStore());
+    memory = applyHardware(applySimLastRun(readPersisted(), lastSim), SNAPSHOT_HARDWARE);
     persist(memory);
     queueMicrotask(emit);
-    void refreshUpcoming();
-    void refreshHardware();
+    attachLiveRefresh();
+    void refreshAll();
   }
   return () => {
     listeners.delete(listener);
   };
 }
 
-async function refreshUpcoming() {
+function attachLiveRefresh() {
+  const onVisible = () => {
+    if (document.visibilityState === "visible") void refreshAll();
+  };
+  window.addEventListener("focus", () => void refreshAll());
+  window.addEventListener("online", () => void refreshAll());
+  window.addEventListener("pageshow", () => void refreshAll());
+  document.addEventListener("visibilitychange", onVisible);
+  window.addEventListener("storage", (event) => {
+    if (event.key === SIM_STORE_KEY || event.key === STORAGE_KEY) void refreshAll();
+  });
+  window.setInterval(() => {
+    if (document.visibilityState === "visible") void refreshAll();
+  }, 20000);
+}
+
+async function refreshAll() {
+  if (refreshing) return;
+  refreshing = true;
   try {
-    const entries = await fetchUpcomingEntries();
-    write((current) => ({
-      ...current,
-      plan: planFromUpcoming(entries, current.plan),
-    }));
-  } catch {
-    // Keep the snapshot already in seed / local storage when offline.
+    const localSim = slimSimStore(readSimStore());
+    const [upcoming, hardware, remote] = await Promise.all([
+      fetchUpcomingEntries().catch(() => null),
+      fetchHardwareItems().catch(() => null),
+      fetchHubSync().catch(() => null),
+    ]);
+    const chosenSim = preferSim(localSim, remote?.sim ?? null);
+    lastSim = chosenSim;
+    const remoteHubNewer = Boolean(remote?.updatedAt && remote.updatedAt > (localUpdatedAt || ""));
+    write((current) => {
+      let next = current;
+      if (upcoming) next = { ...next, plan: planFromUpcoming(upcoming, next.plan) };
+      if (remoteHubNewer) next = applyRemoteHub(next, remote?.hub ?? null);
+      next = applySimLastRun(next, chosenSim);
+      if (hardware) next = applyHardware(next, hardware);
+      return next;
+    }, false);
+    if (remoteHubNewer && remote?.updatedAt) {
+      localUpdatedAt = remote.updatedAt;
+      persist(memory);
+    }
+    if (shouldPublish(localUpdatedAt, chosenSim, remote)) schedulePublish(remote);
+  } finally {
+    refreshing = false;
   }
 }
 
-async function refreshHardware() {
+function schedulePublish(remote?: HubSyncPayload | null) {
+  if (typeof window === "undefined") return;
+  if (publishTimer) window.clearTimeout(publishTimer);
+  publishTimer = window.setTimeout(() => {
+    publishTimer = null;
+    void pushShared(remote);
+  }, 800);
+}
+
+async function pushShared(knownRemote?: HubSyncPayload | null) {
+  if (!navigator.onLine) return;
   try {
-    const items = await fetchHardwareItems();
-    write((current) => applyHardware(current, items));
+    const remote = knownRemote === undefined ? await fetchHubSync().catch(() => null) : knownRemote;
+    const localSim = preferSim(readSimStore(), lastSim);
+    lastSim = localSim;
+    if (!shouldPublish(localUpdatedAt, localSim, remote)) return;
+    const updatedAt = localUpdatedAt || new Date().toISOString();
+    localUpdatedAt = updatedAt;
+    await publishHubSync(snapshotForSync(memory, localSim, updatedAt));
+    persist(memory);
   } catch {
-    // Keep the locator snapshot already applied when the sheet is unreachable.
+    // Stay on the device copy when the shared board is unreachable.
   }
 }
 
@@ -150,10 +235,12 @@ function getServerSnapshot() {
   return seedState;
 }
 
-function write(updater: (current: HubState) => HubState) {
+function write(updater: (current: HubState) => HubState, sync = true) {
   memory = updater(memory);
+  if (sync) localUpdatedAt = new Date().toISOString();
   persist(memory);
   emit();
+  if (sync) schedulePublish();
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -331,8 +418,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const saveHardware = useCallback(
     async (input: { item: string; location: string; person: string; note: string }) => {
       const items = await updateHardware(input);
-      write((current) => applyHardware(current, items));
-      void refreshHardware();
+      write((current) => applyHardware(current, items), false);
+      void refreshAll();
     },
     []
   );
@@ -340,18 +427,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const addHardwareItem = useCallback(
     async (input: { name: string; location: string; person: string; note: string }) => {
       const items = await addHardware(input);
-      write((current) => applyHardware(current, items));
-      void refreshHardware();
+      write((current) => applyHardware(current, items), false);
+      void refreshAll();
     },
     []
   );
 
   const reset = useCallback(() => {
-    memory = applyHardware(applySimLastRun(cloneSeed(), readSimStore()), SNAPSHOT_HARDWARE);
+    localUpdatedAt = "";
+    lastSim = slimSimStore(readSimStore());
+    memory = applyHardware(applySimLastRun(cloneSeed(), lastSim), SNAPSHOT_HARDWARE);
     persist(memory);
     emit();
-    void refreshUpcoming();
-    void refreshHardware();
+    void refreshAll();
   }, []);
 
   const value = useMemo<StoreApi>(

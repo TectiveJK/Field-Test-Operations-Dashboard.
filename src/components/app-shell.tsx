@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <p className="font-mono text-sm font-medium text-slate-900">
                 {now ? formatClock(now) : "—"}
               </p>
-              <p className="text-[11px] text-slate-500">Europe/Amsterdam · local data</p>
+              <p className="text-[11px] text-slate-500">Europe/Amsterdam · shared laptop / iPhone</p>
             </div>
             <LogIssueDialog />
           </div>

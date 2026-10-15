@@ -71,7 +71,7 @@ export const EXISTING_APPS = [
     name: "SIM Flight Testing",
     area: "Simulator testing",
     href: "https://tectivejk.github.io/sim-testing-app/",
-    note: "20 SkyCommand simulator missions. Failed and blocked items from the last run appear under Issues.",
+    note: "20 SkyCommand simulator missions. The last run, including FAIL / BLOCKED items and .deb artifact names, is copied onto this hub and shared with other devices.",
   },
   {
     name: "Hardware locator",

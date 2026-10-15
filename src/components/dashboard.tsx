@@ -62,7 +62,7 @@ export function Dashboard() {
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-slate-800">
               {state.decisionReason ||
-                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Hardware locator list (airframes, hive, rotator, batteries). Tests are the SIM Flight Testing catalog."}
+                "No invented test day. Plan comes from Upcoming flights & tests. Fleet is the Hardware locator list (airframes, hive, rotator, batteries). The last SIM run and hub ticks are shared across laptop and iPhone."}
             </p>
           </div>
           <div className="flex w-full flex-col gap-2 sm:max-w-md">
