@@ -24,16 +24,37 @@ export function planLabel(item: PlanItem, state: HubState) {
   return item.title;
 }
 
+function byWhen(a: PlanItem, b: PlanItem) {
+  return a.date.localeCompare(b.date) || a.window.localeCompare(b.window);
+}
+
 export function upcomingPlan(state: HubState) {
   const today = todayIso();
   return [...state.plan]
     .filter((item) => item.date >= today || (item.status !== "Done" && item.status !== "Skipped"))
-    .sort((a, b) => a.date.localeCompare(b.date) || a.window.localeCompare(b.window));
+    .sort(byWhen);
+}
+
+export function activePlan(state: HubState) {
+  const today = todayIso();
+  return [...state.plan].filter((item) => item.date >= today).sort(byWhen);
+}
+
+export function donePlanHistory(state: HubState) {
+  const today = todayIso();
+  return [...state.plan]
+    .filter((item) => item.date < today && item.status === "Done")
+    .sort((a, b) => byWhen(b, a));
+}
+
+export function skippedPlanCarryover(state: HubState) {
+  const today = todayIso();
+  return [...state.plan].filter((item) => item.date < today && item.status === "Skipped").sort(byWhen);
 }
 
 export function todayPlan(state: HubState) {
   const today = todayIso();
-  return upcomingPlan(state).filter((item) => item.date === today);
+  return activePlan(state).filter((item) => item.date === today);
 }
 
 export function todayRuns(state: HubState) {

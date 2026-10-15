@@ -15,8 +15,10 @@ import {
 import { PlanDialog } from "@/components/plan-dialog";
 import { RecordRunDialog } from "@/components/record-run-dialog";
 import { StatusBadge } from "@/components/status-badge";
+import { TestHistoryDialog } from "@/components/test-history-dialog";
 import { EXISTING_APPS } from "@/lib/seed";
 import {
+  activePlan,
   buildById,
   caseById,
   counts,
@@ -25,8 +27,8 @@ import {
   nextActions,
   openIssues,
   planLabel,
+  skippedPlanCarryover,
   todayRuns,
-  upcomingPlan,
 } from "@/lib/selectors";
 import { useHub } from "@/lib/store";
 import { GO_DECISIONS, isAirframe, type GoDecision } from "@/lib/types";
@@ -35,7 +37,8 @@ export function Dashboard() {
   const { state, setDecision } = useHub();
   const [reason, setReason] = useState(state.decisionReason);
   const kpi = counts(state);
-  const plan = upcomingPlan(state);
+  const plan = activePlan(state);
+  const skipped = skippedPlanCarryover(state);
   const runs = todayRuns(state);
   const issues = openIssues(state);
   const actions = nextActions(state);
@@ -125,11 +128,12 @@ export function Dashboard() {
             <>
               <PlanDialog mode="add" defaultKind="flight" />
               <PlanDialog mode="add" defaultKind="test" />
+              <TestHistoryDialog />
             </>
           }
         >
           {plan.length === 0 ? (
-            <Empty>Nothing on the Upcoming flights & tests board.</Empty>
+            <Empty>Nothing left to test today. Past Done items are in Test history; skipped items move to question 3.</Empty>
           ) : (
             <ul className="divide-y">
               {plan.map((item) => {
@@ -184,10 +188,33 @@ export function Dashboard() {
           href="/tests"
           extra={<PlanDialog mode="add" defaultKind="test" />}
         >
-          {actions.length === 0 ? (
+          {skipped.length === 0 && actions.length === 0 ? (
             <Empty>No recommended next step.</Empty>
           ) : (
             <ul className="divide-y">
+              {skipped.map((item) => {
+                const drone = droneById(state, item.droneId);
+                return (
+                  <li key={item.id} className="py-2.5">
+                    <div className="flex items-center gap-2">
+                      <StatusBadge value="Skipped" />
+                    </div>
+                    <p className="mt-1 text-sm font-medium text-slate-900">
+                      <span className="font-mono text-xs text-slate-500">
+                        {item.date} {item.window}
+                      </span>{" "}
+                      {planLabel(item, state)}
+                    </p>
+                    <p className="truncate text-xs text-slate-600">
+                      Skipped on that day
+                      {item.kind === "flight" ? " · Flight" : " · Test"}
+                      {item.owner ? ` · ${item.owner}` : ""}
+                      {drone ? ` · ${drone.name}` : ""}
+                      {item.notes ? ` · ${item.notes}` : ""}
+                    </p>
+                  </li>
+                );
+              })}
               {actions.map((action) => (
                 <li key={action.title} className="py-2.5">
                   <div className="flex items-center gap-2">
