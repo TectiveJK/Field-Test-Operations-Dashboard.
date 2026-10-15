@@ -105,13 +105,23 @@ function boardFromRaw(raw: unknown): UpcomingBoard {
 }
 
 export async function fetchUpcomingBoard(): Promise<UpcomingBoard> {
-  const response = await fetch(`${UPCOMING_BOARD_URL}?t=${Date.now()}`, {
-    cache: "no-store",
-    headers: { "Cache-Control": "no-cache" },
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!response.ok) throw new Error("Upcoming flights board could not be loaded.");
-  return boardFromRaw(await response.json());
+  const url = `${UPCOMING_BOARD_URL}?t=${Date.now()}`;
+  const targets = typeof window === "undefined" ? [url] : [url, writeUrl(url)];
+  let lastError: Error | null = null;
+  for (const target of targets) {
+    try {
+      const response = await fetch(target, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(8000),
+      });
+      if (response.ok) return boardFromRaw(await response.json());
+      lastError = new Error("Upcoming flights board could not be loaded.");
+    } catch (error) {
+      lastError =
+        error instanceof Error ? error : new Error("Upcoming flights board could not be loaded.");
+    }
+  }
+  throw lastError ?? new Error("Upcoming flights board could not be loaded.");
 }
 
 export async function fetchUpcomingEntries(): Promise<UpcomingEntry[]> {
