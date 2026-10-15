@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app. Origin is **0.2.7** (Add flight / Add test on Plan). GitHub `main` is still **0.2.6** until `git push github main`. After that push they match, and Pages serves Plan write-back. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (**0.2.7**). GitHub `main` and Origin are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. Origin is **0.2.7**. GitHub `main` and Pages are **0.2.6** until you publish with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.7`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -218,7 +218,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.7 is on Origin.** **Add flight** / **Add test** on Today and Plan write the same Upcoming flights & tests board (edit and remove too). That app is not modified; phones that still open it see the same list. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone. Fleet still lists every Hardware locator item. The hub does not invent a test day. GitHub Pages is still **0.2.6** until `git push github main`.
+**0.2.7 is live on GitHub Pages.** **Add flight** / **Add test** on Today and Plan write the same Upcoming flights & tests board (edit and remove too). That app is not modified; phones that still open it see the same list. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone. Fleet still lists every Hardware locator item. The hub does not invent a test day.
 
 ## Links
 
