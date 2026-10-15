@@ -57,6 +57,7 @@ import type {
 type StoreApi = {
   ready: boolean;
   state: HubState;
+  lastSim: SimStore | null;
   setDecision: (decision: GoDecision, reason: string) => void;
   setPlanStatus: (id: string, status: PlanStatus) => void;
   setRunResult: (id: string, result: RunResult, notes?: string) => void;
@@ -178,7 +179,7 @@ function attachLiveRefresh() {
   });
   window.setInterval(() => {
     if (document.visibilityState === "visible") void refreshAll();
-  }, 20000);
+  }, 8000);
 }
 
 async function refreshAll() {
@@ -225,12 +226,13 @@ async function pushShared(knownRemote?: HubSyncPayload | null) {
   if (!navigator.onLine) return;
   try {
     const remote = knownRemote === undefined ? await fetchHubSync().catch(() => null) : knownRemote;
-    const localSim = preferSim(readSimStore(), lastSim);
-    lastSim = localSim;
-    if (!shouldPublish(localUpdatedAt, localSim, remote)) return;
+    const deviceSim = preferSim(readSimStore(), lastSim);
+    const sim = preferSim(deviceSim, remote?.sim ?? null);
+    lastSim = sim;
+    if (!shouldPublish(localUpdatedAt, deviceSim, remote)) return;
     const updatedAt = localUpdatedAt || new Date().toISOString();
     localUpdatedAt = updatedAt;
-    await publishHubSync(snapshotForSync(memory, localSim, updatedAt));
+    await publishHubSync(snapshotForSync(memory, sim, updatedAt));
     persist(memory);
   } catch {
     // Stay on the device copy when the shared board is unreachable.
@@ -256,6 +258,7 @@ function write(updater: (current: HubState) => HubState, sync = true) {
 export function StoreProvider({ children }: { children: ReactNode }) {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const ready = state !== seedState || clientAttached;
+  const sim = lastSim;
 
   const setDecision = useCallback((decision: GoDecision, reason: string) => {
     write((current) => ({ ...current, decision, decisionReason: reason }));
@@ -476,6 +479,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       ready,
       state,
+      lastSim: sim,
       setDecision,
       setPlanStatus,
       setRunResult,
@@ -494,6 +498,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [
       ready,
       state,
+      sim,
       setDecision,
       setPlanStatus,
       setRunResult,

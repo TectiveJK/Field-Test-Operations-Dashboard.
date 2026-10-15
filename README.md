@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.11`
+**Current version:** `0.2.12`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.11** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.11`. If the iPhone home-screen copy looks old, open the `?ftod=0.2.11` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.12** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.12`. Today shows **Last SIM run** and package names once the laptop has published the snapshot. If the iPhone home-screen copy looks old, open the `?ftod=0.2.12` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.11` after you publish this commit. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.12` after you publish this commit. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -61,7 +61,7 @@ The operations dashboard is the home screen for the day, with the other modules 
 
 | Screen | What you use it for |
 | --- | --- |
-| **Today** | GO / CONDITIONAL / NO-GO, the three questions, **Add flight** / **Add test**, **Test history** of Done items after their day, skipped items carried into “What should we test next?”, daily summary, fleet snapshot |
+| **Today** | GO / CONDITIONAL / NO-GO, **Last SIM run** (score and `.deb` names), the three questions, **Add flight** / **Add test**, **Test history** of Done items after their day, skipped items carried into “What should we test next?”, daily summary, fleet snapshot |
 | **Plan** | Shared Upcoming board. **Add flight** / **Add test**, edit or remove, and mark Planned / In progress / Done / Skipped |
 | **Tests** | SIM Flight Testing catalog. Record a run here if you want it on this hub |
 | **Fleet** | Aircraft, hive, rotator and batteries from the Hardware locator list. **Update location** / **Add hardware** writes that company list. Airframes also show available / under test / grounded. |
@@ -178,11 +178,13 @@ git push origin main
 
 Hub ticks, the last SIM run, and artifact names are shared with the laptop. Flights and tests you add on Plan write the Upcoming board, so that app and other phones see them.
 
+The iPhone home-screen app cannot read SIM Flight Testing storage directly. After you score a SIM run (or change packages), open this hub **on the laptop in the same browser as SIM Flight Testing** while online. Wait until Today shows **Last SIM run**. Then reopen FTOD on the iPhone.
+
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.11
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.12
 
-Pull down to refresh until the header shows `v0.2.11`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.12`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -228,7 +230,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.11** makes the iPhone home-screen copy pick up new versions. The header shows `v0.2.11`. After publish, open the `?ftod=0.2.11` Safari link, then Menu → **Reset to source apps**. Publish with `git pull && git push github main`.
+**0.2.12** publishes the last SIM run and package names through the same shared path as the Upcoming board, so the iPhone can load them. Today shows **Last SIM run**. After a SIM run, open this hub on the laptop once, then reopen the phone. Header `v0.2.12`. Publish with `git pull && git push github main`.
 
 ## Links
 

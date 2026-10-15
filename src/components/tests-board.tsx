@@ -14,11 +14,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate, formatTime } from "@/lib/format";
 import { buildById, droneById, runsForCase } from "@/lib/selectors";
+import { summarizeSim } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { RUN_RESULTS, type RunResult } from "@/lib/types";
 
 export function TestsBoard() {
-  const { state, setRunResult } = useHub();
+  const { state, lastSim, setRunResult } = useHub();
+  const sim = summarizeSim(lastSim);
   const [caseId, setCaseId] = useState(state.testCases[0]?.id ?? "");
   const runs = runsForCase(state, caseId);
   const [left, setLeft] = useState(runs[0]?.id ?? "");
@@ -45,6 +47,40 @@ export function TestsBoard() {
         </div>
         <RecordRunDialog />
       </div>
+
+      <Card className="bg-white">
+        <CardHeader>
+          <CardDescription>Last SIM Flight Testing run</CardDescription>
+          <CardTitle>{sim ? sim.name : "No shared SIM snapshot yet"}</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-slate-700">
+          {sim ? (
+            <div className="grid gap-2">
+              <p>
+                {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
+                {sim.tester ? ` · ${sim.tester}` : ""}
+                {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+              </p>
+              {sim.artifacts.length > 0 ? (
+                <ul className="space-y-1">
+                  {sim.artifacts.map((item) => (
+                    <li key={`${item.packageName}-${item.filename}`} className="font-mono text-xs">
+                      {item.filename}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-slate-500">No .deb names on that run.</p>
+              )}
+            </div>
+          ) : (
+            <p>
+              Open this hub on the laptop in the same browser as SIM Flight Testing after a scored
+              run. The iPhone then loads that snapshot from the shared list.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="library">
         <TabsList>

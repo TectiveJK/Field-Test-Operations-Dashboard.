@@ -151,9 +151,39 @@ export function preferSim(local: SimStore | null, remote: SimStore | null): SimS
   return localArts.length >= remoteArts.length ? left : right;
 }
 
-function artifactsOf(store: SimStore, run: SimRun | null): SimArtifact[] {
+export function artifactsOf(store: SimStore, run: SimRun | null): SimArtifact[] {
   if (run?.artifacts?.length) return run.artifacts.map(asArtifact).filter(Boolean) as SimArtifact[];
   return store.artifacts ?? [];
+}
+
+export type SimRunSummary = {
+  name: string;
+  startedAt: string;
+  tester: string;
+  passed: number;
+  failed: number;
+  blocked: number;
+  scored: number;
+  artifacts: SimArtifact[];
+};
+
+export function summarizeSim(store: SimStore | null): SimRunSummary | null {
+  if (!store) return null;
+  const run = latestSimRun(store);
+  if (!run) return null;
+  const scored = store.results.filter(
+    (result) => result.testRunId === run.id && hubResult(result.status) !== null
+  );
+  return {
+    name: run.name,
+    startedAt: run.startedAt,
+    tester: run.tester || "",
+    passed: scored.filter((result) => result.status === "passed").length,
+    failed: scored.filter((result) => result.status === "failed").length,
+    blocked: scored.filter((result) => result.status === "blocked").length,
+    scored: scored.length,
+    artifacts: artifactsOf(store, run),
+  };
 }
 
 function fileFor(artifacts: SimArtifact[], packageName: string) {

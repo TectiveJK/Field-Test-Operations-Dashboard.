@@ -20,6 +20,8 @@ import type {
 
 export const HUB_SYNC_URL = "https://extendsclass.com/api/json-storage/bin/dcfcacb";
 
+const WRITE_PROXY = "https://cors.jimmywarting.deno.net/";
+
 export type HubSyncPayload = {
   kind: "tective-ftod-hub";
   updatedAt: string;
@@ -60,13 +62,39 @@ function asPayload(raw: unknown): HubSyncPayload | null {
   };
 }
 
-export async function fetchHubSync(): Promise<HubSyncPayload | null> {
-  const response = await fetch(`${HUB_SYNC_URL}?t=${Date.now()}`, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(12000),
+function proxiedUrl(url: string) {
+  if (typeof window === "undefined") return url;
+  if (new URL(url).origin === window.location.origin) return url;
+  const query = new URLSearchParams({
+    cors: JSON.stringify({
+      url,
+      deleteRequestHeaders: ["Origin", "Sec-Fetch-Mode"],
+    }),
   });
-  if (!response.ok) throw new Error("Shared hub list could not be loaded.");
-  return asPayload(await response.json());
+  return `${WRITE_PROXY}?${query.toString()}`;
+}
+
+function stamped(url: string) {
+  return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+}
+
+export async function fetchHubSync(): Promise<HubSyncPayload | null> {
+  const url = stamped(HUB_SYNC_URL);
+  const targets = typeof window === "undefined" ? [url] : [url, proxiedUrl(url)];
+  let lastError: Error | null = null;
+  for (const target of targets) {
+    try {
+      const response = await fetch(target, { signal: AbortSignal.timeout(12000) });
+      if (!response.ok) {
+        lastError = new Error("Shared hub list could not be loaded.");
+        continue;
+      }
+      return asPayload(await response.json());
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Shared hub list could not be loaded.");
+    }
+  }
+  throw lastError ?? new Error("Shared hub list could not be loaded.");
 }
 
 export function snapshotForSync(hub: HubState, sim: SimStore | null, updatedAt: string): HubSyncPayload {
@@ -97,13 +125,25 @@ export function snapshotForSync(hub: HubState, sim: SimStore | null, updatedAt: 
 }
 
 export async function publishHubSync(payload: HubSyncPayload): Promise<void> {
-  const response = await fetch(HUB_SYNC_URL, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!response.ok) throw new Error("Shared hub list could not be saved.");
+  const body = JSON.stringify(payload);
+  const targets =
+    typeof window === "undefined" ? [HUB_SYNC_URL] : [proxiedUrl(HUB_SYNC_URL), HUB_SYNC_URL];
+  let lastError: Error | null = null;
+  for (const target of targets) {
+    try {
+      const response = await fetch(target, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body,
+        signal: AbortSignal.timeout(15000),
+      });
+      if (response.ok) return;
+      lastError = new Error("Shared hub list could not be saved.");
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Shared hub list could not be saved.");
+    }
+  }
+  throw lastError ?? new Error("Shared hub list could not be saved.");
 }
 
 export function applyRemoteHub(hub: HubState, remote: HubSyncPayload["hub"]): HubState {

@@ -16,6 +16,7 @@ import { PlanDialog } from "@/components/plan-dialog";
 import { RecordRunDialog } from "@/components/record-run-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { TestHistoryDialog } from "@/components/test-history-dialog";
+import { formatDate, formatTime } from "@/lib/format";
 import { EXISTING_APPS } from "@/lib/seed";
 import {
   activePlan,
@@ -30,11 +31,12 @@ import {
   skippedPlanCarryover,
   todayRuns,
 } from "@/lib/selectors";
+import { summarizeSim } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { GO_DECISIONS, isAirframe, type GoDecision } from "@/lib/types";
 
 export function Dashboard() {
-  const { state, setDecision } = useHub();
+  const { state, lastSim, setDecision } = useHub();
   const [reason, setReason] = useState(state.decisionReason);
   const kpi = counts(state);
   const plan = activePlan(state);
@@ -44,6 +46,7 @@ export function Dashboard() {
   const actions = nextActions(state);
   const summary = dailySummary(state);
   const drones = state.drones.filter(isAirframe);
+  const sim = summarizeSim(lastSim);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
@@ -99,6 +102,45 @@ export function Dashboard() {
             </Button>
           </div>
         </div>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+        {sim ? (
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{sim.name}</p>
+              <p className="text-xs text-slate-600">
+                {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
+                {sim.tester ? ` · ${sim.tester}` : ""}
+                {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+              </p>
+            </div>
+            <div className="min-w-0 sm:max-w-md sm:text-right">
+              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">PACKAGES</p>
+              {sim.artifacts.length > 0 ? (
+                <ul className="mt-1 space-y-0.5">
+                  {sim.artifacts.map((item) => (
+                    <li key={`${item.packageName}-${item.filename}`} className="truncate font-mono text-[11px] text-slate-700">
+                      {item.filename}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1 text-xs text-slate-600">No .deb names on that run.</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
+            <p className="mt-1 text-sm text-slate-700">
+              No shared SIM snapshot yet. After a SIM run, open this hub on the laptop in the same
+              browser as SIM Flight Testing (while online). This phone then picks up that run, FAIL /
+              BLOCKED items, and package names.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -164,7 +206,11 @@ export function Dashboard() {
 
         <QuestionCard index="2" title="What is still unresolved?" href="/issues">
           {issues.length === 0 ? (
-            <Empty>No open issues from the last SIM run or Maintenance Assistant.</Empty>
+            <Empty>
+              {sim
+                ? `Last SIM run (${sim.name}) had no FAIL or BLOCKED missions. Maintenance Assistant still has none stored.`
+                : "No open issues from the last SIM run or Maintenance Assistant."}
+            </Empty>
           ) : (
             <ul className="divide-y">
               {issues.map((issue) => (
