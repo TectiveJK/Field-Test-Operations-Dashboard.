@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.6**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (**0.2.6**). GitHub `main` and Origin are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -52,7 +52,7 @@ Five tools already cover reporting, maintenance, planning, simulator testing and
 | Reporting | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) | Equipment list (ReFly / SkyHive / rotator / packs). Saved flight reports stay in that app until imported. |
 | Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Fleet, faults and inspections if that app has any. It currently stores none. |
 | Planning | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) | The live shared board (TALON, ReLION, Arctus, and so on). |
-| Simulator testing | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) | The 20 SkyCommand simulator missions, plus FAIL / BLOCKED items from the last scored run. |
+| Simulator testing | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) | The 20 SkyCommand simulator missions, FAIL / BLOCKED items from the last scored run, and `.deb` artifact names. That snapshot is shared between laptop and iPhone. |
 | Locations | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) | Live company list. This hub reads it and can update location / who / note, or add an item. The locator app itself is unchanged; phones keep using it. |
 
 The operations dashboard is the home screen for the day, with the other modules sharing the same records.
@@ -71,7 +71,7 @@ The operations dashboard is the home screen for the day, with the other modules 
 
 A failed simulator or field run can create an issue, keep the ULog against that drone and build, show on Today as an outstanding retest, and later be compared with the next Jenkins build.
 
-When this hub and SIM Flight Testing share the GitHub Pages origin (`tectivejk.github.io`), FAIL and BLOCKED results from the last SIM run are copied into Issues, Tests and Reports automatically.
+When this hub and SIM Flight Testing share the GitHub Pages origin (`tectivejk.github.io`), FAIL and BLOCKED results from the last SIM run are copied into Issues, Tests and Reports. Open this hub on the laptop after a SIM run (or leave it open) so the iPhone receives the same snapshot.
 
 Hardware locations use the same Google Sheet the locator app writes. You can **Update location** on Fleet or Deploy, or **Add hardware** on Fleet. Phones that still open the locator see those changes. This repo does not change the locator app. **Out of service** is shown as grounded.
 
@@ -176,7 +176,7 @@ git push origin main
 3. Tap Share → **Add to Home Screen**.
 4. Open **FTOD** from the home screen.
 
-Data stays on that device until you export or reset.
+Hub ticks, the last SIM run, and artifact names are shared with the laptop. If the home-screen copy looks old, hard-refresh or tap **Reset to source apps**.
 
 ### Offline
 
@@ -217,7 +217,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.6** shares hub ticks, the last SIM Flight Testing run, and SIM `.deb` artifact names between laptop and iPhone. Fleet still lists every Hardware locator item. Gimbal is written once per card. Compare two drones is gone. The locator app is not modified. The hub does not invent a test day. Next: edit Upcoming flights from Plan.
+**0.2.6 is live on GitHub Pages.** Hub ticks, the last SIM Flight Testing run, and SIM `.deb` artifact names are shared between laptop and iPhone. Fleet lists every Hardware locator item. Gimbal is written once per card. Compare two drones is gone. The locator app is not modified. The hub does not invent a test day. Next: edit Upcoming flights from Plan.
 
 ## Links
 
