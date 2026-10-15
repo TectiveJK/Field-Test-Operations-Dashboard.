@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { LogIssueDialog } from "@/components/log-issue-dialog";
 import { OfflineBanner } from "@/components/offline-banner";
-import { PwaRegister } from "@/components/pwa-register";
+import { forceAppUpdate, PwaRegister } from "@/components/pwa-register";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,7 @@ import { formatClock } from "@/lib/format";
 import { openIssues } from "@/lib/selectors";
 import { useHub } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { APP_VERSION } from "@/lib/version";
 
 const nav = [
   { href: "/", label: "Today", icon: LayoutGrid },
@@ -60,6 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             Field Test Operations
           </h1>
           <p className="mt-1 text-xs text-slate-600">Daily hub · SkyCommand / PX4 / ReFly</p>
+          <p className="mt-1 font-mono text-[11px] text-slate-500">v{APP_VERSION}</p>
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">
           {nav.map((item) => {
@@ -87,7 +89,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="border-t border-slate-300/80 p-3">
-          <Button variant="outline" className="w-full justify-start bg-white" onClick={reset}>
+          <Button
+            variant="outline"
+            className="w-full justify-start bg-white"
+            onClick={() => {
+              reset();
+              void forceAppUpdate();
+            }}
+          >
             <RotateCcw data-icon="inline-start" />
             Reset to source apps
           </Button>
@@ -128,6 +137,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     );
                   })}
                 </nav>
+                <div className="px-3 pt-3">
+                  <p className="mb-2 font-mono text-[11px] text-slate-500">v{APP_VERSION}</p>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start bg-white"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      reset();
+                      void forceAppUpdate();
+                    }}
+                  >
+                    <RotateCcw data-icon="inline-start" />
+                    Reset to source apps
+                  </Button>
+                </div>
               </SheetContent>
             </Sheet>
 
@@ -140,11 +164,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {[state.operator, state.builds.at(-1)?.label, state.weather].filter(Boolean).join(" · ")}
               </p>
             </div>
-            <div className="hidden text-right sm:block">
-              <p className="font-mono text-sm font-medium text-slate-900">
+            <div className="text-right">
+              <p className="hidden font-mono text-sm font-medium text-slate-900 sm:block">
                 {now ? formatClock(now) : "—"}
               </p>
-              <p className="text-[11px] text-slate-500">Europe/Amsterdam · shared laptop / iPhone</p>
+              <p className="font-mono text-[11px] text-slate-500">v{APP_VERSION}</p>
+              <p className="hidden text-[11px] text-slate-500 sm:block">Europe/Amsterdam · shared laptop / iPhone</p>
             </div>
             <LogIssueDialog />
           </div>

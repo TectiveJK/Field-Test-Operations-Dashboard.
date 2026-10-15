@@ -1,4 +1,5 @@
-const CACHE = "ftod-shell-v12";
+const APP_VERSION = "0.2.11";
+const CACHE = `ftod-shell-${APP_VERSION}`;
 const BASE = self.location.pathname.replace(/\/sw\.js$/, "");
 const SHELL = [
   "/",
@@ -32,8 +33,10 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.endsWith("/sw.js") || url.pathname.endsWith("/version.json")) return;
+  const navigate = event.request.mode === "navigate";
   event.respondWith(
-    fetch(event.request)
+    fetch(navigate ? url.href : event.request, { cache: navigate ? "no-store" : "no-cache" })
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE).then((cache) => cache.put(event.request, copy));

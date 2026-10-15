@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.10`
+**Current version:** `0.2.11`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.10**). GitHub `main` and Origin are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (**0.2.11** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.11`. If the iPhone home-screen copy looks old, open the `?ftod=0.2.11` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.10`. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.11` after you publish this commit. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -176,7 +176,16 @@ git push origin main
 3. Tap Share → **Add to Home Screen**.
 4. Open **FTOD** from the home screen.
 
-Hub ticks, the last SIM run, and artifact names are shared with the laptop. Flights and tests you add on Plan write the Upcoming board, so that app and other phones see them. If the home-screen copy looks old, hard-refresh or tap **Reset to source apps**.
+Hub ticks, the last SIM run, and artifact names are shared with the laptop. Flights and tests you add on Plan write the Upcoming board, so that app and other phones see them.
+
+Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
+
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.11
+
+Pull down to refresh until the header shows `v0.2.11`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+
+1. Swipe FTOD out of the app switcher, then open it again.
+2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
 
 ### Offline
 
@@ -219,7 +228,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.10 is live on GitHub Pages.** After a flight or test day has passed, Done items stay in **Test history** on Today and skipped items move to “What should we test next?”. Tick Done or Skipped on Plan. **Add flight** / **Add test** still write the Upcoming board. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone.
+**0.2.11** makes the iPhone home-screen copy pick up new versions. The header shows `v0.2.11`. After publish, open the `?ftod=0.2.11` Safari link, then Menu → **Reset to source apps**. Publish with `git pull && git push github main`.
 
 ## Links
 
