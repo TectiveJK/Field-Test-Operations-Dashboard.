@@ -1,4 +1,4 @@
-const CACHE = "ftod-shell-v9";
+const CACHE = "ftod-shell-v10";
 const BASE = self.location.pathname.replace(/\/sw\.js$/, "");
 const SHELL = [
   "/",
@@ -10,6 +10,7 @@ const SHELL = [
   "/reports/",
   "/manifest.webmanifest",
   "/icon.svg",
+  "/tective-banner.png",
 ].map((path) => `${BASE}${path === "/" ? "/" : path}`);
 
 self.addEventListener("install", (event) => {

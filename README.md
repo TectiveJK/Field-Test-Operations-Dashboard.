@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.7`
+**Current version:** `0.2.8`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.7**). GitHub `main` and Origin are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (**0.2.8** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.7`. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.8` after you publish this commit. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -61,7 +61,7 @@ The operations dashboard is the home screen for the day, with the other modules 
 
 | Screen | What you use it for |
 | --- | --- |
-| **Today** | The three questions, GO / CONDITIONAL / NO-GO, daily summary, fleet snapshot, **Add flight** / **Add test**, links to the existing apps |
+| **Today** | Tective banner, GO / CONDITIONAL / NO-GO, the three questions, **Add flight** / **Add test** (including on “What should we test next?”), daily summary, fleet snapshot, links to the existing apps |
 | **Plan** | Shared Upcoming board. **Add flight** / **Add test**, edit or remove, and mark Planned / In progress / Done / Skipped |
 | **Tests** | SIM Flight Testing catalog. Record a run here if you want it on this hub |
 | **Fleet** | Aircraft, hive, rotator and batteries from the Hardware locator list. **Update location** / **Add hardware** writes that company list. Airframes also show available / under test / grounded. |
@@ -218,7 +218,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.7 is live on GitHub Pages.** **Add flight** / **Add test** on Today and Plan write the same Upcoming flights & tests board (edit and remove too). That app is not modified; phones that still open it see the same list. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone. Fleet still lists every Hardware locator item. The hub does not invent a test day.
+**0.2.8** puts the Tective company photo on Today in place of “What needs attention”, and adds **Add test** on “What should we test next?”. **Add flight** / **Add test** still write the Upcoming board. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone. Publish with `git push github main`.
 
 ## Links
 

@@ -44,61 +44,56 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
+      <section className="overflow-hidden rounded-xl border border-slate-200">
+        <img
+          src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/tective-banner.png`}
+          alt="Tective — Automated drone deployment"
+          className="block h-auto w-full object-cover object-center"
+        />
+      </section>
+
       <section
         className={
           state.decision === "NO-GO"
-            ? "rounded-xl border border-red-300 bg-red-50 p-4 sm:p-5"
+            ? "rounded-xl border border-red-300 bg-red-50 p-3 sm:p-4"
             : state.decision === "CONDITIONAL"
-              ? "rounded-xl border border-amber-300 bg-amber-50 p-4 sm:p-5"
-              : "rounded-xl border border-emerald-300 bg-emerald-50 p-4 sm:p-5"
+              ? "rounded-xl border border-amber-300 bg-amber-50 p-3 sm:p-4"
+              : "rounded-xl border border-emerald-300 bg-emerald-50 p-3 sm:p-4"
         }
       >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-600">
-              THIS MORNING
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-              What needs attention
-            </h2>
-            <p className="mt-2 max-w-3xl text-sm text-slate-800">
-              {state.decisionReason ||
-                "No invented test day. Plan is the Upcoming flights board — add flights and tests here. Fleet is the Hardware locator list. The last SIM run and hub ticks are shared across laptop and iPhone."}
-            </p>
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <div className="flex min-w-0 flex-1 gap-2 sm:max-w-md">
+            <Select
+              value={state.decision}
+              onValueChange={(value) => value && setDecision(value as GoDecision, reason)}
+            >
+              <SelectTrigger className="flex-1 bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {GO_DECISIONS.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <RecordRunDialog />
           </div>
-          <div className="flex w-full flex-col gap-2 sm:max-w-md">
-            <div className="flex gap-2">
-              <Select
-                value={state.decision}
-                onValueChange={(value) => value && setDecision(value as GoDecision, reason)}
-              >
-                <SelectTrigger className="flex-1 bg-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {GO_DECISIONS.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <RecordRunDialog />
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={reason}
-                onChange={(event) => setReason(event.target.value)}
-                className="bg-white"
-              />
-              <Button
-                variant="outline"
-                className="bg-white"
-                onClick={() => setDecision(state.decision, reason)}
-              >
-                Update
-              </Button>
-            </div>
+          <div className="flex min-w-0 flex-1 gap-2 sm:max-w-md">
+            <Input
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              className="bg-white"
+              placeholder="GO / NO-GO reason"
+            />
+            <Button
+              variant="outline"
+              className="bg-white"
+              onClick={() => setDecision(state.decision, reason)}
+            >
+              Update
+            </Button>
           </div>
         </div>
       </section>
@@ -183,7 +178,12 @@ export function Dashboard() {
           )}
         </QuestionCard>
 
-        <QuestionCard index="3" title="What should we test next?" href="/tests">
+        <QuestionCard
+          index="3"
+          title="What should we test next?"
+          href="/tests"
+          extra={<PlanDialog mode="add" defaultKind="test" />}
+        >
           {actions.length === 0 ? (
             <Empty>No recommended next step.</Empty>
           ) : (
