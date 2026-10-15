@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.10** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
+That is the live GitHub Pages app (**0.2.10**). GitHub `main` and Origin are on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). If an older seed is still on the device, hard-refresh or tap **Reset to source apps**.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.10` after you publish this commit. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.10`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -219,7 +219,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.10** keeps Done flights and tests in **Test history** once their day has passed, and moves skipped ones to “What should we test next?”. **Add flight** / **Add test** still write the Upcoming board. Publish with `git push github main`.
+**0.2.10 is live on GitHub Pages.** After a flight or test day has passed, Done items stay in **Test history** on Today and skipped items move to “What should we test next?”. Tick Done or Skipped on Plan. **Add flight** / **Add test** still write the Upcoming board. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone.
 
 ## Links
 
