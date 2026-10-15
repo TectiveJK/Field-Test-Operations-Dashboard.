@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.12** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.12`. Today shows **Last SIM run** and package names once the laptop has published the snapshot. If the iPhone home-screen copy looks old, open the `?ftod=0.2.12` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.12**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.12`. Today shows **Last SIM run** and package names once the laptop has published the snapshot. If the iPhone home-screen copy looks old, open the `?ftod=0.2.12` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.12` after you publish this commit. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.12`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -230,7 +230,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.12** publishes the last SIM run and package names through the same shared path as the Upcoming board, so the iPhone can load them. Today shows **Last SIM run**. After a SIM run, open this hub on the laptop once, then reopen the phone. Header `v0.2.12`. Publish with `git pull && git push github main`.
+**0.2.12** is live. Today shows **Last SIM run** and `.deb` names. After a SIM run, open this hub on the laptop in the same browser as SIM Flight Testing, then reopen the iPhone. Header `v0.2.12`.
 
 ## Links
 
