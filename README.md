@@ -61,7 +61,7 @@ The operations dashboard is the home screen for the day, with the other modules 
 
 | Screen | What you use it for |
 | --- | --- |
-| **Today** | Tective banner, GO / CONDITIONAL / NO-GO, the three questions, **Add flight** / **Add test** (including on “What should we test next?”), daily summary, fleet snapshot, links to the existing apps |
+| **Today** | GO / CONDITIONAL / NO-GO, the three questions, **Add flight** / **Add test** (including on “What should we test next?”), daily summary, fleet snapshot, links to the existing apps |
 | **Plan** | Shared Upcoming board. **Add flight** / **Add test**, edit or remove, and mark Planned / In progress / Done / Skipped |
 | **Tests** | SIM Flight Testing catalog. Record a run here if you want it on this hub |
 | **Fleet** | Aircraft, hive, rotator and batteries from the Hardware locator list. **Update location** / **Add hardware** writes that company list. Airframes also show available / under test / grounded. |
@@ -218,7 +218,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.8 is live on GitHub Pages.** Today shows the Tective company photo instead of “What needs attention”, and **Add test** is on “What should we test next?”. **Add flight** / **Add test** still write the Upcoming board. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone.
+**0.2.8 is live on GitHub Pages.** **Add test** is on “What should we test next?”. **Add flight** / **Add test** still write the Upcoming board. Hub ticks, the last SIM run, and artifact names stay shared between laptop and iPhone.
 
 ## Links
 
