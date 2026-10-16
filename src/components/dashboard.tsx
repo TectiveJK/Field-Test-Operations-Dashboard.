@@ -117,7 +117,7 @@ export function Dashboard() {
               </p>
             </div>
             <div className="min-w-0 sm:max-w-md sm:text-right">
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">PACKAGES</p>
+              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SUCCESSFUL .DEB</p>
               {sim.artifacts.length > 0 ? (
                 <ul className="mt-1 space-y-0.5">
                   {sim.artifacts.map((item) => (

@@ -45,6 +45,13 @@ const REPORT_ID = "rep-sim-latest";
 
 const CATALOG_DEFAULT_MARK = "b9c924f";
 
+/** Last successful SIM packages. Same three names as SIM Flight Testing. */
+const SIM_PACKAGES = [
+  { packageName: "web-ground-control", filename: "web-ground-control_0.0.1-b9c924f.deb" },
+  { packageName: "mission-planner", filename: "mission-planner_1.0.0+b9c924f-b29_amd64.deb" },
+  { packageName: "tective-simulator", filename: "tective-simulator_0.1.0+b9c924f.b29_amd64.deb" },
+] as const;
+
 function asArtifact(raw: unknown): SimArtifact | null {
   if (!raw || typeof raw !== "object") return null;
   const item = raw as Partial<SimArtifact>;
@@ -65,15 +72,23 @@ export function isCatalogDefaultArtifacts(arts: SimArtifact[]): boolean {
   return arts.length > 0 && arts.every((item) => item.filename.includes(CATALOG_DEFAULT_MARK));
 }
 
-export function liveArtifacts(store: SimStore): SimArtifact[] {
-  const current = parseArtifacts(store.artifacts);
-  if (current.length && !isCatalogDefaultArtifacts(current)) return current;
-  const runs = [...store.runs].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""));
-  for (const run of runs) {
-    const snapped = parseArtifacts(run.artifacts);
-    if (snapped.length && !isCatalogDefaultArtifacts(snapped)) return snapped;
+function pickPackage(packageName: string, sources: SimArtifact[][]): SimArtifact {
+  const catalog = SIM_PACKAGES.find((item) => item.packageName === packageName)!;
+  let fallback: SimArtifact | null = null;
+  for (const list of sources) {
+    const item = list.find((artifact) => artifact.packageName === packageName);
+    if (!item) continue;
+    if (!item.filename.includes(CATALOG_DEFAULT_MARK)) return item;
+    if (!fallback) fallback = item;
   }
-  return current;
+  return fallback ?? { id: catalog.packageName, packageName: catalog.packageName, filename: catalog.filename };
+}
+
+export function liveArtifacts(store: SimStore): SimArtifact[] {
+  const sources: SimArtifact[][] = [parseArtifacts(store.artifacts)];
+  const runs = [...store.runs].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""));
+  for (const run of runs) sources.push(parseArtifacts(run.artifacts));
+  return SIM_PACKAGES.map((item) => pickPackage(item.packageName, sources));
 }
 
 export function asStore(raw: unknown): SimStore | null {
