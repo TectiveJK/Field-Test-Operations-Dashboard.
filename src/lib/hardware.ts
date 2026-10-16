@@ -52,6 +52,88 @@ export function itemsFromHardware(raw: unknown): HardwareItem[] {
 
 export const SNAPSHOT_HARDWARE = itemsFromHardware(snapshot);
 
+export const SHARED_HARDWARE_KEY = "tective-shared-hardware-v1";
+export const SHARED_HARDWARE_CHANNEL = "tective-hardware-locations";
+
+export type SharedHardwarePayload = {
+  kind: "tective-shared-hardware";
+  v: 1;
+  updatedAt: string;
+  source: string;
+  items: HardwareItem[];
+};
+
+export function readSharedHardware(): SharedHardwarePayload | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(SHARED_HARDWARE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SharedHardwarePayload;
+    if (!parsed || parsed.kind !== "tective-shared-hardware" || !Array.isArray(parsed.items)) return null;
+    return { ...parsed, items: itemsFromHardware({ items: parsed.items }) };
+  } catch {
+    return null;
+  }
+}
+
+export function writeSharedHardware(items: HardwareItem[], source = "dashboard"): SharedHardwarePayload {
+  const payload: SharedHardwarePayload = {
+    kind: "tective-shared-hardware",
+    v: 1,
+    updatedAt: new Date().toISOString(),
+    source,
+    items,
+  };
+  if (typeof window === "undefined") return payload;
+  try {
+    window.localStorage.setItem(SHARED_HARDWARE_KEY, JSON.stringify(payload));
+  } catch {
+    /* private mode */
+  }
+  try {
+    const channel = new BroadcastChannel(SHARED_HARDWARE_CHANNEL);
+    channel.postMessage(payload);
+    channel.close();
+  } catch {
+    /* older browsers */
+  }
+  return payload;
+}
+
+export function listenSharedHardware(onItems: (items: HardwareItem[]) => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== SHARED_HARDWARE_KEY || !event.newValue) return;
+    try {
+      const parsed = JSON.parse(event.newValue) as SharedHardwarePayload;
+      if (parsed?.kind === "tective-shared-hardware") onItems(itemsFromHardware({ items: parsed.items }));
+    } catch {
+      /* ignore bad cache */
+    }
+  };
+  window.addEventListener("storage", onStorage);
+  let channel: BroadcastChannel | null = null;
+  try {
+    channel = new BroadcastChannel(SHARED_HARDWARE_CHANNEL);
+    channel.onmessage = (event: MessageEvent<SharedHardwarePayload>) => {
+      const parsed = event.data;
+      if (parsed?.kind === "tective-shared-hardware") onItems(itemsFromHardware({ items: parsed.items }));
+    };
+  } catch {
+    channel = null;
+  }
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    channel?.close();
+  };
+}
+
+export function starterHardware(): HardwareItem[] {
+  const shared = readSharedHardware();
+  if (shared?.items.length) return shared.items;
+  return SNAPSHOT_HARDWARE;
+}
+
 export function normalizeHardwareName(name: string) {
   return name
     .toLowerCase()
@@ -88,17 +170,23 @@ export function parseHardwarePayload(raw: string): HardwareItem[] {
 
 let lastHardware: HardwareItem[] = SNAPSHOT_HARDWARE;
 
-function rememberHardware(items: HardwareItem[]) {
+function rememberHardware(items: HardwareItem[], share = true) {
   lastHardware = items;
+  if (share) writeSharedHardware(items, "dashboard");
+}
+
+export function cacheHardware(items: HardwareItem[], share = false) {
+  rememberHardware(items, share);
 }
 
 function upsertRemembered(item: HardwareItem) {
   const needle = normalizeHardwareName(item.name);
   lastHardware = [item, ...lastHardware.filter((entry) => normalizeHardwareName(entry.name) !== needle)];
+  writeSharedHardware(lastHardware, "dashboard");
   return lastHardware;
 }
 
-function hardwareJsonp(action: string, params: Record<string, string>): Promise<HardwareEnvelope> {
+function hardwareJsonp(action: string, params: Record<string, string>, allowCookies = false): Promise<HardwareEnvelope> {
   return new Promise((resolve, reject) => {
     const callback = `hwcb_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const query = new URLSearchParams({ action, callback, t: String(Date.now()), ...params });
@@ -121,24 +209,44 @@ function hardwareJsonp(action: string, params: Record<string, string>): Promise<
       reject(new Error("Could not reach the company hardware list."));
     };
     script.async = true;
+    script.referrerPolicy = "no-referrer";
+    if (!allowCookies) script.crossOrigin = "anonymous";
     script.src = `${HARDWARE_SCRIPT_URL}?${query.toString()}`;
     document.body.appendChild(script);
   });
 }
 
 async function hardwareRequest(action: string, params: Record<string, string> = {}): Promise<HardwareEnvelope> {
-  try {
-    const query = new URLSearchParams({ action, t: String(Date.now()), ...params });
-    const response = await fetch(`${HARDWARE_SCRIPT_URL}?${query.toString()}`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!response.ok) throw new Error("Hardware locator could not be reached.");
-    return parseHardwareEnvelope(await response.text());
-  } catch (error) {
-    if (typeof document === "undefined") throw error;
-    return hardwareJsonp(action, params);
+  if (typeof document !== "undefined") {
+    try {
+      return await hardwareJsonp(action, params, false);
+    } catch (error) {
+      try {
+        return await hardwareJsonp(action, params, true);
+      } catch {
+        /* fall through to fetch */
+      }
+      const fetchError = error;
+      try {
+        const query = new URLSearchParams({ action, t: String(Date.now()), ...params });
+        const response = await fetch(`${HARDWARE_SCRIPT_URL}?${query.toString()}`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
+        });
+        if (!response.ok) throw new Error("Hardware locator could not be reached.");
+        return parseHardwareEnvelope(await response.text());
+      } catch {
+        throw fetchError;
+      }
+    }
   }
+  const query = new URLSearchParams({ action, t: String(Date.now()), ...params });
+  const response = await fetch(`${HARDWARE_SCRIPT_URL}?${query.toString()}`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!response.ok) throw new Error("Hardware locator could not be reached.");
+  return parseHardwareEnvelope(await response.text());
 }
 
 export async function fetchHardwareItems(): Promise<HardwareItem[]> {
@@ -160,8 +268,9 @@ export async function updateHardware(input: {
   person: string;
   note: string;
 }): Promise<HardwareItem[]> {
+  const canonical = findHardware(lastHardware, input.item)?.name || input.item;
   const data = await hardwareRequest("update", {
-    item: input.item,
+    item: canonical,
     newName: "",
     location: input.location,
     person: input.person,
@@ -257,6 +366,7 @@ export function applyHardware(hub: HubState, items: HardwareItem[]): HubState {
     }
     return {
       ...drone,
+      name: item.name,
       location: item.location,
       holder: item.person,
       gimbal: item.gimbal,

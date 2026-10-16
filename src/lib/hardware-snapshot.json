@@ -74,7 +74,7 @@
     },
     {
       "name": "refly-sf-033",
-      "location": "In office upstairs",
+      "location": "In factory downstairs",
       "gimbal": "On Drone",
       "person": "",
       "note": "Motherboard changed end Aug. Fitted with Arctus motors, one did not work.",
@@ -106,7 +106,7 @@
     },
     {
       "name": "battery 39",
-      "location": "In hive",
+      "location": "In factory downstairs",
       "gimbal": "",
       "person": "",
       "note": "",
@@ -199,6 +199,30 @@
       "person": "",
       "note": "",
       "type": "battery"
+    },
+    {
+      "name": "GCS-004",
+      "location": "In factory downstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "other"
+    },
+    {
+      "name": "GCS-001",
+      "location": "In office upstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "other"
+    },
+    {
+      "name": "GCS-005",
+      "location": "In office upstairs",
+      "gimbal": "",
+      "person": "",
+      "note": "",
+      "type": "other"
     }
   ]
 }

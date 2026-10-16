@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.18`
+**Current version:** `0.2.19`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.18** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.18`. Plan lists Today question 3 under Upcoming flights and tests; rename there with **Edit**. If the iPhone home-screen copy looks old, open the `?ftod=0.2.18` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.19** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.19`. Plan lists Today question 3 under Upcoming flights and tests; rename there with **Edit**. If the iPhone home-screen copy looks old, open the `?ftod=0.2.19` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -17,7 +17,7 @@ This hub does **not** invent a test day. It only shows records that already exis
 | This hub | Source |
 | --- | --- |
 | **Plan** | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) live board. Add, edit or remove flights and tests here; that board updates. |
-| **Fleet / Deploy** | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) company list (airframes, hive, rotator, batteries) plus [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) equipment names. Locations are read from and written to that same list. The locator app is not modified. |
+| **Fleet / Deploy** | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) company list (airframes, hive, rotator, batteries) plus [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) equipment names. Locations are read from and written to that same list, so Fleet and the locator stay in sync. |
 | **Tests** | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) 20-mission catalog, last run, and `.deb` artifact names |
 | **Issues / reports / runs** | Failed and blocked missions from the last [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) run. That snapshot is shared between laptop and iPhone. Maintenance Assistant still has none stored. |
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.18` after you publish this commit. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.19` after you publish this commit. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ Five tools already cover reporting, maintenance, planning, simulator testing and
 | Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Fleet, faults and inspections if that app has any. It currently stores none. |
 | Planning | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) | The live shared board. This hub reads it and can add, edit or remove flights and tests. That app is not modified. |
 | Simulator testing | [SIM Flight Testing](https://tectivejk.github.io/sim-testing-app/) | The 20 SkyCommand simulator missions, FAIL / BLOCKED items from the last scored run, and `.deb` artifact names. That snapshot is shared between laptop and iPhone. |
-| Locations | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) | Live company list. This hub reads it and can update location / who / note, or add an item. The locator app itself is unchanged; phones keep using it. |
+| Locations | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) | Live company list. Change a location here or in the locator; both apps update. |
 
 The operations dashboard is the home screen for the day, with the other modules sharing the same records.
 
@@ -73,7 +73,7 @@ A failed simulator or field run can create an issue, keep the ULog against that 
 
 When this hub and SIM Flight Testing share the GitHub Pages origin (`tectivejk.github.io`), FAIL and BLOCKED results from the last SIM run are copied into Issues, Tests and Reports. Open this hub on the laptop after a SIM run (or leave it open) so the iPhone receives the same snapshot.
 
-Hardware locations use the same Google Sheet the locator app writes. You can **Update location** on Fleet or Deploy, or **Add hardware** on Fleet. Phones that still open the locator see those changes. This repo does not change the locator app. **Out of service** is shown as grounded.
+Hardware locations use the same Google Sheet the locator app writes. **Update location** on Fleet or Deploy, or **Add hardware** on Fleet, and the locator app shows it. Change a location in the locator and Fleet updates. On GitHub Pages they also share a same-origin cache, so the other tab updates immediately. **Out of service** is shown as grounded.
 
 ## Shared records
 
@@ -94,7 +94,7 @@ Every module uses the same objects. That is the foundation for adding more later
 - Automatic **daily summary**: completed tests, failures, open issues, remaining plan, grounded airframes
 - **Evidence organizer**: attach a filename on the pad even when you cannot upload the file
 - **Test comparison**: two runs of the same mission, including result, configuration and measurements (manual entry now; ULog parsing later)
-- **Update location** on Fleet and Deploy writes the company Hardware locator list (phones still see it). The locator app is not modified. Fleet shows every locator item, not only airframes.
+- **Update location** on Fleet and Deploy writes the company Hardware locator list. The locator app updates too, and a location change in the locator shows on Fleet. Fleet shows every locator item, not only airframes.
 - **Laptop and iPhone share one live copy** of hub ticks, issues, the last SIM run, and SIM `.deb` artifact names. Hardware locations already use the locator list. **Add flight** / **Add test** on Plan writes the Upcoming board, so that app sees it too. Open this hub on the laptop after a SIM run (or leave it open) so the phone can pick up SIM results. No login.
 - **Reset to source apps** reloads Reporter equipment, Hardware locator locations, the SIM catalog, the Upcoming flights board, and the last shared SIM FAIL / BLOCKED items. It does not invent a test day.
 
@@ -182,9 +182,9 @@ The iPhone home-screen app cannot read SIM Flight Testing storage directly. Afte
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.18
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.19
 
-Pull down to refresh until the header shows `v0.2.18`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.19`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -230,7 +230,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.18** removes **Edit title** from Plan. Use **Edit** there. Header `v0.2.18`. Publish with `git pull && git push github main`.
+**0.2.19** keeps Fleet locations in lockstep with the Hardware locator. Header `v0.2.19`. Publish with `git pull && git push github main`.
 
 ## Links
 

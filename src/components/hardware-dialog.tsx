@@ -119,8 +119,7 @@ export function HardwareDialog({
         <DialogHeader>
           <DialogTitle>{mode === "add" ? "Add hardware" : `Move ${itemName}`}</DialogTitle>
           <DialogDescription>
-            Saves to the same company list the Hardware locator uses. Phones still see it there.
-            The locator app itself is not changed.
+            Saves to the same company list the Hardware locator uses. The locator app updates too.
           </DialogDescription>
         </DialogHeader>
         <div className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1">
