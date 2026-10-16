@@ -135,6 +135,27 @@ export function nextActions(state: HubState): NextAction[] {
   return actions.slice(0, 6);
 }
 
+export function questionThreePlan(state: HubState): PlanItem[] {
+  const upcomingIds = new Set(upcomingPlan(state).map((item) => item.id));
+  const items: PlanItem[] = [];
+  const seen = new Set<string>();
+  for (const item of [
+    ...skippedPlanCarryover(state),
+    ...nextActions(state)
+      .map((action) => (action.planId ? state.plan.find((entry) => entry.id === action.planId) : null))
+      .filter((item): item is PlanItem => Boolean(item)),
+  ]) {
+    if (upcomingIds.has(item.id) || seen.has(item.id)) continue;
+    seen.add(item.id);
+    items.push(item);
+  }
+  return items;
+}
+
+export function questionThreeIssues(state: HubState): NextAction[] {
+  return nextActions(state).filter((action) => !action.planId);
+}
+
 export function dailySummary(state: HubState) {
   const runs = todayRuns(state);
   const done = runs.filter((run) => run.result !== "Not run");
