@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.17`
+**Current version:** `0.2.18`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.17** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.17`. Plan lists Today question 3 under Upcoming flights and tests. If the iPhone home-screen copy looks old, open the `?ftod=0.2.17` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.18** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.18`. Plan lists Today question 3 under Upcoming flights and tests; rename there with **Edit**. If the iPhone home-screen copy looks old, open the `?ftod=0.2.18` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.17` after you publish this commit. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.18` after you publish this commit. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -182,9 +182,9 @@ The iPhone home-screen app cannot read SIM Flight Testing storage directly. Afte
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.17
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.18
 
-Pull down to refresh until the header shows `v0.2.17`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.18`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -230,7 +230,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.17** lists Today question 3 on Plan, below Upcoming flights and tests. Header `v0.2.17`. Publish with `git pull && git push github main`.
+**0.2.18** removes **Edit title** from Plan. Use **Edit** there. Header `v0.2.18`. Publish with `git pull && git push github main`.
 
 ## Links
 

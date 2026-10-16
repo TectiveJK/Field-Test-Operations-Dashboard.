@@ -190,7 +190,6 @@ function PlanItemCard({
         <div className="grid gap-3">
           <p className="text-sm text-slate-800">{item.notes || "No extra note on the board."}</p>
           <div className="flex flex-wrap gap-2">
-            <PlanDialog mode="edit" item={item} triggerLabel="Edit title" titleOnly />
             <PlanDialog mode="edit" item={item} />
             <Button
               variant="outline"

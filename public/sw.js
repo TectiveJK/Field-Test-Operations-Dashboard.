@@ -1,4 +1,4 @@
-const APP_VERSION = "0.2.17";
+const APP_VERSION = "0.2.18";
 const CACHE = `ftod-shell-${APP_VERSION}`;
 const BASE = self.location.pathname.replace(/\/sw\.js$/, "");
 const SHELL = [
