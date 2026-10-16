@@ -121,8 +121,9 @@ export function Dashboard() {
               {sim.artifacts.length > 0 ? (
                 <ul className="mt-1 space-y-0.5">
                   {sim.artifacts.map((item) => (
-                    <li key={`${item.packageName}-${item.filename}`} className="truncate font-mono text-[11px] text-slate-700">
-                      {item.filename}
+                    <li key={`${item.packageName}-${item.filename}`} className="text-[11px] text-slate-700">
+                      <span className="text-slate-500">{item.packageName}</span>
+                      <span className="block truncate font-mono">{item.filename}</span>
                     </li>
                   ))}
                 </ul>

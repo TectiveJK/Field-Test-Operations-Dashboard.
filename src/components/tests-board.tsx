@@ -64,8 +64,9 @@ export function TestsBoard() {
               {sim.artifacts.length > 0 ? (
                 <ul className="space-y-1">
                   {sim.artifacts.map((item) => (
-                    <li key={`${item.packageName}-${item.filename}`} className="font-mono text-xs">
-                      {item.filename}
+                    <li key={`${item.packageName}-${item.filename}`} className="text-xs">
+                      <span className="text-slate-500">{item.packageName}</span>
+                      <span className="block font-mono">{item.filename}</span>
                     </li>
                   ))}
                 </ul>
