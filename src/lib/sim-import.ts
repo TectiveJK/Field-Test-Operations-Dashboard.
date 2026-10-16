@@ -43,13 +43,37 @@ const ISSUE_PREFIX = "ISS-SIM-";
 const RUN_PREFIX = "simrun-";
 const REPORT_ID = "rep-sim-latest";
 
+const CATALOG_DEFAULT_MARK = "b9c924f";
+
 function asArtifact(raw: unknown): SimArtifact | null {
   if (!raw || typeof raw !== "object") return null;
   const item = raw as Partial<SimArtifact>;
-  const packageName = String(item.packageName ?? "").trim();
   const filename = String(item.filename ?? "").trim();
-  if (!packageName || !filename) return null;
+  if (!filename) return null;
+  const packageName =
+    String(item.packageName ?? "").trim() || filename.replace(/_.*$/, "").replace(/\.deb$/i, "");
+  if (!packageName) return null;
   return { id: String(item.id ?? packageName), packageName, filename };
+}
+
+function parseArtifacts(raw: unknown): SimArtifact[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(asArtifact).filter((item): item is SimArtifact => item !== null);
+}
+
+export function isCatalogDefaultArtifacts(arts: SimArtifact[]): boolean {
+  return arts.length > 0 && arts.every((item) => item.filename.includes(CATALOG_DEFAULT_MARK));
+}
+
+export function liveArtifacts(store: SimStore): SimArtifact[] {
+  const current = parseArtifacts(store.artifacts);
+  if (current.length && !isCatalogDefaultArtifacts(current)) return current;
+  const runs = [...store.runs].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""));
+  for (const run of runs) {
+    const snapped = parseArtifacts(run.artifacts);
+    if (snapped.length && !isCatalogDefaultArtifacts(snapped)) return snapped;
+  }
+  return current;
 }
 
 export function asStore(raw: unknown): SimStore | null {
@@ -57,12 +81,14 @@ export function asStore(raw: unknown): SimStore | null {
   const runs = (raw as { runs?: unknown }).runs;
   const results = (raw as { results?: unknown }).results;
   if (!Array.isArray(runs) || !Array.isArray(results)) return null;
-  const artifacts = Array.isArray((raw as { artifacts?: unknown }).artifacts)
-    ? ((raw as { artifacts: unknown[] }).artifacts.map(asArtifact).filter(Boolean) as SimArtifact[])
-    : [];
+  const artifacts = parseArtifacts((raw as { artifacts?: unknown }).artifacts);
   return {
     artifacts,
-    runs: runs as SimRun[],
+    runs: (runs as unknown[]).map((run) => {
+      if (!run || typeof run !== "object") return run as SimRun;
+      const item = run as SimRun;
+      return { ...item, artifacts: parseArtifacts(item.artifacts) };
+    }),
     results: (results as SimResult[]).map((result) => ({
       ...result,
       notes: result.notes ?? "",
@@ -72,8 +98,9 @@ export function asStore(raw: unknown): SimStore | null {
 
 export function slimSimStore(store: SimStore | null): SimStore | null {
   if (!store) return null;
+  const artifacts = liveArtifacts(store);
   return {
-    artifacts: store.artifacts ?? [],
+    artifacts,
     runs: store.runs.map((run) => ({
       id: run.id,
       number: run.number,
@@ -126,10 +153,21 @@ export function simKey(store: SimStore | null): string {
   if (!store) return "";
   const run = latestSimRun(store);
   const scored = store.results.filter((result) => result.testRunId === run?.id).length;
-  const artifacts = artifactsOf(store, run)
+  const artifacts = liveArtifacts(store)
     .map((item) => item.filename)
     .join("|");
   return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored}|${artifacts}`;
+}
+
+function withLiveArtifacts(winner: SimStore, left: SimStore, right: SimStore): SimStore {
+  return {
+    ...winner,
+    artifacts: liveArtifacts({
+      artifacts: [...(left.artifacts ?? []), ...(right.artifacts ?? [])],
+      runs: [...left.runs, ...right.runs],
+      results: winner.results,
+    }),
+  };
 }
 
 export function preferSim(local: SimStore | null, remote: SimStore | null): SimStore | null {
@@ -141,19 +179,24 @@ export function preferSim(local: SimStore | null, remote: SimStore | null): SimS
   const remoteRun = latestSimRun(right);
   const localTime = Date.parse(localRun?.startedAt || "") || 0;
   const remoteTime = Date.parse(remoteRun?.startedAt || "") || 0;
-  if (localTime !== remoteTime) return localTime > remoteTime ? left : right;
+  if (localTime !== remoteTime) {
+    return withLiveArtifacts(localTime > remoteTime ? left : right, left, right);
+  }
   const localCount = left.results.filter((result) => result.testRunId === localRun?.id).length;
   const remoteCount = right.results.filter((result) => result.testRunId === remoteRun?.id).length;
-  if (localCount !== remoteCount) return localCount > remoteCount ? left : right;
-  const localArts = artifactsOf(left, localRun).map((item) => item.filename).join("|");
-  const remoteArts = artifactsOf(right, remoteRun).map((item) => item.filename).join("|");
-  if (localArts === remoteArts) return right;
-  return localArts.length >= remoteArts.length ? left : right;
+  if (localCount !== remoteCount) {
+    return withLiveArtifacts(localCount > remoteCount ? left : right, left, right);
+  }
+  const localArts = liveArtifacts(left).map((item) => item.filename).join("|");
+  const remoteArts = liveArtifacts(right).map((item) => item.filename).join("|");
+  const winner = localArts === remoteArts || localArts.length < remoteArts.length ? right : left;
+  return withLiveArtifacts(winner, left, right);
 }
 
 export function artifactsOf(store: SimStore, run: SimRun | null): SimArtifact[] {
-  if (run?.artifacts?.length) return run.artifacts.map(asArtifact).filter(Boolean) as SimArtifact[];
-  return store.artifacts ?? [];
+  const live = liveArtifacts(store);
+  if (live.length) return live;
+  return parseArtifacts(run?.artifacts);
 }
 
 export type SimRunSummary = {
