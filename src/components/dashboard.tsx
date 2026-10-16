@@ -197,7 +197,10 @@ export function Dashboard() {
                         {item.notes ? ` · ${item.notes}` : ""}
                       </p>
                     </div>
-                    <StatusBadge value={item.status} />
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <StatusBadge value={item.status} />
+                      <PlanDialog mode="edit" item={item} triggerLabel="Edit title" titleOnly />
+                    </div>
                   </li>
                 );
               })}
@@ -243,44 +246,61 @@ export function Dashboard() {
                 const drone = droneById(state, item.droneId);
                 return (
                   <li key={item.id} className="py-2.5">
-                    <div className="flex items-center gap-2">
-                      <StatusBadge value="Skipped" />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <StatusBadge value="Skipped" />
+                        </div>
+                        <p className="mt-1 text-sm font-medium text-slate-900">
+                          <span className="font-mono text-xs text-slate-500">
+                            {item.date} {item.window}
+                          </span>{" "}
+                          {planLabel(item, state)}
+                        </p>
+                        <p className="truncate text-xs text-slate-600">
+                          Skipped on that day
+                          {item.kind === "flight" ? " · Flight" : " · Test"}
+                          {item.owner ? ` · ${item.owner}` : ""}
+                          {drone ? ` · ${drone.name}` : ""}
+                          {item.notes ? ` · ${item.notes}` : ""}
+                        </p>
+                      </div>
+                      <PlanDialog mode="edit" item={item} triggerLabel="Edit title" titleOnly />
                     </div>
-                    <p className="mt-1 text-sm font-medium text-slate-900">
-                      <span className="font-mono text-xs text-slate-500">
-                        {item.date} {item.window}
-                      </span>{" "}
-                      {planLabel(item, state)}
-                    </p>
-                    <p className="truncate text-xs text-slate-600">
-                      Skipped on that day
-                      {item.kind === "flight" ? " · Flight" : " · Test"}
-                      {item.owner ? ` · ${item.owner}` : ""}
-                      {drone ? ` · ${drone.name}` : ""}
-                      {item.notes ? ` · ${item.notes}` : ""}
-                    </p>
                   </li>
                 );
               })}
-              {actions.map((action) => (
-                <li key={action.title} className="py-2.5">
-                  <div className="flex items-center gap-2">
-                    <StatusBadge
-                      tone={
-                        action.priority === "now"
-                          ? "fail"
-                          : action.priority === "blocked"
-                            ? "watch"
-                            : "pending"
-                      }
-                    >
-                      {action.priority}
-                    </StatusBadge>
-                  </div>
-                  <p className="mt-1 text-sm font-medium text-slate-900">{action.title}</p>
-                  <p className="text-xs text-slate-600">{action.why}</p>
-                </li>
-              ))}
+              {actions.map((action) => {
+                const planItem = action.planId
+                  ? state.plan.find((item) => item.id === action.planId)
+                  : undefined;
+                return (
+                  <li key={action.title} className="py-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <StatusBadge
+                            tone={
+                              action.priority === "now"
+                                ? "fail"
+                                : action.priority === "blocked"
+                                  ? "watch"
+                                  : "pending"
+                            }
+                          >
+                            {action.priority}
+                          </StatusBadge>
+                        </div>
+                        <p className="mt-1 text-sm font-medium text-slate-900">{action.title}</p>
+                        <p className="text-xs text-slate-600">{action.why}</p>
+                      </div>
+                      {planItem ? (
+                        <PlanDialog mode="edit" item={planItem} triggerLabel="Edit title" titleOnly />
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </QuestionCard>

@@ -196,4 +196,5 @@ export type NextAction = {
   why: string;
   href: string;
   priority: "now" | "next" | "blocked";
+  planId?: string;
 };

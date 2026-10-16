@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.15`
+**Current version:** `0.2.16`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.15** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.15`. Today copies the **Last successful artifacts** list from SIM Flight Testing as you edited it. If the iPhone home-screen copy looks old, open the `?ftod=0.2.15` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.16** after `git push github main`). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.16`. Question 1 and Question 3 have **Edit title** next to each flight or test. If the iPhone home-screen copy looks old, open the `?ftod=0.2.16` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.15` after you publish this commit. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.16` after you publish this commit. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -61,7 +61,7 @@ The operations dashboard is the home screen for the day, with the other modules 
 
 | Screen | What you use it for |
 | --- | --- |
-| **Today** | GO / CONDITIONAL / NO-GO, **Last SIM run** (score and `.deb` names), the three questions, **Add flight** / **Add test**, **Test history** of Done items after their day, skipped items carried into “What should we test next?”, daily summary, fleet snapshot |
+| **Today** | GO / CONDITIONAL / NO-GO, **Last SIM run** (score and `.deb` names), the three questions, **Edit title** next to each flight or test on questions 1 and 3, **Add flight** / **Add test**, **Test history** of Done items after their day, skipped items carried into “What should we test next?”, daily summary, fleet snapshot |
 | **Plan** | Shared Upcoming board. **Add flight** / **Add test**, edit or remove, and mark Planned / In progress / Done / Skipped |
 | **Tests** | SIM Flight Testing catalog. Record a run here if you want it on this hub |
 | **Fleet** | Aircraft, hive, rotator and batteries from the Hardware locator list. **Update location** / **Add hardware** writes that company list. Airframes also show available / under test / grounded. |
@@ -182,9 +182,9 @@ The iPhone home-screen app cannot read SIM Flight Testing storage directly. Afte
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.15
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.16
 
-Pull down to refresh until the header shows `v0.2.15`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.16`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -230,7 +230,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.15** copies the SIM **Last successful artifacts** list as edited, including a renamed package such as Skycommand. Header `v0.2.15`. After you change artifacts in SIM, open this hub in that same browser once. Publish with `git pull && git push github main`.
+**0.2.16** adds **Edit title** next to each flight or test on Today questions 1 and 3. That name writes the Upcoming board. Header `v0.2.16`. Publish with `git pull && git push github main`.
 
 ## Links
 

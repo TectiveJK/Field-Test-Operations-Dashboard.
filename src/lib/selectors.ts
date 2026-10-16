@@ -104,6 +104,7 @@ export function nextActions(state: HubState): NextAction[] {
       why: [inProgress.owner, inProgress.notes].filter(Boolean).join(". ") || `${inProgress.date} ${inProgress.window}`,
       href: "/plan",
       priority: "now",
+      planId: inProgress.id,
     });
   }
 
@@ -127,6 +128,7 @@ export function nextActions(state: HubState): NextAction[] {
       why: [drone?.name, item.owner, item.notes].filter(Boolean).join(". ") || "From Upcoming flights & tests.",
       href: "/plan",
       priority: "next",
+      planId: item.id,
     });
   }
 

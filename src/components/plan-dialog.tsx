@@ -23,9 +23,17 @@ type PlanDialogProps = {
   mode: "add" | "edit";
   item?: PlanItem;
   defaultKind?: UpcomingKind;
+  triggerLabel?: string;
+  titleOnly?: boolean;
 };
 
-export function PlanDialog({ mode, item, defaultKind = "flight" }: PlanDialogProps) {
+export function PlanDialog({
+  mode,
+  item,
+  defaultKind = "flight",
+  triggerLabel,
+  titleOnly = false,
+}: PlanDialogProps) {
   const { state, savePlanEntry } = useHub();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<UpcomingKind>(item?.kind ?? defaultKind);
@@ -86,62 +94,73 @@ export function PlanDialog({ mode, item, defaultKind = "flight" }: PlanDialogPro
         }
       >
         {mode === "add" ? <Plus data-icon="inline-start" /> : <Pencil data-icon="inline-start" />}
-        {mode === "add" ? (defaultKind === "flight" ? "Add flight" : "Add test") : "Edit"}
+        {triggerLabel ??
+          (mode === "add" ? (defaultKind === "flight" ? "Add flight" : "Add test") : "Edit")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{mode === "add" ? "Add to the board" : "Edit board item"}</DialogTitle>
+          <DialogTitle>
+            {mode === "add" ? "Add to the board" : titleOnly ? "Edit title" : "Edit board item"}
+          </DialogTitle>
           <DialogDescription>
-            Saves to the same Upcoming flights & tests board. Phones and that app see it too.
+            {titleOnly
+              ? "Updates the name on the Upcoming flights & tests board. Phones and that app see it too."
+              : "Saves to the same Upcoming flights & tests board. Phones and that app see it too."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1">
-          <div className="grid grid-cols-2 gap-2">
-            {(["flight", "test"] as const).map((option) => (
-              <Button
-                key={option}
-                type="button"
-                variant={kind === option ? "default" : "outline"}
-                onClick={() => setKind(option)}
-              >
-                {option === "flight" ? "Flight" : "Test"}
-              </Button>
-            ))}
-          </div>
+          {titleOnly ? null : (
+            <div className="grid grid-cols-2 gap-2">
+              {(["flight", "test"] as const).map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  variant={kind === option ? "default" : "outline"}
+                  onClick={() => setKind(option)}
+                >
+                  {option === "flight" ? "Flight" : "Test"}
+                </Button>
+              ))}
+            </div>
+          )}
           <label className="grid gap-1 text-sm font-medium">
-            Name
+            {titleOnly ? "Title" : "Name"}
             <Input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder={kind === "flight" ? "e.g. TALON with ESS" : "e.g. Arctus motor flight test"}
             />
           </label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="grid gap-1 text-sm font-medium">
-              Date
-              <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-            </label>
-            <label className="grid gap-1 text-sm font-medium">
-              Time
-              <Input type="time" value={time} onChange={(event) => setTime(event.target.value)} />
-            </label>
-          </div>
-          <label className="grid gap-1 text-sm font-medium">
-            Owner
-            <Input
-              value={owner}
-              onChange={(event) => setOwner(event.target.value)}
-              placeholder="Who is flying or testing"
-            />
-          </label>
-          <label className="grid gap-1 text-sm font-medium">
-            Note
-            <FieldTextarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Optional note"
-            />
-          </label>
+          {titleOnly ? null : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-sm font-medium">
+                  Date
+                  <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Time
+                  <Input type="time" value={time} onChange={(event) => setTime(event.target.value)} />
+                </label>
+              </div>
+              <label className="grid gap-1 text-sm font-medium">
+                Owner
+                <Input
+                  value={owner}
+                  onChange={(event) => setOwner(event.target.value)}
+                  placeholder="Who is flying or testing"
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-medium">
+                Note
+                <FieldTextarea
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  placeholder="Optional note"
+                />
+              </label>
+            </>
+          )}
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
           <a href={UPCOMING_APP_URL} target="_blank" rel="noreferrer" className="text-xs text-slate-500 underline">
             Open Upcoming flights & tests
