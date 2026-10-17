@@ -152,10 +152,21 @@ git remote add github https://github.com/TectiveJK/Field-Test-Operations-Dashboa
 git push github main
 ```
 
-If the `github` remote already exists:
+If the `github` remote already exists, run this **inside the clone** (not from `~`). The branch is `main`, not `master`:
 
 ```bash
-git pull
+cd field-test-dashboard
+git fetch origin
+git checkout main
+git pull origin main
+git push github main
+```
+
+If `git checkout main` fails because this copy only has `master`:
+
+```bash
+git fetch origin
+git checkout -B main origin/main
 git push github main
 ```
 
