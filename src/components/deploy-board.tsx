@@ -20,7 +20,7 @@ export function DeployBoard() {
           <h2 className="text-xl font-semibold tracking-tight">Field deployment checklist</h2>
           <p className="mt-1 text-sm text-slate-600">
             Aircraft and packs from the Flight Test Reporter equipment list, with live locations
-            from the Hardware locator. Update a location here; the locator app stays as it is.
+            from the Hardware locator. Update a location here and the locator app updates too.
             Nothing is pre-ticked. Timestamps stay on this device.
           </p>
           <p className="mt-2 text-sm font-medium text-slate-800">

@@ -77,7 +77,7 @@ export const EXISTING_APPS = [
     name: "Hardware locator",
     area: "Locations",
     href: "https://tectivejk.github.io/Updating-hardware/",
-    note: "Live company list of where each airframe, pack, hive and rotator is. Change locations there; this hub only reads them.",
+    note: "Live company list of where each airframe, pack, hive and rotator is. Change a location here or there; both apps update.",
   },
 ] as const;
 

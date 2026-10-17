@@ -55,8 +55,8 @@ export function FleetBoard() {
           <h2 className="text-xl font-semibold tracking-tight">Fleet, builds & configuration</h2>
           <p className="mt-1 text-sm text-slate-600">
             Airframes, hive, rotator and batteries from the Hardware locator company list. Update a
-            location here to write that same list. Phones keep using the locator app unchanged. Out
-            of service is treated as grounded on airframes.
+            location here and the locator app shows it; change it there and Fleet updates. Out of
+            service is treated as grounded on airframes.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">

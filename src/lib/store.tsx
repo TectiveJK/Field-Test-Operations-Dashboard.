@@ -12,8 +12,11 @@ import { newId } from "@/lib/format";
 import {
   addHardware,
   applyHardware,
+  cacheHardware,
   fetchHardwareItems,
-  SNAPSHOT_HARDWARE,
+  listenSharedHardware,
+  readSharedHardware,
+  starterHardware,
   updateHardware,
 } from "@/lib/hardware";
 import {
@@ -155,7 +158,14 @@ function subscribe(listener: () => void) {
     clientAttached = true;
     readMeta();
     lastSim = slimSimStore(readSimStore());
-    memory = applyHardware(applySimLastRun(readPersisted(), lastSim), SNAPSHOT_HARDWARE);
+    const persisted = applySimLastRun(readPersisted(), lastSim);
+    const shared = readSharedHardware();
+    const live = shared?.items.length
+      ? shared.items
+      : persisted.drones.some((drone) => drone.location)
+        ? null
+        : starterHardware();
+    memory = live ? applyHardware(persisted, live) : persisted;
     persist(memory);
     queueMicrotask(emit);
     attachLiveRefresh();
@@ -177,6 +187,10 @@ function attachLiveRefresh() {
   window.addEventListener("storage", (event) => {
     if (event.key === SIM_STORE_KEY || event.key === STORAGE_KEY) void refreshAll();
   });
+  listenSharedHardware((items) => {
+    cacheHardware(items, false);
+    write((current) => applyHardware(current, items), false);
+  });
   window.setInterval(() => {
     if (document.visibilityState === "visible") void refreshAll();
   }, 8000);
@@ -189,7 +203,7 @@ async function refreshAll() {
     const localSim = slimSimStore(readSimStore());
     const [upcoming, hardware, remote] = await Promise.all([
       fetchUpcomingEntries().catch(() => null),
-      fetchHardwareItems().catch(() => null),
+      fetchHardwareItems().catch(() => readSharedHardware()?.items ?? null),
       fetchHubSync().catch(() => null),
     ]);
     const chosenSim = preferSim(localSim, remote?.sim ?? null);
@@ -469,7 +483,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     localUpdatedAt = "";
     lastSim = slimSimStore(readSimStore());
-    memory = applyHardware(applySimLastRun(cloneSeed(), lastSim), SNAPSHOT_HARDWARE);
+    memory = applyHardware(applySimLastRun(cloneSeed(), lastSim), starterHardware());
     persist(memory);
     emit();
     void refreshAll();
