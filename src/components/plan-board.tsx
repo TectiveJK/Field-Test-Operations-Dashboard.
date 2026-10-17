@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { PlanDialog } from "@/components/plan-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ export function PlanBoard() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <ExportPdfButton page="plan" />
             <PlanDialog mode="add" defaultKind="flight" />
             <PlanDialog mode="add" defaultKind="test" />
           </div>

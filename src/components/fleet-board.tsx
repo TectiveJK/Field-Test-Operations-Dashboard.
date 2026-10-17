@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { HardwareDialog } from "@/components/hardware-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,7 +59,10 @@ export function FleetBoard() {
             of service is treated as grounded on airframes.
           </p>
         </div>
-        <HardwareDialog mode="add" triggerVariant="default" />
+        <div className="flex flex-wrap gap-2">
+          <ExportPdfButton page="fleet" />
+          <HardwareDialog mode="add" triggerVariant="default" />
+        </div>
       </div>
 
       <Input

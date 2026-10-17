@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { PlanDialog } from "@/components/plan-dialog";
 import { RecordRunDialog } from "@/components/record-run-dialog";
 import { StatusBadge } from "@/components/status-badge";
@@ -50,6 +51,15 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Today</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            GO / NO-GO, last SIM run, and the three questions for the day.
+          </p>
+        </div>
+        <ExportPdfButton page="today" />
+      </div>
       <section className="overflow-hidden rounded-xl border border-slate-200">
         <img
           src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/tective-banner.png`}

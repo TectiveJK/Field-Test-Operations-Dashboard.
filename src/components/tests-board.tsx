@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { RecordRunDialog } from "@/components/record-run-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,7 +46,10 @@ export function TestsBoard() {
             here if you want it on this hub. Per-tester SIM results stay in that app.
           </p>
         </div>
-        <RecordRunDialog />
+        <div className="flex flex-wrap gap-2">
+          <ExportPdfButton page="tests" />
+          <RecordRunDialog />
+        </div>
       </div>
 
       <Card className="bg-white">

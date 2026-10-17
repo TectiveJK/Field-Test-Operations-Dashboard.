@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,12 +57,16 @@ export function ReportsBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">Reports, evidence & knowledge</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          The last SIM Flight Testing run is listed here when it has been scored on the laptop
-          or iPhone. Flight Test Reporter JSON is still imported separately.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Reports, evidence & knowledge</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            The last SIM Flight Testing run is listed here when it has been scored on the laptop
+            or iPhone. Flight Test Reporter JSON is still imported separately. Export PDF on this
+            page writes every hub page into one file.
+          </p>
+        </div>
+        <ExportPdfButton page="reports" />
       </div>
 
       <section className="grid gap-3">
