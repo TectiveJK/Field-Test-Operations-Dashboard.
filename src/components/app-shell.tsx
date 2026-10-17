@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { LogIssueDialog } from "@/components/log-issue-dialog";
 import { OfflineBanner } from "@/components/offline-banner";
+import { WeatherWidget } from "@/components/weather-widget";
 import { forceAppUpdate, PwaRegister } from "@/components/pwa-register";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -164,12 +165,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {[state.operator, state.builds.at(-1)?.label, state.weather].filter(Boolean).join(" · ")}
               </p>
             </div>
-            <div className="text-right">
-              <p className="hidden font-mono text-sm font-medium text-slate-900 sm:block">
+            <div className="shrink-0 text-right">
+              <p className="font-mono text-[11px] font-medium text-slate-900 sm:text-sm">
                 {now ? formatClock(now) : "—"}
               </p>
+              <WeatherWidget />
               <p className="font-mono text-[11px] text-slate-500">v{APP_VERSION}</p>
-              <p className="hidden text-[11px] text-slate-500 sm:block">Europe/Amsterdam · shared laptop / iPhone</p>
             </div>
             <LogIssueDialog />
           </div>

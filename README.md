@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.20`
+**Current version:** `0.2.21`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app. After you publish this Origin commit it is **0.2.20**. GitHub `main` and Origin match after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.20`. Every page has **Export PDF**; Reports writes all pages into one file. Fleet locations stay in sync with the Hardware locator. If the iPhone home-screen copy looks old, open the `?ftod=0.2.20` Safari link under iPhone / iPad.
+That is the live GitHub Pages app. After you publish this Origin commit it is **0.2.21**. GitHub `main` and Origin match after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.21` and a live Delft weather line next to the date (condition, °C, wind, gusts). Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.21` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -98,6 +98,7 @@ Every module uses the same objects. That is the foundation for adding more later
 - **Laptop and iPhone share one live copy** of hub ticks, issues, the last SIM run, and SIM `.deb` artifact names. Hardware locations already use the locator list. **Add flight** / **Add test** on Plan writes the Upcoming board, so that app sees it too. Open this hub on the laptop after a SIM run (or leave it open) so the phone can pick up SIM results. No login.
 - **Reset to source apps** reloads Reporter equipment, Hardware locator locations, the SIM catalog, the Upcoming flights board, and the last shared SIM FAIL / BLOCKED items. It does not invent a test day.
 - **Export PDF** on Today, Plan, Tests, Fleet, Issues and Deploy writes that page. **Export PDF** on Reports writes all seven pages.
+- Header **weather** for the Delft site: condition, °C, wind m/s and gusts from Open-Meteo. Last reading is kept for offline.
 
 ## Clone from GitHub
 
@@ -202,9 +203,9 @@ The iPhone home-screen app cannot read SIM Flight Testing storage directly. Afte
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.20
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.21
 
-Pull down to refresh until the header shows `v0.2.20`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.21`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -233,6 +234,7 @@ src/components/hardware-dialog.tsx  Update location / Add hardware
 src/components/plan-dialog.tsx      Add / edit flights and tests on the Upcoming board
 src/components/test-history-dialog.tsx  Done flights and tests after their day has passed
 src/lib/sim-import.ts last SIM FAIL / BLOCKED run → issues, runs, reports, artifacts
+src/lib/weather.ts    Delft Open-Meteo reading (condition, °C, wind, gusts)
 src/lib/seed.ts       hub snapshot built from those apps
 src/lib/store.tsx     local persistence
 public/sw.js          offline cache
@@ -250,7 +252,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.20** combines **Export PDF** on every page with Fleet locations staying in sync with the Hardware locator. Reports Export PDF writes all pages. Header `v0.2.20`. From the clone (not `~`): `git pull origin main` then `git push github main`.
+**0.2.21** adds a live Delft weather line next to the date: condition, temperature, wind and gusts. Header `v0.2.21`. From the clone (not `~`): `git pull origin main` then `git push github main`. If GitHub rejects the push, `git fetch github` then `git merge github/main` then `git push github main`.
 
 ## Links
 

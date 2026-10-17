@@ -19,6 +19,7 @@ import { summarizeSim, type SimStore } from "@/lib/sim-import";
 import { isAirframe, type Drone, type HubState } from "@/lib/types";
 import { APP_VERSION } from "@/lib/version";
 import { buildPdf, downloadPdf, type PdfSection } from "@/lib/pdf";
+import { readWeatherCache, weatherLine } from "@/lib/weather";
 
 export type ExportPage = "today" | "plan" | "tests" | "fleet" | "issues" | "deploy" | "reports";
 
@@ -34,6 +35,12 @@ const PAGE_TITLES: Record<ExportPage, string> = {
   deploy: "Deploy",
   reports: "All pages",
 };
+
+function weatherValue(state: HubState) {
+  const live = readWeatherCache();
+  if (live) return `${live.place}: ${weatherLine(live)}`;
+  return blank(state.weather);
+}
 
 function blank(value: string | number | null | undefined) {
   if (value === null || value === undefined) return "—";
@@ -106,7 +113,7 @@ function todaySections(state: HubState, lastSim: SimStore | null): PdfSection[] 
       rows: [
         { label: "Site", value: blank(state.site) },
         { label: "Operator", value: blank(state.operator) },
-        { label: "Weather", value: blank(state.weather) },
+        { label: "Weather", value: weatherValue(state) },
         { label: "Decision", value: state.decision },
         { label: "Reason", value: blank(state.decisionReason) },
         { label: "Still on the card", value: String(kpi.planned) },
