@@ -12,7 +12,7 @@ export function ExportPdfButton({ page }: { page: ExportPage }) {
   return (
     <Button
       variant="outline"
-      className="bg-white"
+      className="shrink-0 bg-white"
       title={allPages ? "Export every page as one PDF" : "Export this page as PDF"}
       onClick={() => exportHubPdf(page, state, lastSim)}
     >

@@ -51,8 +51,8 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Today</h2>
           <p className="mt-1 text-sm text-slate-600">
             GO / NO-GO, last SIM run, and the three questions for the day.

@@ -15,8 +15,8 @@ export function DeployBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Field deployment checklist</h2>
           <p className="mt-1 text-sm text-slate-600">
             Aircraft and packs from the Flight Test Reporter equipment list, with live locations

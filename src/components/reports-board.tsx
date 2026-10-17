@@ -57,8 +57,8 @@ export function ReportsBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Reports, evidence & knowledge</h2>
           <p className="mt-1 text-sm text-slate-600">
             The last SIM Flight Testing run is listed here when it has been scored on the laptop
