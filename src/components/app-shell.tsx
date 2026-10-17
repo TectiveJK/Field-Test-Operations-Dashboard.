@@ -107,7 +107,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">
         <OfflineBanner />
         <header className="sticky top-0 z-20 border-b border-slate-300/80 bg-[#f3f4f6]/95 backdrop-blur">
-          <div className="flex items-center gap-3 px-3 py-3 sm:px-5">
+          <div className="flex flex-wrap items-center gap-3 px-3 py-3 sm:px-5">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger
                 render={
@@ -165,7 +165,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {[state.operator, state.builds.at(-1)?.label, state.weather].filter(Boolean).join(" · ")}
               </p>
             </div>
-            <div className="shrink-0 text-right">
+            <div className="order-last w-full border-t border-slate-300/80 pt-2 text-right sm:order-none sm:w-auto sm:border-0 sm:pt-0">
               <p className="font-mono text-[11px] font-medium text-slate-900 sm:text-sm">
                 {now ? formatClock(now) : "—"}
               </p>
