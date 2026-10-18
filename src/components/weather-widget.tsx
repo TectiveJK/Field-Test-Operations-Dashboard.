@@ -23,7 +23,7 @@ import {
 
 function ConditionIcon({ code }: { code: number }) {
   const kind = weatherIconKind(code);
-  const className = "size-3.5 shrink-0";
+  const className = "size-5 shrink-0 text-slate-900 sm:size-6";
   switch (kind) {
     case "sun":
       return <Sun className={className} />;
@@ -85,26 +85,26 @@ export function WeatherWidget() {
   }, []);
 
   if (status === "loading" && !reading) {
-    return <p className="text-[11px] text-slate-500">Weather…</p>;
+    return <p className="text-xs font-medium text-slate-600">Weather…</p>;
   }
   if (!reading) {
-    return <p className="text-[11px] text-slate-500">Weather unavailable</p>;
+    return <p className="text-xs font-medium text-slate-600">Weather unavailable</p>;
   }
 
   const stale = status === "cached";
   return (
     <div
-      className="text-[11px] leading-tight text-slate-700"
+      className="leading-tight text-slate-900"
       title={`${reading.place}${stale ? " · last reading" : ""} · ${weatherLine(reading)}`}
     >
-      <p className="flex items-center justify-end gap-1 font-medium">
+      <p className="flex items-center justify-end gap-1.5 text-sm font-semibold sm:text-base">
         <ConditionIcon code={reading.code} />
         <span>{reading.condition}</span>
-        <span className="font-mono">{formatTemp(reading.temperatureC)}</span>
+        <span className="font-mono tabular-nums">{formatTemp(reading.temperatureC)}</span>
       </p>
-      <p className="font-mono text-slate-600">
+      <p className="mt-0.5 font-mono text-xs font-medium text-slate-800 sm:text-sm">
         wind {formatMs(reading.windMs)}
-        <span className="text-slate-400"> · </span>
+        <span className="text-slate-500"> · </span>
         gust {formatMs(reading.gustMs)}
       </p>
     </div>
