@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app. After you publish this Origin commit it is **0.2.22**. GitHub `main` and Origin match after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.22` and a larger Delft weather line next to the date (condition, °C, wind, gusts). Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.22` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.22**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.22` and a larger Delft weather line next to the date (condition, °C, wind, gusts). Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.22` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.22`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -252,7 +252,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.22** makes the header weather icon and readings larger. Header `v0.2.22`. From the clone (not `~`): `git pull origin main` then `git push github main`.
+**0.2.22** is live. Header weather icon and readings are larger next to the date (condition, °C, wind, gusts). Every page has **Export PDF**; Reports writes all pages. Header `v0.2.22`.
 
 ## Links
 
