@@ -1,4 +1,11 @@
 import {
+  asReporterStore,
+  preferReporter,
+  reporterKey,
+  slimReporterStore,
+  type ReporterStore,
+} from "@/lib/reporter-import";
+import {
   asStore,
   preferSim,
   simKey,
@@ -26,6 +33,7 @@ export type HubSyncPayload = {
   kind: "tective-ftod-hub";
   updatedAt: string;
   sim: SimStore | null;
+  reporter: ReporterStore | null;
   hub: {
     decision: GoDecision;
     decisionReason: string;
@@ -58,6 +66,7 @@ function asPayload(raw: unknown): HubSyncPayload | null {
     kind: "tective-ftod-hub",
     updatedAt: typeof item.updatedAt === "string" ? item.updatedAt : "",
     sim: asStore(item.sim),
+    reporter: asReporterStore(item.reporter),
     hub: item.hub && typeof item.hub === "object" ? item.hub : null,
   };
 }
@@ -97,11 +106,17 @@ export async function fetchHubSync(): Promise<HubSyncPayload | null> {
   throw lastError ?? new Error("Shared hub list could not be loaded.");
 }
 
-export function snapshotForSync(hub: HubState, sim: SimStore | null, updatedAt: string): HubSyncPayload {
+export function snapshotForSync(
+  hub: HubState,
+  sim: SimStore | null,
+  reporter: ReporterStore | null,
+  updatedAt: string
+): HubSyncPayload {
   return {
     kind: "tective-ftod-hub",
     updatedAt,
     sim: slimSimStore(sim),
+    reporter: slimReporterStore(reporter),
     hub: {
       decision: hub.decision,
       decisionReason: hub.decisionReason,
@@ -177,9 +192,20 @@ export function applyRemoteHub(hub: HubState, remote: HubSyncPayload["hub"]): Hu
   };
 }
 
-export function shouldPublish(localUpdatedAt: string, localSim: SimStore | null, remote: HubSyncPayload | null) {
-  if (!remote) return Boolean(localUpdatedAt || simKey(localSim));
+export function shouldPublish(
+  localUpdatedAt: string,
+  localSim: SimStore | null,
+  remote: HubSyncPayload | null,
+  localReporter: ReporterStore | null = null
+) {
+  if (!remote) return Boolean(localUpdatedAt || simKey(localSim) || reporterKey(preferReporter(localReporter, null)));
   if (localUpdatedAt && localUpdatedAt > (remote.updatedAt || "")) return true;
   const chosen = preferSim(localSim, remote.sim);
-  return Boolean(chosen && simKey(chosen) !== simKey(remote.sim) && simKey(chosen) === simKey(localSim));
+  if (chosen && simKey(chosen) !== simKey(remote.sim) && simKey(chosen) === simKey(localSim)) return true;
+  const localChosen = preferReporter(localReporter, null);
+  const chosenReporter = preferReporter(localReporter, remote.reporter);
+  return (
+    reporterKey(chosenReporter) !== reporterKey(remote.reporter) &&
+    reporterKey(chosenReporter) === reporterKey(localChosen)
+  );
 }

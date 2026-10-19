@@ -1,0 +1,422 @@
+{
+  "conclusion": "Overall test result: PASS WITH OBSERVATIONS.",
+  "flights": [
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 1,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "",
+      "objective": "Manual Flight in GPS Mode: Initial Precision Landing",
+      "equipment": [
+        "refly-sf-032"
+      ],
+      "dateTime": "2026-10-19T11:54",
+      "duration": "1min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed a manual flight in GPS mode. A precision landing command was issued from the computer.\nThe drone successfully initiated and completed the landing procedure. However, it did not land precisely at the centre of the AprilTag.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 2,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "",
+      "objective": "GPS Mode: Repeated Landing Attempts from 10 m Altitude",
+      "equipment": [
+        "refly-sf-032",
+        "battery 39"
+      ],
+      "dateTime": "2026-10-19T00:08",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "During the second flight, the drone climbed to 10 m altitude and was moved approximately 10 m away from the take-off position.\nA landing command was issued from the computer. On the first two attempts, the drone climbed to 30 m and switched to Loiter mode instead of completing the landing.\nOn the third attempt, I manually lowered the drone to approximately 5 m altitude. After another landing command was issued, the drone moved above the AprilTag and completed the landing autonomously.\nHowever, the drone again landed off-centre relative to the AprilTag.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass with observations"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 3,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "",
+      "objective": "GPS Mode: Landing Attempts from Different Positions",
+      "equipment": [
+        "refly-sf-032",
+        "battery 39"
+      ],
+      "dateTime": "2026-10-19T12:16",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed another manual flight. The drone was positioned approximately 15 m away from the AprilTag at an altitude of 5 m.\nAttempt 1: After the landing command, the drone climbed to 30 m and switched to Loiter.\nAttempt 2: The drone was lowered to 5 m again. After the landing command, it climbed to 18.7 m, moved above the AprilTag, then climbed further to 30 m and switched to Loiter.\nAttempt 3: The drone was lowered to 5 m and positioned approximately 10 m away from the AprilTag. Following the landing command, it moved towards the AprilTag. It first climbed to approximately 18 m, then returned above the AprilTag and landed autonomously.\nThe final landing was successful, although the drone did not touch down precisely at the centre of the AprilTag.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass with observations"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 4,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "",
+      "objective": "AprilTag Movement During Precision Landing",
+      "equipment": [
+        "refly-sf-032",
+        "battery 39"
+      ],
+      "dateTime": "2026-10-19T12:40",
+      "duration": "",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "",
+      "anomalies": "Performed another flight, climbing to an altitude of 10 m. A rope was attached to the AprilTag to allow it to be moved during the landing procedure.\nOnce the drone detected the AprilTag and began descending, we slightly rotated the AprilTag.\nThe drone then climbed back to approximately 10 m and attempted to reacquire the AprilTag. After detecting it again, the drone restarted the landing procedure.\nWhen the drone descended to approximately 0.5 m above the AprilTag, we pulled the AprilTag away from underneath the drone. The drone then landed on the ground.",
+      "action": "",
+      "result": "Pass"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 5,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GNSS-Denied Mode: AprilTag Detected but Landing Not Initiated",
+      "equipment": [
+        "refly-sf-032",
+        "battery 39"
+      ],
+      "dateTime": "2026-10-19T13:10",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed another flight and climbed to 10 m. The drone was moved slightly to the left and its yaw orientation was adjusted. GNSS-Denied mode was then enabled, and a landing command was issued from the computer.\nThe drone moved above the AprilTag and detected it, but the landing procedure did not start.\nI then reduced the altitude slightly, moved the drone further to the left, and adjusted its yaw orientation again.\nAfter approximately one minute, the drone began drifting autonomously to the left while losing altitude.\nTo recover control, I switched back to GPS mode, selected Manual mode, and landed the drone safely.",
+      "anomalies": "The drone began drifting autonomously to the left while losing altitude.",
+      "action": "To recover control, I switched back to GPS mode, selected Manual mode, and landed the drone safely.",
+      "result": "Fail"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 6,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GNSS-Denied Mode: Landing Command Not Executed",
+      "equipment": [
+        "refly-sf-032",
+        "battery 39"
+      ],
+      "dateTime": "2026-10-19T13:22",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed another flight, climbing to 8 m. The drone was moved slightly to the left, and its yaw orientation was adjusted before enabling GNSS-Denied mode.\nA landing command was issued from the computer, but the drone remained at approximately 8 m altitude and did not initiate the landing procedure.\nI switched back to GPS mode, selected Manual mode, and landed the drone safely.",
+      "anomalies": "The drone did not initiate the landing",
+      "action": "I switched back to GPS mode, selected Manual mode, and landed the drone safely.",
+      "result": "Fail"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 7,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GNSS Denied landing. Repeated Aborted Landing Attempts",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T14:25",
+      "duration": "3min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "During this flight, the drone climbed to 10 m. Its position was shifted slightly to the left, and its yaw orientation was adjusted.\nThe drone moved above the AprilTag and began descending. However, at approximately 20 cm above the ground, it climbed back to 10 m.\nThis sequence occurred three times. Following the third attempt, the drone climbed to 30 m and remained at that altitude.\nI switched back to GPS mode, selected Manual mode, and landed the drone safely.",
+      "anomalies": "The drone climbed to 30 m and remained at that altitude.",
+      "action": "I switched back to GPS mode, selected Manual mode, and landed the drone safely.",
+      "result": "Fail"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 8,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GPS Mode: Offboard Mode Controller and Tective MAVLink Update",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T14:40",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed another flight in GPS mode, climbing to 10 m.\nBefore the flight, the Offboard mode controller was changed and an update was applied to Tective MAVLink.\nThe drone moved above the AprilTag but then climbed to 30 m and remained there.\nI took manual control and landed the drone safely.",
+      "anomalies": "The drone climbed to 30 m and remained there.",
+      "action": "I took manual control and landed the drone safely.",
+      "result": "Fail"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 9,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GPS Mode: Successful Landing Following Software Changes",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T14:50",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed another flight using the changes introduced before the previous flight.\nThe drone climbed to 10 m. I then moved it slightly and adjusted its yaw orientation.\nAlmost immediately, the drone moved above the AprilTag and landed autonomously.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 10,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GPS Mode: Two Additional Successful Landings",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T14:53",
+      "duration": "3min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed two additional flights using a procedure similar to the previous flight.\nIn both flights, the drone autonomously landed on the AprilTag in GPS mode.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 11,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GNSS-Denied Mode: Two Consecutive Autonomous Landings",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T15:13",
+      "duration": "",
+      "modes": [],
+      "mission": "Performed two consecutive flight/landing cycles without returning the drone and land it between the two attempts.\nFor each attempt, the drone climbed to 10 m, was moved slightly to the left, and had its yaw orientation adjusted before GNSS-Denied mode was enabled.\nA landing command was then issued from the computer.\nOn both attempts, the drone moved above the AprilTag and landed autonomously.\nHowever, neither landing was precisely centred on the AprilTag.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 12,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GNSS-Denied Mode: Initial Forward Drift",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T15:50",
+      "duration": "1min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "",
+      "anomalies": "Performed another flight at 10 m altitude. The drone was moved slightly to the left, and its yaw orientation was adjusted.\nThe drone initially began drifting forward.\nI switched to Manual mode and repositioned it to approximately its previous position, almost directly above the AprilTag. I then enabled GNSS-Denied mode again.\nThe drone subsequently completed the landing autonomously.",
+      "action": "",
+      "result": "Pass with observations"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 13,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GNSS-Denied Mode: Aborted Descent and Recovery",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T16:00",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed a flight using the same procedure as the previous attempt.\nThe drone began its landing approach but climbed back to approximately 14 m when it was around 20 cm above the ground.\nIt subsequently attempted the landing again and completed it autonomously.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass with observations"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 14,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "GNSS-Denied Mode: Aborted Descent to 16 m",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T16:03",
+      "duration": "2min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed another flight using the same procedure as the previous attempt.\nDuring the landing process, the drone climbed to approximately 16 m before successfully completing the landing autonomously.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass with observations"
+    },
+    {
+      "vehiclePlate": "",
+      "location": "Unmanned Valley / Field 10",
+      "operator": "John",
+      "observer": "Lorenzo",
+      "category": "Multirotor UAVs",
+      "weather": "temperature : 15 Celcius wind : 3 btf-West-Gusts 30 km/h Clouds : Cloudy",
+      "logName": "",
+      "captureName": "",
+      "attachments": [],
+      "number": 15,
+      "objectiveType": "April Tag Landing test",
+      "objectiveType2": "GNSS Denied",
+      "objective": "Three Additional GNSS-Denied Landing Attempts",
+      "equipment": [
+        "refly-sf-032",
+        "battery 43"
+      ],
+      "dateTime": "2026-10-19T16:10",
+      "duration": "4min",
+      "modes": [
+        "Posctl"
+      ],
+      "mission": "Performed three additional flights using a procedure similar to the previous attempt.\nAttempt 1: The drone landed autonomously.\nAttempt 2: The drone landed autonomously.\nAttempt 3: The drone initially climbed to approximately 14 m, attempted the landing again, and then landed autonomously.",
+      "anomalies": "",
+      "action": "",
+      "result": "Pass with observations"
+    }
+  ]
+}

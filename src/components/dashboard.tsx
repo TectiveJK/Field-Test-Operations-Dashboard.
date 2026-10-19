@@ -32,12 +32,13 @@ import {
   skippedPlanCarryover,
   todayRuns,
 } from "@/lib/selectors";
+import { summarizeReporter } from "@/lib/reporter-import";
 import { summarizeSim } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { GO_DECISIONS, isAirframe, type GoDecision } from "@/lib/types";
 
 export function Dashboard() {
-  const { state, lastSim, setDecision } = useHub();
+  const { state, lastSim, lastReporter, setDecision } = useHub();
   const [reason, setReason] = useState(state.decisionReason);
   const kpi = counts(state);
   const plan = activePlan(state);
@@ -48,6 +49,7 @@ export function Dashboard() {
   const summary = dailySummary(state);
   const drones = state.drones.filter(isAirframe);
   const sim = summarizeSim(lastSim);
+  const field = summarizeReporter(lastReporter);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
@@ -55,7 +57,7 @@ export function Dashboard() {
         <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Today</h2>
           <p className="mt-1 text-sm text-slate-600">
-            GO / NO-GO, last SIM run, and the three questions for the day.
+            GO / NO-GO, last field report, last SIM run, and the three questions for the day.
           </p>
         </div>
         <ExportPdfButton page="today" />
@@ -114,44 +116,90 @@ export function Dashboard() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-        {sim ? (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">{sim.name}</p>
-              <p className="text-xs text-slate-600">
-                {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
-                {sim.tester ? ` · ${sim.tester}` : ""}
-                {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+      <section className="grid gap-3 xl:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+          {field ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">
+                  LAST FIELD REPORT
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {field.location || "Drone Flight Test Reporter"}
+                </p>
+                <p className="text-xs text-slate-600">
+                  {field.date ? formatDate(field.date) : "Date not set"}
+                  {field.operator ? ` · ${field.operator}` : ""}
+                  {field.observer ? ` · ${field.observer}` : ""}
+                  {` · ${field.passed} pass / ${field.observations} observations / ${field.failed} fail / ${field.aborted} aborted of ${field.scored} scored`}
+                </p>
+                {field.conclusion ? (
+                  <p className="mt-1 text-xs text-slate-600">{field.conclusion}</p>
+                ) : null}
+              </div>
+              <div className="min-w-0 sm:max-w-xs sm:text-right">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">OVERALL</p>
+                <div className="mt-1 flex sm:justify-end">
+                  <StatusBadge value={field.overall} />
+                </div>
+                {field.equipment.length ? (
+                  <p className="mt-1 text-[11px] text-slate-600">{field.equipment.join(", ")}</p>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">
+                LAST FIELD REPORT
+              </p>
+              <p className="mt-1 text-sm text-slate-700">
+                No shared field report yet. After you save a report in Drone Flight Test Reporter,
+                open this hub on the laptop in the same browser (while online). This phone then
+                picks up those flights, Fail items, and the overall result.
               </p>
             </div>
-            <div className="min-w-0 sm:max-w-md sm:text-right">
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SUCCESSFUL .DEB</p>
-              {sim.artifacts.length > 0 ? (
-                <ul className="mt-1 space-y-0.5">
-                  {sim.artifacts.map((item) => (
-                    <li key={`${item.packageName}-${item.filename}`} className="text-[11px] text-slate-700">
-                      <span className="text-slate-500">{item.packageName}</span>
-                      <span className="block truncate font-mono">{item.filename}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-1 text-xs text-slate-600">No .deb names on that run.</p>
-              )}
+          )}
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+          {sim ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{sim.name}</p>
+                <p className="text-xs text-slate-600">
+                  {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
+                  {sim.tester ? ` · ${sim.tester}` : ""}
+                  {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+                </p>
+              </div>
+              <div className="min-w-0 sm:max-w-md sm:text-right">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SUCCESSFUL .DEB</p>
+                {sim.artifacts.length > 0 ? (
+                  <ul className="mt-1 space-y-0.5">
+                    {sim.artifacts.map((item) => (
+                      <li key={`${item.packageName}-${item.filename}`} className="text-[11px] text-slate-700">
+                        <span className="text-slate-500">{item.packageName}</span>
+                        <span className="block truncate font-mono">{item.filename}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-xs text-slate-600">No .deb names on that run.</p>
+                )}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div>
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
-            <p className="mt-1 text-sm text-slate-700">
-              No shared SIM snapshot yet. After a SIM run, open this hub on the laptop in the same
-              browser as SIM Flight Testing (while online). This phone then picks up that run, FAIL /
-              BLOCKED items, and package names.
-            </p>
-          </div>
-        )}
+          ) : (
+            <div>
+              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
+              <p className="mt-1 text-sm text-slate-700">
+                No shared SIM snapshot yet. After a SIM run, open this hub on the laptop in the same
+                browser as SIM Flight Testing (while online). This phone then picks up that run, FAIL /
+                BLOCKED items, and package names.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -221,9 +269,9 @@ export function Dashboard() {
         <QuestionCard index="2" title="What is still unresolved?" href="/issues">
           {issues.length === 0 ? (
             <Empty>
-              {sim
-                ? `Last SIM run (${sim.name}) had no FAIL or BLOCKED missions. Maintenance Assistant still has none stored.`
-                : "No open issues from the last SIM run or Maintenance Assistant."}
+              {field || sim
+                ? "Last field report and SIM run left no open Fail / BLOCKED items. Maintenance Assistant still has none stored."
+                : "No open issues from the last field report, SIM run, or Maintenance Assistant."}
             </Empty>
           ) : (
             <ul className="divide-y">
@@ -320,7 +368,9 @@ export function Dashboard() {
         <Card className="bg-white">
           <CardHeader className="border-b">
             <CardTitle>Latest results</CardTitle>
-            <CardDescription>Runs recorded in this hub against Reporter airframes and SIM cases</CardDescription>
+            <CardDescription>
+              Today&apos;s field flights from Drone Flight Test Reporter, plus SIM cases recorded in this hub
+            </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {runs.length === 0 ? (

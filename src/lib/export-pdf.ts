@@ -15,6 +15,7 @@ import {
   todayRuns,
   upcomingPlan,
 } from "@/lib/selectors";
+import { summarizeReporter, type ReporterStore } from "@/lib/reporter-import";
 import { summarizeSim, type SimStore } from "@/lib/sim-import";
 import { isAirframe, type Drone, type HubState } from "@/lib/types";
 import { APP_VERSION } from "@/lib/version";
@@ -64,6 +65,37 @@ function fleetSection(drone: Drone): FleetSection {
   return "Aircraft";
 }
 
+function reporterSections(lastReporter: ReporterStore | null): PdfSection[] {
+  const field = summarizeReporter(lastReporter);
+  if (!field) {
+    return [
+      {
+        heading: "Last field report",
+        empty: "No shared Drone Flight Test Reporter campaign in this hub.",
+      },
+    ];
+  }
+  return [
+    {
+      heading: "Last field report",
+      rows: [
+        { label: "Site", value: blank(field.location) },
+        { label: "When", value: field.date ? when(field.date) : "Date not set" },
+        { label: "Responsible", value: blank(field.operator) },
+        { label: "Robotics", value: blank(field.observer) },
+        { label: "Overall", value: field.overall },
+        {
+          label: "Score",
+          value: `${field.passed} pass / ${field.observations} observations / ${field.failed} fail / ${field.aborted} aborted of ${field.scored} scored`,
+        },
+        { label: "Equipment", value: field.equipment.join(", ") || "—" },
+        { label: "Weather", value: blank(field.weather) },
+        { label: "Conclusion", value: blank(field.conclusion) },
+      ],
+    },
+  ];
+}
+
 function simSections(lastSim: SimStore | null): PdfSection[] {
   const sim = summarizeSim(lastSim);
   if (!sim) {
@@ -99,7 +131,11 @@ function simSections(lastSim: SimStore | null): PdfSection[] {
   ];
 }
 
-function todaySections(state: HubState, lastSim: SimStore | null): PdfSection[] {
+function todaySections(
+  state: HubState,
+  lastSim: SimStore | null,
+  lastReporter: ReporterStore | null
+): PdfSection[] {
   const kpi = counts(state);
   const plan = activePlan(state);
   const skipped = skippedPlanCarryover(state);
@@ -125,6 +161,7 @@ function todaySections(state: HubState, lastSim: SimStore | null): PdfSection[] 
         { label: "Ready for retest", value: String(kpi.readyRetest) },
       ],
     },
+    ...reporterSections(lastReporter),
     ...simSections(lastSim),
     plan.length
       ? {
@@ -271,9 +308,14 @@ function planSections(state: HubState): PdfSection[] {
   return sections;
 }
 
-function testsSections(state: HubState, lastSim: SimStore | null): PdfSection[] {
+function testsSections(
+  state: HubState,
+  lastSim: SimStore | null,
+  lastReporter: ReporterStore | null
+): PdfSection[] {
   const history = [...state.runs].sort((a, b) => b.startedAt.localeCompare(a.startedAt));
   return [
+    ...reporterSections(lastReporter),
     ...simSections(lastSim),
     state.testCases.length
       ? {
@@ -444,7 +486,7 @@ function reportsOnlySections(state: HubState): PdfSection[] {
         }
       : {
           heading: "Flight reports",
-          empty: "No Flight Test Reporter JSON in this hub yet.",
+          empty: "No field or SIM report in this hub yet.",
         },
     state.evidence.length
       ? {
@@ -472,14 +514,19 @@ function reportsOnlySections(state: HubState): PdfSection[] {
   ];
 }
 
-function sectionsFor(page: ExportPage, state: HubState, lastSim: SimStore | null): PdfSection[] {
+function sectionsFor(
+  page: ExportPage,
+  state: HubState,
+  lastSim: SimStore | null,
+  lastReporter: ReporterStore | null
+): PdfSection[] {
   switch (page) {
     case "today":
-      return todaySections(state, lastSim);
+      return todaySections(state, lastSim, lastReporter);
     case "plan":
       return planSections(state);
     case "tests":
-      return testsSections(state, lastSim);
+      return testsSections(state, lastSim, lastReporter);
     case "fleet":
       return fleetSections(state);
     case "issues":
@@ -488,9 +535,9 @@ function sectionsFor(page: ExportPage, state: HubState, lastSim: SimStore | null
       return deploySections(state);
     case "reports":
       return [
-        ...todaySections(state, lastSim),
+        ...todaySections(state, lastSim, lastReporter),
         ...planSections(state),
-        ...testsSections(state, lastSim),
+        ...testsSections(state, lastSim, lastReporter),
         ...fleetSections(state),
         ...issuesSections(state),
         ...deploySections(state),
@@ -499,7 +546,12 @@ function sectionsFor(page: ExportPage, state: HubState, lastSim: SimStore | null
   }
 }
 
-export function exportHubPdf(page: ExportPage, state: HubState, lastSim: SimStore | null) {
+export function exportHubPdf(
+  page: ExportPage,
+  state: HubState,
+  lastSim: SimStore | null,
+  lastReporter: ReporterStore | null = null
+) {
   const title = PAGE_TITLES[page];
   const generated = formatClock(new Date());
   const bytes = buildPdf({
@@ -507,7 +559,7 @@ export function exportHubPdf(page: ExportPage, state: HubState, lastSim: SimStor
     subtitle: [state.site, state.operator, state.decision].filter(Boolean).join(" · "),
     generated,
     version: APP_VERSION,
-    sections: sectionsFor(page, state, lastSim),
+    sections: sectionsFor(page, state, lastSim, lastReporter),
   });
   const stamp = todayIso();
   const slug = page === "reports" ? "All-pages" : title.replaceAll(" ", "-");

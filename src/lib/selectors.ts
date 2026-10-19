@@ -172,7 +172,7 @@ export function dailySummary(state: HubState) {
     `${site}. Decision ${state.decision}.${weather}`,
     done.length || runs.length
       ? `Completed ${done.length} of ${runs.length} recorded runs today (${pass.length} pass / observations, ${fail.length} fail / aborted).`
-      : "No test runs recorded in this hub yet. Record them here, or keep using SIM Flight Testing and the Flight Test Reporter.",
+      : "No test runs recorded in this hub yet. Record them here, or keep using SIM Flight Testing and Drone Flight Test Reporter.",
     open.length
       ? `${open.length} unresolved issues. Ready for retest: ${open
           .filter((issue) => issue.status === "READY FOR RETEST")

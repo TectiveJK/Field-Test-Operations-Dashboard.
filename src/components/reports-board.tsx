@@ -61,9 +61,9 @@ export function ReportsBoard() {
         <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Reports, evidence & knowledge</h2>
           <p className="mt-1 text-sm text-slate-600">
-            The last SIM Flight Testing run is listed here when it has been scored on the laptop
-            or iPhone. Flight Test Reporter JSON is still imported separately. Export PDF on this
-            page writes every hub page into one file.
+            The latest Drone Flight Test Reporter campaign and the last SIM Flight Testing run
+            are listed here when this hub has seen them on the laptop or iPhone. Export PDF on
+            this page writes every hub page into one file.
           </p>
         </div>
         <ExportPdfButton page="reports" />
@@ -73,8 +73,8 @@ export function ReportsBoard() {
         {state.reports.length === 0 ? (
           <Card className="bg-white">
             <CardContent className="py-10 text-center text-sm text-slate-600">
-              No Flight Test Reporter JSON in this hub yet. Reports stay in that app until you
-              import one.
+              No field or SIM report in this hub yet. Save a report in Drone Flight Test Reporter,
+              then open this hub on the laptop in the same browser.
             </CardContent>
           </Card>
         ) : null}

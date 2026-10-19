@@ -47,8 +47,9 @@ export function IssuesBoard() {
         <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Bugs, fixes & retests</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Failed and blocked missions from the last SIM Flight Testing run (shared with the
-            iPhone), plus anything you log here. Maintenance Assistant still has no stored faults.
+            Fail flights from the latest Drone Flight Test Reporter campaign and FAIL / BLOCKED
+            missions from the last SIM run (shared with the iPhone), plus anything you log here.
+            Maintenance Assistant still has no stored faults.
           </p>
         </div>
         <ExportPdfButton page="issues" />
