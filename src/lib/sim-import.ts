@@ -19,6 +19,7 @@ export type SimRun = {
   droneVersion?: string;
   tester?: string;
   startedAt: string;
+  completedAt?: string;
   notes?: string;
   artifacts?: SimArtifact[];
 };
@@ -102,6 +103,7 @@ export function asStore(raw: unknown): SimStore | null {
     }),
     results: (results as SimResult[]).map((result) => ({
       ...result,
+      status: asStatus(result.status),
       notes: result.notes ?? "",
     })),
   };
@@ -120,6 +122,7 @@ export function slimSimStore(store: SimStore | null): SimStore | null {
       droneVersion: run.droneVersion,
       tester: run.tester,
       startedAt: run.startedAt,
+      completedAt: run.completedAt,
       notes: run.notes,
       artifacts: (run.artifacts ?? []).map((item) => ({
         id: item.id,
@@ -153,6 +156,20 @@ export function readSimStore(): SimStore | null {
   } catch {
     return null;
   }
+}
+
+function asStatus(raw: unknown): SimStatus {
+  const value = String(raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replaceAll(" ", "_");
+  if (value === "pass") return "passed";
+  if (value === "fail") return "failed";
+  if (value === "block") return "blocked";
+  if (value === "passed" || value === "failed" || value === "blocked" || value === "not_tested" || value === "not_applicable") {
+    return value;
+  }
+  return "not_tested";
 }
 
 function hubResult(status: SimStatus | string): RunResult | null {
@@ -194,11 +211,58 @@ export function simKey(store: SimStore | null): string {
   return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored.length}|${statusMark(store, run?.id)}|${artifacts}`;
 }
 
-function withLiveArtifacts(winner: SimStore, left: SimStore, right: SimStore): SimStore {
+function resultRank(status: string | undefined) {
+  if (hubResult(status ?? "")) return 2;
+  if (status === "not_applicable") return 1;
+  return 0;
+}
+
+function mergeResults(left: SimResult[], right: SimResult[]): SimResult[] {
+  const map = new Map<string, SimResult>();
+  for (const result of [...right, ...left]) {
+    const key = `${result.testRunId}:${result.testCaseId}`;
+    const previous = map.get(key);
+    if (!previous) {
+      map.set(key, result);
+      continue;
+    }
+    const nextRank = resultRank(result.status);
+    const prevRank = resultRank(previous.status);
+    if (nextRank > prevRank) {
+      map.set(key, result);
+      continue;
+    }
+    if (nextRank === prevRank && (result.executedAt || "") > (previous.executedAt || "")) {
+      map.set(key, result);
+    }
+  }
+  return [...map.values()];
+}
+
+function mergeRuns(left: SimRun[], right: SimRun[]): SimRun[] {
+  const map = new Map<string, SimRun>();
+  for (const run of [...right, ...left]) {
+    const previous = map.get(run.id);
+    if (!previous) {
+      map.set(run.id, run);
+      continue;
+    }
+    map.set(run.id, {
+      ...previous,
+      ...run,
+      completedAt: run.completedAt || previous.completedAt,
+      artifacts: (run.artifacts?.length ? run.artifacts : previous.artifacts) ?? [],
+    });
+  }
+  return [...map.values()].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""));
+}
+
+function mergeStores(left: SimStore, right: SimStore): SimStore {
   const artifacts = preferArtifactList(left, right);
   return {
-    ...winner,
-    artifacts: artifacts.length ? artifacts : liveArtifacts(winner),
+    artifacts: artifacts.length ? artifacts : liveArtifacts(left),
+    runs: mergeRuns(left.runs, right.runs),
+    results: mergeResults(left.results, right.results),
   };
 }
 
@@ -207,24 +271,7 @@ export function preferSim(local: SimStore | null, remote: SimStore | null): SimS
   const right = slimSimStore(remote);
   if (!left) return right;
   if (!right) return left;
-  const localRun = latestScoredSimRun(left);
-  const remoteRun = latestScoredSimRun(right);
-  const localCount = scoredResults(left, localRun?.id).length;
-  const remoteCount = scoredResults(right, remoteRun?.id).length;
-  if (localCount && !remoteCount) return withLiveArtifacts(left, left, right);
-  if (remoteCount && !localCount) return withLiveArtifacts(right, left, right);
-  const localTime = Date.parse(localRun?.startedAt || latestSimRun(left)?.startedAt || "") || 0;
-  const remoteTime = Date.parse(remoteRun?.startedAt || latestSimRun(right)?.startedAt || "") || 0;
-  if (localTime !== remoteTime) {
-    return withLiveArtifacts(localTime > remoteTime ? left : right, left, right);
-  }
-  if (localCount !== remoteCount) {
-    return withLiveArtifacts(localCount > remoteCount ? left : right, left, right);
-  }
-  const localMark = statusMark(left, localRun?.id);
-  const remoteMark = statusMark(right, remoteRun?.id);
-  if (localMark !== remoteMark) return withLiveArtifacts(left, left, right);
-  return withLiveArtifacts(left, left, right);
+  return mergeStores(left, right);
 }
 
 export function artifactsOf(store: SimStore, run: SimRun | null): SimArtifact[] {

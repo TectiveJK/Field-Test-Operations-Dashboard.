@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.24`
+**Current version:** `0.2.25`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app after you publish this Origin commit with `git pull origin main && git push github main` (**0.2.24**). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.24`. Today shows the last **scored** SIM run (it no longer hides those results behind a new SIM run that is still all not-tested) next to the latest field report. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.24` Safari link under iPhone / iPad.
+That is the live GitHub Pages app after you publish this Origin commit with `git pull origin main && git push github main` (**0.2.25**). GitHub `main` and Origin should then be on the same commit. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.25`. Today shows the last **scored** SIM run. If SIM Flight Testing has 20/20 recorded (including fails) and the shared copy is still empty, this hub merges those scores from the laptop SIM store. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.25` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. Publish later Origin commits with `git push github main` so they stay in sync at `0.2.24`.
+The same codebase lives in two places. Publish later Origin commits with `git push github main` so they stay in sync at `0.2.25`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -203,9 +203,9 @@ The iPhone home-screen app cannot read Drone Flight Test Reporter or SIM Flight 
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.24
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.25
 
-Pull down to refresh until the header shows `v0.2.24`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.25`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -253,7 +253,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.24** uses the last **scored** SIM Flight Testing run on Today, Tests, Issues and Reports. A newer SIM run that is still all not-tested no longer hides those results. After you score a run, open this hub on the laptop in the same browser as SIM Flight Testing (while online). Header `v0.2.24`. Publish from the clone with `cd ~/field-test-dashboard` (or wherever you cloned it), then `git pull origin main && git push github main`.
+**0.2.25** merges pass / fail / blocked missions from the SIM Flight Testing laptop store into the shared snapshot, so a 20/20 scored run is not replaced by an earlier all-not-tested copy of the same run. Header `v0.2.25`. After you score a run, open this hub on the laptop in the same browser as SIM Flight Testing (while online), then publish from the clone: `cd ~/field-test-dashboard` (or wherever you cloned it), `git pull origin main && git push github main`.
 
 ## Links
 
