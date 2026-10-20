@@ -117,7 +117,13 @@ function simSections(lastSim: SimStore | null): PdfSection[] {
           label: "Score",
           value: `${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`,
         },
-      ],
+        sim.openRunName
+          ? {
+              label: "Open SIM run",
+              value: `${sim.openRunName} has no pass / fail yet. This PDF uses the last scored run.`,
+            }
+          : null,
+      ].filter((row): row is { label: string; value: string } => Boolean(row)),
     },
     sim.artifacts.length
       ? {

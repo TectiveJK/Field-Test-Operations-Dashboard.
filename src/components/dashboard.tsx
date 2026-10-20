@@ -172,6 +172,13 @@ export function Dashboard() {
                   {sim.tester ? ` · ${sim.tester}` : ""}
                   {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
                 </p>
+                {sim.openRunName ? (
+                  <p className="mt-1 text-xs text-amber-800">
+                    {sim.openRunName} is open in SIM Flight Testing with no pass / fail yet. This
+                    card shows the last scored run. Open this hub on the laptop in the same browser
+                    as SIM after you score it.
+                  </p>
+                ) : null}
               </div>
               <div className="min-w-0 sm:max-w-md sm:text-right">
                 <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SUCCESSFUL .DEB</p>

@@ -98,6 +98,12 @@ export function TestsBoard() {
                   {sim.tester ? ` · ${sim.tester}` : ""}
                   {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
                 </p>
+                {sim.openRunName ? (
+                  <p className="text-xs text-amber-800">
+                    {sim.openRunName} is open in SIM with no pass / fail yet. Showing the last scored
+                    run. Open this hub on the laptop in the same browser as SIM after you score it.
+                  </p>
+                ) : null}
                 {sim.artifacts.length > 0 ? (
                   <ul className="space-y-1">
                     {sim.artifacts.map((item) => (

@@ -155,19 +155,43 @@ export function readSimStore(): SimStore | null {
   }
 }
 
+function hubResult(status: SimStatus | string): RunResult | null {
+  if (status === "passed") return "Pass";
+  if (status === "failed") return "Fail";
+  if (status === "blocked") return "Blocked";
+  return null;
+}
+
+function scoredResults(store: SimStore, runId: string | undefined) {
+  if (!runId) return [];
+  return store.results.filter((result) => result.testRunId === runId && hubResult(result.status) !== null);
+}
+
+function statusMark(store: SimStore, runId: string | undefined) {
+  return scoredResults(store, runId)
+    .map((result) => `${result.testCaseId}:${result.status}:${result.notes ?? ""}`)
+    .sort()
+    .join("|");
+}
+
 export function latestSimRun(store: SimStore): SimRun | null {
   if (!store.runs.length) return null;
   return [...store.runs].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""))[0];
 }
 
+export function latestScoredSimRun(store: SimStore): SimRun | null {
+  const ranked = [...store.runs].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""));
+  return ranked.find((run) => scoredResults(store, run.id).length > 0) ?? null;
+}
+
 export function simKey(store: SimStore | null): string {
   if (!store) return "";
-  const run = latestSimRun(store);
-  const scored = store.results.filter((result) => result.testRunId === run?.id).length;
+  const run = latestScoredSimRun(store) ?? latestSimRun(store);
+  const scored = scoredResults(store, run?.id);
   const artifacts = liveArtifacts(store)
     .map((item) => item.filename)
     .join("|");
-  return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored}|${artifacts}`;
+  return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored.length}|${statusMark(store, run?.id)}|${artifacts}`;
 }
 
 function withLiveArtifacts(winner: SimStore, left: SimStore, right: SimStore): SimStore {
@@ -183,22 +207,24 @@ export function preferSim(local: SimStore | null, remote: SimStore | null): SimS
   const right = slimSimStore(remote);
   if (!left) return right;
   if (!right) return left;
-  const localRun = latestSimRun(left);
-  const remoteRun = latestSimRun(right);
-  const localTime = Date.parse(localRun?.startedAt || "") || 0;
-  const remoteTime = Date.parse(remoteRun?.startedAt || "") || 0;
+  const localRun = latestScoredSimRun(left);
+  const remoteRun = latestScoredSimRun(right);
+  const localCount = scoredResults(left, localRun?.id).length;
+  const remoteCount = scoredResults(right, remoteRun?.id).length;
+  if (localCount && !remoteCount) return withLiveArtifacts(left, left, right);
+  if (remoteCount && !localCount) return withLiveArtifacts(right, left, right);
+  const localTime = Date.parse(localRun?.startedAt || latestSimRun(left)?.startedAt || "") || 0;
+  const remoteTime = Date.parse(remoteRun?.startedAt || latestSimRun(right)?.startedAt || "") || 0;
   if (localTime !== remoteTime) {
     return withLiveArtifacts(localTime > remoteTime ? left : right, left, right);
   }
-  const localCount = left.results.filter((result) => result.testRunId === localRun?.id).length;
-  const remoteCount = right.results.filter((result) => result.testRunId === remoteRun?.id).length;
   if (localCount !== remoteCount) {
     return withLiveArtifacts(localCount > remoteCount ? left : right, left, right);
   }
-  const localArts = liveArtifacts(left).map((item) => item.filename).join("|");
-  const remoteArts = liveArtifacts(right).map((item) => item.filename).join("|");
-  const winner = localArts === remoteArts || localArts.length < remoteArts.length ? right : left;
-  return withLiveArtifacts(winner, left, right);
+  const localMark = statusMark(left, localRun?.id);
+  const remoteMark = statusMark(right, remoteRun?.id);
+  if (localMark !== remoteMark) return withLiveArtifacts(left, left, right);
+  return withLiveArtifacts(left, left, right);
 }
 
 export function artifactsOf(store: SimStore, run: SimRun | null): SimArtifact[] {
@@ -216,15 +242,17 @@ export type SimRunSummary = {
   blocked: number;
   scored: number;
   artifacts: SimArtifact[];
+  openRunName: string;
 };
 
 export function summarizeSim(store: SimStore | null): SimRunSummary | null {
   if (!store) return null;
-  const run = latestSimRun(store);
+  const scoredRun = latestScoredSimRun(store);
+  const latest = latestSimRun(store);
+  const run = scoredRun ?? latest;
   if (!run) return null;
-  const scored = store.results.filter(
-    (result) => result.testRunId === run.id && hubResult(result.status) !== null
-  );
+  const scored = scoredResults(store, run.id);
+  const openRunName = latest && scoredRun && latest.id !== scoredRun.id ? latest.name : "";
   return {
     name: run.name,
     startedAt: run.startedAt,
@@ -234,6 +262,7 @@ export function summarizeSim(store: SimStore | null): SimRunSummary | null {
     blocked: scored.filter((result) => result.status === "blocked").length,
     scored: scored.length,
     artifacts: artifactsOf(store, run),
+    openRunName,
   };
 }
 
@@ -245,7 +274,7 @@ export function buildFromSim(store: SimStore, run: SimRun | null): SoftwareBuild
   const artifacts = artifactsOf(store, run);
   const skyCommand = fileFor(artifacts, "web-ground-control");
   const gcs = fileFor(artifacts, "mission-planner");
-  const autonomyNode = fileFor(artifacts, "tective-simulator");
+  const autonomyNode = fileFor(artifacts, "tective-simulator") || fileFor(artifacts, "autonomy-node");
   if (!skyCommand && !gcs && !autonomyNode) return null;
   const stamp = [skyCommand, gcs, autonomyNode].filter(Boolean).join(" ").replaceAll(/[^a-z0-9]+/gi, "-").slice(0, 56);
   return {
@@ -265,21 +294,14 @@ export function buildFromSim(store: SimStore, run: SimRun | null): SoftwareBuild
   };
 }
 
-function hubResult(status: SimStatus): RunResult | null {
-  if (status === "passed") return "Pass";
-  if (status === "failed") return "Fail";
-  if (status === "blocked") return "Blocked";
-  return null;
-}
-
 function missionOf(id: string) {
   return SUITE.find((item) => item.id === id) ?? null;
 }
 
 export function applySimLastRun(hub: HubState, store: SimStore | null): HubState {
   if (!store) return hub;
-  const run = latestSimRun(store);
-  const build = buildFromSim(store, run);
+  const run = latestScoredSimRun(store);
+  const build = buildFromSim(store, run ?? latestSimRun(store));
   let next = hub;
   if (build) {
     next = {
