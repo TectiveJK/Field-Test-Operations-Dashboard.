@@ -3,6 +3,9 @@ import { isAirframe, type HubState, type Issue, type RunResult, type SoftwareBui
 
 export const SIM_STORE_KEY = "sim-flight-testing-store-v1";
 
+/** Gitea SIM Flight Testing app on this computer (desktop icon / npm run open). */
+export const SIM_APP_URL = "http://127.0.0.1:43147";
+
 type SimStatus = "passed" | "failed" | "blocked" | "not_tested" | "not_applicable";
 
 export type SimArtifact = {
@@ -153,6 +156,32 @@ export function readSimStore(): SimStore | null {
   } catch {
     return null;
   }
+}
+
+function storeFromSimPayload(raw: unknown): SimStore | null {
+  if (!raw || typeof raw !== "object") return null;
+  const data = raw as { sim?: unknown; store?: unknown };
+  return asStore(data.sim) ?? asStore(data.store) ?? asStore(raw);
+}
+
+/** Live results from the Gitea SIM app running on this computer. */
+export async function fetchLocalSimStore(): Promise<SimStore | null> {
+  if (typeof window === "undefined") return null;
+  const urls = [`${SIM_APP_URL}/api/hub-snapshot`, `${SIM_APP_URL}/api/data`];
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(2500),
+      });
+      if (!response.ok) continue;
+      const store = slimSimStore(storeFromSimPayload(await response.json()));
+      if (store) return store;
+    } catch {
+      // Sim app is not running on this computer, or this page is HTTPS.
+    }
+  }
+  return null;
 }
 
 export function latestSimRun(store: SimStore): SimRun | null {

@@ -30,9 +30,11 @@ import {
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
 import {
   applySimLastRun,
+  fetchLocalSimStore,
   preferSim,
   readSimStore,
   SIM_STORE_KEY,
+  simKey,
   slimSimStore,
   type SimStore,
 } from "@/lib/sim-import";
@@ -201,12 +203,20 @@ async function refreshAll() {
   refreshing = true;
   try {
     const localSim = slimSimStore(readSimStore());
-    const [upcoming, hardware, remote] = await Promise.all([
+    const localApiSimPromise = fetchLocalSimStore().catch(() => null);
+    const restPromise = Promise.all([
       fetchUpcomingEntries().catch(() => null),
       fetchHardwareItems().catch(() => readSharedHardware()?.items ?? null),
       fetchHubSync().catch(() => null),
     ]);
-    const chosenSim = preferSim(localSim, remote?.sim ?? null);
+    const localApiSim = await localApiSimPromise;
+    const earlySim = preferSim(localSim, localApiSim);
+    if (simKey(earlySim) !== simKey(lastSim)) {
+      lastSim = earlySim;
+      write((current) => applySimLastRun(current, earlySim), false);
+    }
+    const [upcoming, hardware, remote] = await restPromise;
+    const chosenSim = preferSim(earlySim, remote?.sim ?? null);
     lastSim = chosenSim;
     const remoteHubNewer = Boolean(remote?.updatedAt && remote.updatedAt > (localUpdatedAt || ""));
     write((current) => {

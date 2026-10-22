@@ -136,9 +136,9 @@ export function Dashboard() {
           <div>
             <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
             <p className="mt-1 text-sm text-slate-700">
-              No shared SIM snapshot yet. After a SIM run, open this hub on the laptop in the same
-              browser as SIM Flight Testing (while online). This phone then picks up that run, FAIL /
-              BLOCKED items, and package names.
+              No shared SIM snapshot yet. Start SIM Flight Testing on this computer (desktop icon or
+              the module below). After a scored run, this hub shows PASS / FAIL / BLOCKED and package
+              names. Other devices pick up that snapshot from the shared list.
             </p>
           </div>
         )}

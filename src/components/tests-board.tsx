@@ -41,8 +41,8 @@ export function TestsBoard() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight">Regression tests & runs</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            Catalog from SIM Flight Testing: 20 SkyCommand simulator missions. Record a run
-            here if you want it on this hub. Per-tester SIM results stay in that app.
+            Catalog from the Gitea SIM Flight Testing app: 20 SkyCommand simulator missions.
+            Record a run here if you want it on this hub. Per-tester SIM results stay in that app.
           </p>
         </div>
         <RecordRunDialog />
@@ -76,8 +76,8 @@ export function TestsBoard() {
             </div>
           ) : (
             <p>
-              Open this hub on the laptop in the same browser as SIM Flight Testing after a scored
-              run. The iPhone then loads that snapshot from the shared list.
+              Start SIM Flight Testing on this computer. After a scored run, this hub shows that
+              snapshot. Other devices then load it from the shared list.
             </p>
           )}
         </CardContent>

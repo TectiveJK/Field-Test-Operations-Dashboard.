@@ -1,5 +1,6 @@
 import { applyHardware, SNAPSHOT_HARDWARE } from "@/lib/hardware";
 import { SNAPSHOT_ENTRIES, planFromUpcoming } from "@/lib/upcoming";
+import { SIM_APP_URL } from "@/lib/sim-import";
 import { SUITE } from "@/lib/sim-suite";
 import { isAirframe, type ChecklistItem, type Drone, type HubState, type SoftwareBuild, type TestCase } from "@/lib/types";
 
@@ -70,8 +71,8 @@ export const EXISTING_APPS = [
   {
     name: "SIM Flight Testing",
     area: "Simulator testing",
-    href: "https://tectivejk.github.io/sim-testing-app/",
-    note: "20 SkyCommand simulator missions. The last run, including FAIL / BLOCKED items and .deb artifact names, is copied onto this hub and shared with other devices.",
+    href: SIM_APP_URL,
+    note: "Gitea SIM app on this computer (20 SkyCommand simulator missions). Scored runs, FAIL / BLOCKED items, and .deb names are copied onto this hub and shared with other devices.",
   },
   {
     name: "Hardware locator",

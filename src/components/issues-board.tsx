@@ -76,8 +76,8 @@ export function IssuesBoard() {
       {rows.length === 0 ? (
         <Card className="bg-white">
           <CardContent className="py-12 text-center text-sm text-slate-600">
-            No issues in this view. Open this hub on github.io in the same browser as SIM Flight
-            Testing so the last run can be read, or log an issue from the header.
+            No issues in this view. Start SIM Flight Testing on this computer so the last FAIL /
+            BLOCKED run can be read, or log an issue from the header.
           </CardContent>
         </Card>
       ) : (
