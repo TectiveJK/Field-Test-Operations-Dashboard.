@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { RecordRunDialog } from "@/components/record-run-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,13 +15,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate, formatTime } from "@/lib/format";
 import { buildById, droneById, runsForCase } from "@/lib/selectors";
+import { summarizeReporter } from "@/lib/reporter-import";
 import { summarizeSim } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { RUN_RESULTS, type RunResult } from "@/lib/types";
 
 export function TestsBoard() {
-  const { state, lastSim, setRunResult } = useHub();
+  const { state, lastSim, lastReporter, setRunResult } = useHub();
   const sim = summarizeSim(lastSim);
+  const field = summarizeReporter(lastReporter);
   const [caseId, setCaseId] = useState(state.testCases[0]?.id ?? "");
   const runs = runsForCase(state, caseId);
   const [left, setLeft] = useState(runs[0]?.id ?? "");
@@ -37,51 +40,92 @@ export function TestsBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Regression tests & runs</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            Catalog from the Gitea SIM Flight Testing app: 20 SkyCommand simulator missions.
-            Record a run here if you want it on this hub. Per-tester SIM results stay in that app.
+            Field flights from Drone Flight Test Reporter plus the Gitea SIM Flight Testing
+            catalog (20 SkyCommand simulator missions). Record an extra run here if you want
+            it on this hub. Per-tester SIM results stay in that app.
           </p>
         </div>
-        <RecordRunDialog />
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <ExportPdfButton page="tests" />
+          <RecordRunDialog />
+        </div>
       </div>
 
-      <Card className="bg-white">
-        <CardHeader>
-          <CardDescription>Last SIM Flight Testing run</CardDescription>
-          <CardTitle>{sim ? sim.name : "No shared SIM snapshot yet"}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-slate-700">
-          {sim ? (
-            <div className="grid gap-2">
+      <div className="grid gap-3 xl:grid-cols-2">
+        <Card className="bg-white">
+          <CardHeader>
+            <CardDescription>Last Drone Flight Test Reporter campaign</CardDescription>
+            <CardTitle>{field ? field.location || field.title : "No shared field report yet"}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-slate-700">
+            {field ? (
+              <div className="grid gap-2">
+                <p>
+                  {field.date ? formatDate(field.date) : "Date not set"}
+                  {field.operator ? ` · ${field.operator}` : ""}
+                  {field.observer ? ` · ${field.observer}` : ""}
+                  {` · ${field.passed} pass / ${field.observations} observations / ${field.failed} fail of ${field.scored} scored`}
+                </p>
+                <p className="text-xs text-slate-500">
+                  Overall {field.overall}
+                  {field.equipment.length ? ` · ${field.equipment.join(", ")}` : ""}
+                </p>
+                {field.conclusion ? <p className="text-xs text-slate-500">{field.conclusion}</p> : null}
+              </div>
+            ) : (
               <p>
-                {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
-                {sim.tester ? ` · ${sim.tester}` : ""}
-                {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+                Open this hub on the laptop in the same browser as Drone Flight Test Reporter after
+                you save a report. The iPhone then loads that campaign from the shared list.
               </p>
-              {sim.artifacts.length > 0 ? (
-                <ul className="space-y-1">
-                  {sim.artifacts.map((item) => (
-                    <li key={`${item.packageName}-${item.filename}`} className="text-xs">
-                      <span className="text-slate-500">{item.packageName}</span>
-                      <span className="block font-mono">{item.filename}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-slate-500">No .deb names on that run.</p>
-              )}
-            </div>
-          ) : (
-            <p>
-              Start SIM Flight Testing on this computer. After a scored run, this hub shows that
-              snapshot. Other devices then load it from the shared list.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white">
+          <CardHeader>
+            <CardDescription>Last SIM Flight Testing run</CardDescription>
+            <CardTitle>{sim ? sim.name : "No shared SIM snapshot yet"}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-slate-700">
+            {sim ? (
+              <div className="grid gap-2">
+                <p>
+                  {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
+                  {sim.tester ? ` · ${sim.tester}` : ""}
+                  {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+                </p>
+                {sim.openRunName ? (
+                  <p className="text-xs text-amber-800">
+                    {sim.openRunName} is open in SIM with no pass / fail yet. Showing the last scored
+                    run. Start SIM Flight Testing on this computer after you score it.
+                  </p>
+                ) : null}
+                {sim.artifacts.length > 0 ? (
+                  <ul className="space-y-1">
+                    {sim.artifacts.map((item) => (
+                      <li key={`${item.packageName}-${item.filename}`} className="text-xs">
+                        <span className="text-slate-500">{item.packageName}</span>
+                        <span className="block font-mono">{item.filename}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-slate-500">No .deb names on that run.</p>
+                )}
+              </div>
+            ) : (
+              <p>
+                Start SIM Flight Testing on this computer. After a scored run, this hub shows that
+                snapshot. Other devices then load it from the shared list.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Tabs defaultValue="library">
         <TabsList>

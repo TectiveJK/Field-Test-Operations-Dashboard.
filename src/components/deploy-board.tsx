@@ -1,5 +1,6 @@
 "use client";
 
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { HardwareDialog } from "@/components/hardware-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -14,16 +15,19 @@ export function DeployBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">Field deployment checklist</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Aircraft and packs from the Flight Test Reporter equipment list, with live locations
-          from the Hardware locator. Update a location here and the locator app updates too.
-          Nothing is pre-ticked. Timestamps stay on this device.
-        </p>
-        <p className="mt-2 text-sm font-medium text-slate-800">
-          {remaining === 0 ? "Checklist complete." : `${remaining} items still open.`}
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl font-semibold tracking-tight">Field deployment checklist</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Aircraft and packs from the Flight Test Reporter equipment list, with live locations
+            from the Hardware locator. Update a location here and the locator app updates too.
+            Nothing is pre-ticked. Timestamps stay on this device.
+          </p>
+          <p className="mt-2 text-sm font-medium text-slate-800">
+            {remaining === 0 ? "Checklist complete." : `${remaining} items still open.`}
+          </p>
+        </div>
+        <ExportPdfButton page="deploy" />
       </div>
 
       {groups.map((group) => (

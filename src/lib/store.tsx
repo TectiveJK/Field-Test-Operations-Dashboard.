@@ -29,6 +29,14 @@ import {
 } from "@/lib/hub-sync";
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
 import {
+  applyReporterDraft,
+  preferReporter,
+  readReporterStore,
+  REPORTER_STORE_KEY,
+  SNAPSHOT_REPORTER,
+  type ReporterStore,
+} from "@/lib/reporter-import";
+import {
   applySimLastRun,
   fetchLocalSimStore,
   preferSim,
@@ -63,6 +71,7 @@ type StoreApi = {
   ready: boolean;
   state: HubState;
   lastSim: SimStore | null;
+  lastReporter: ReporterStore | null;
   setDecision: (decision: GoDecision, reason: string) => void;
   setPlanStatus: (id: string, status: PlanStatus) => void;
   setRunResult: (id: string, result: RunResult, notes?: string) => void;
@@ -118,6 +127,7 @@ const listeners = new Set<() => void>();
 let memory: HubState = seedState;
 let clientAttached = false;
 let lastSim: SimStore | null = null;
+let lastReporter: ReporterStore | null = SNAPSHOT_REPORTER;
 let localUpdatedAt = "";
 let publishTimer: number | null = null;
 let refreshing = false;
@@ -160,7 +170,8 @@ function subscribe(listener: () => void) {
     clientAttached = true;
     readMeta();
     lastSim = slimSimStore(readSimStore());
-    const persisted = applySimLastRun(readPersisted(), lastSim);
+    lastReporter = preferReporter(readReporterStore(), null);
+    const persisted = applyReporterDraft(applySimLastRun(readPersisted(), lastSim), lastReporter);
     const shared = readSharedHardware();
     const live = shared?.items.length
       ? shared.items
@@ -187,7 +198,13 @@ function attachLiveRefresh() {
   window.addEventListener("pageshow", () => void refreshAll());
   document.addEventListener("visibilitychange", onVisible);
   window.addEventListener("storage", (event) => {
-    if (event.key === SIM_STORE_KEY || event.key === STORAGE_KEY) void refreshAll();
+    if (
+      event.key === SIM_STORE_KEY ||
+      event.key === REPORTER_STORE_KEY ||
+      event.key === STORAGE_KEY
+    ) {
+      void refreshAll();
+    }
   });
   listenSharedHardware((items) => {
     cacheHardware(items, false);
@@ -203,6 +220,7 @@ async function refreshAll() {
   refreshing = true;
   try {
     const localSim = slimSimStore(readSimStore());
+    const localReporter = readReporterStore();
     const localApiSimPromise = fetchLocalSimStore().catch(() => null);
     const restPromise = Promise.all([
       fetchUpcomingEntries().catch(() => null),
@@ -217,13 +235,16 @@ async function refreshAll() {
     }
     const [upcoming, hardware, remote] = await restPromise;
     const chosenSim = preferSim(earlySim, remote?.sim ?? null);
+    const chosenReporter = preferReporter(localReporter, remote?.reporter ?? null);
     lastSim = chosenSim;
+    lastReporter = chosenReporter;
     const remoteHubNewer = Boolean(remote?.updatedAt && remote.updatedAt > (localUpdatedAt || ""));
     write((current) => {
       let next = current;
       if (upcoming) next = { ...next, plan: planFromUpcoming(upcoming, next.plan) };
       if (remoteHubNewer) next = applyRemoteHub(next, remote?.hub ?? null);
       next = applySimLastRun(next, chosenSim);
+      next = applyReporterDraft(next, chosenReporter);
       if (hardware) next = applyHardware(next, hardware);
       return next;
     }, false);
@@ -231,7 +252,9 @@ async function refreshAll() {
       localUpdatedAt = remote.updatedAt;
       persist(memory);
     }
-    if (shouldPublish(localUpdatedAt, chosenSim, remote)) schedulePublish(remote);
+    if (shouldPublish(localUpdatedAt, chosenSim, remote, localReporter ?? chosenReporter)) {
+      schedulePublish(remote);
+    }
   } finally {
     refreshing = false;
   }
@@ -252,11 +275,14 @@ async function pushShared(knownRemote?: HubSyncPayload | null) {
     const remote = knownRemote === undefined ? await fetchHubSync().catch(() => null) : knownRemote;
     const deviceSim = preferSim(readSimStore(), lastSim);
     const sim = preferSim(deviceSim, remote?.sim ?? null);
+    const deviceReporter = preferReporter(readReporterStore(), lastReporter);
+    const reporter = preferReporter(deviceReporter, remote?.reporter ?? null);
     lastSim = sim;
-    if (!shouldPublish(localUpdatedAt, deviceSim, remote)) return;
+    lastReporter = reporter;
+    if (!shouldPublish(localUpdatedAt, deviceSim, remote, deviceReporter)) return;
     const updatedAt = localUpdatedAt || new Date().toISOString();
     localUpdatedAt = updatedAt;
-    await publishHubSync(snapshotForSync(memory, sim, updatedAt));
+    await publishHubSync(snapshotForSync(memory, sim, reporter, updatedAt));
     persist(memory);
   } catch {
     // Stay on the device copy when the shared board is unreachable.
@@ -283,6 +309,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const ready = state !== seedState || clientAttached;
   const sim = lastSim;
+  const reporter = lastReporter;
 
   const setDecision = useCallback((decision: GoDecision, reason: string) => {
     write((current) => ({ ...current, decision, decisionReason: reason }));
@@ -493,7 +520,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     localUpdatedAt = "";
     lastSim = slimSimStore(readSimStore());
-    memory = applyHardware(applySimLastRun(cloneSeed(), lastSim), starterHardware());
+    lastReporter = preferReporter(readReporterStore(), null);
+    memory = applyHardware(
+      applyReporterDraft(applySimLastRun(cloneSeed(), lastSim), lastReporter),
+      starterHardware()
+    );
     persist(memory);
     emit();
     void refreshAll();
@@ -504,6 +535,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ready,
       state,
       lastSim: sim,
+      lastReporter: reporter,
       setDecision,
       setPlanStatus,
       setRunResult,
@@ -523,6 +555,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ready,
       state,
       sim,
+      reporter,
       setDecision,
       setPlanStatus,
       setRunResult,

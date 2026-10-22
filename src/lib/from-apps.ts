@@ -1,4 +1,5 @@
 import { applyHardware, SNAPSHOT_HARDWARE } from "@/lib/hardware";
+import { applyReporterDraft, SNAPSHOT_REPORTER } from "@/lib/reporter-import";
 import { SNAPSHOT_ENTRIES, planFromUpcoming } from "@/lib/upcoming";
 import { SIM_APP_URL } from "@/lib/sim-import";
 import { SUITE } from "@/lib/sim-suite";
@@ -54,7 +55,7 @@ export const EXISTING_APPS = [
     name: "Flight Test Reporter",
     area: "Reporting",
     href: "https://tectivejk.github.io/drone-flight-test-reporter/",
-    note: "Multi-flight PDF / JSON reports. Saved reports stay in that app until you import them here.",
+    note: "Multi-flight field reports. The latest saved report is copied onto this hub (laptop same-origin store, then shared with the iPhone).",
   },
   {
     name: "Maintenance Assistant",
@@ -171,23 +172,26 @@ function checklistFromReporter(): ChecklistItem[] {
 
 export function buildHubState(): HubState {
   return applyHardware(
-    {
-      site: "Tective",
-      decision: "GO",
-      decisionReason: "",
-      weather: "",
-      operator: "John Kokotinis",
-      builds: [simBuild],
-      drones: dronesFromReporter(),
-      testCases: testsFromSim(),
-      runs: [],
-      issues: [],
-      reports: [],
-      evidence: [],
-      plan: planFromUpcoming(SNAPSHOT_ENTRIES),
-      checklist: checklistFromReporter(),
-      knowledge: [],
-    },
+    applyReporterDraft(
+      {
+        site: "Tective",
+        decision: "GO",
+        decisionReason: "",
+        weather: "",
+        operator: "John Kokotinis",
+        builds: [simBuild],
+        drones: dronesFromReporter(),
+        testCases: testsFromSim(),
+        runs: [],
+        issues: [],
+        reports: [],
+        evidence: [],
+        plan: planFromUpcoming(SNAPSHOT_ENTRIES),
+        checklist: checklistFromReporter(),
+        knowledge: [],
+      },
+      SNAPSHOT_REPORTER
+    ),
     SNAPSHOT_HARDWARE
   );
 }

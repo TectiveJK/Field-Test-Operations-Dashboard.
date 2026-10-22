@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { HardwareDialog } from "@/components/hardware-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,8 +50,8 @@ export function FleetBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Fleet, builds & configuration</h2>
           <p className="mt-1 text-sm text-slate-600">
             Airframes, hive, rotator and batteries from the Hardware locator company list. Update a
@@ -58,7 +59,10 @@ export function FleetBoard() {
             service is treated as grounded on airframes.
           </p>
         </div>
-        <HardwareDialog mode="add" triggerVariant="default" />
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <ExportPdfButton page="fleet" />
+          <HardwareDialog mode="add" triggerVariant="default" />
+        </div>
       </div>
 
       <Input

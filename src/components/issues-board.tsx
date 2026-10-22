@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,12 +43,16 @@ export function IssuesBoard() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">Bugs, fixes & retests</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Failed and blocked missions from the last SIM Flight Testing run (shared with the
-          iPhone), plus anything you log here. Maintenance Assistant still has no stored faults.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl font-semibold tracking-tight">Bugs, fixes & retests</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Fail flights from the latest Drone Flight Test Reporter campaign and FAIL / BLOCKED
+            missions from the last SIM run (shared with the iPhone), plus anything you log here.
+            Maintenance Assistant still has no stored faults.
+          </p>
+        </div>
+        <ExportPdfButton page="issues" />
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">

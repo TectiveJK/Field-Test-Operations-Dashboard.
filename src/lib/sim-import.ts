@@ -22,6 +22,7 @@ export type SimRun = {
   droneVersion?: string;
   tester?: string;
   startedAt: string;
+  completedAt?: string;
   notes?: string;
   artifacts?: SimArtifact[];
 };
@@ -105,6 +106,7 @@ export function asStore(raw: unknown): SimStore | null {
     }),
     results: (results as SimResult[]).map((result) => ({
       ...result,
+      status: asStatus(result.status),
       notes: result.notes ?? "",
     })),
   };
@@ -123,6 +125,7 @@ export function slimSimStore(store: SimStore | null): SimStore | null {
       droneVersion: run.droneVersion,
       tester: run.tester,
       startedAt: run.startedAt,
+      completedAt: run.completedAt,
       notes: run.notes,
       artifacts: (run.artifacts ?? []).map((item) => ({
         id: item.id,
@@ -184,26 +187,112 @@ export async function fetchLocalSimStore(): Promise<SimStore | null> {
   return null;
 }
 
+function asStatus(raw: unknown): SimStatus {
+  const value = String(raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replaceAll(" ", "_");
+  if (value === "pass") return "passed";
+  if (value === "fail") return "failed";
+  if (value === "block") return "blocked";
+  if (value === "passed" || value === "failed" || value === "blocked" || value === "not_tested" || value === "not_applicable") {
+    return value;
+  }
+  return "not_tested";
+}
+
+function hubResult(status: SimStatus | string): RunResult | null {
+  if (status === "passed") return "Pass";
+  if (status === "failed") return "Fail";
+  if (status === "blocked") return "Blocked";
+  return null;
+}
+
+function scoredResults(store: SimStore, runId: string | undefined) {
+  if (!runId) return [];
+  return store.results.filter((result) => result.testRunId === runId && hubResult(result.status) !== null);
+}
+
+function statusMark(store: SimStore, runId: string | undefined) {
+  return scoredResults(store, runId)
+    .map((result) => `${result.testCaseId}:${result.status}:${result.notes ?? ""}`)
+    .sort()
+    .join("|");
+}
+
+
 export function latestSimRun(store: SimStore): SimRun | null {
   if (!store.runs.length) return null;
   return [...store.runs].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""))[0];
 }
 
+export function latestScoredSimRun(store: SimStore): SimRun | null {
+  const ranked = [...store.runs].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""));
+  return ranked.find((run) => scoredResults(store, run.id).length > 0) ?? null;
+}
+
 export function simKey(store: SimStore | null): string {
   if (!store) return "";
-  const run = latestSimRun(store);
-  const scored = store.results.filter((result) => result.testRunId === run?.id).length;
+  const run = latestScoredSimRun(store) ?? latestSimRun(store);
+  const scored = scoredResults(store, run?.id);
   const artifacts = liveArtifacts(store)
     .map((item) => item.filename)
     .join("|");
-  return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored}|${artifacts}`;
+  return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored.length}|${statusMark(store, run?.id)}|${artifacts}`;
 }
 
-function withLiveArtifacts(winner: SimStore, left: SimStore, right: SimStore): SimStore {
+function resultRank(status: string | undefined) {
+  if (hubResult(status ?? "")) return 2;
+  if (status === "not_applicable") return 1;
+  return 0;
+}
+
+function mergeResults(left: SimResult[], right: SimResult[]): SimResult[] {
+  const map = new Map<string, SimResult>();
+  for (const result of [...right, ...left]) {
+    const key = `${result.testRunId}:${result.testCaseId}`;
+    const previous = map.get(key);
+    if (!previous) {
+      map.set(key, result);
+      continue;
+    }
+    const nextRank = resultRank(result.status);
+    const prevRank = resultRank(previous.status);
+    if (nextRank > prevRank) {
+      map.set(key, result);
+      continue;
+    }
+    if (nextRank === prevRank && (result.executedAt || "") > (previous.executedAt || "")) {
+      map.set(key, result);
+    }
+  }
+  return [...map.values()];
+}
+
+function mergeRuns(left: SimRun[], right: SimRun[]): SimRun[] {
+  const map = new Map<string, SimRun>();
+  for (const run of [...right, ...left]) {
+    const previous = map.get(run.id);
+    if (!previous) {
+      map.set(run.id, run);
+      continue;
+    }
+    map.set(run.id, {
+      ...previous,
+      ...run,
+      completedAt: run.completedAt || previous.completedAt,
+      artifacts: (run.artifacts?.length ? run.artifacts : previous.artifacts) ?? [],
+    });
+  }
+  return [...map.values()].sort((a, b) => (b.startedAt || "").localeCompare(a.startedAt || ""));
+}
+
+function mergeStores(left: SimStore, right: SimStore): SimStore {
   const artifacts = preferArtifactList(left, right);
   return {
-    ...winner,
-    artifacts: artifacts.length ? artifacts : liveArtifacts(winner),
+    artifacts: artifacts.length ? artifacts : liveArtifacts(left),
+    runs: mergeRuns(left.runs, right.runs),
+    results: mergeResults(left.results, right.results),
   };
 }
 
@@ -212,22 +301,7 @@ export function preferSim(local: SimStore | null, remote: SimStore | null): SimS
   const right = slimSimStore(remote);
   if (!left) return right;
   if (!right) return left;
-  const localRun = latestSimRun(left);
-  const remoteRun = latestSimRun(right);
-  const localTime = Date.parse(localRun?.startedAt || "") || 0;
-  const remoteTime = Date.parse(remoteRun?.startedAt || "") || 0;
-  if (localTime !== remoteTime) {
-    return withLiveArtifacts(localTime > remoteTime ? left : right, left, right);
-  }
-  const localCount = left.results.filter((result) => result.testRunId === localRun?.id).length;
-  const remoteCount = right.results.filter((result) => result.testRunId === remoteRun?.id).length;
-  if (localCount !== remoteCount) {
-    return withLiveArtifacts(localCount > remoteCount ? left : right, left, right);
-  }
-  const localArts = liveArtifacts(left).map((item) => item.filename).join("|");
-  const remoteArts = liveArtifacts(right).map((item) => item.filename).join("|");
-  const winner = localArts === remoteArts || localArts.length < remoteArts.length ? right : left;
-  return withLiveArtifacts(winner, left, right);
+  return mergeStores(left, right);
 }
 
 export function artifactsOf(store: SimStore, run: SimRun | null): SimArtifact[] {
@@ -245,15 +319,17 @@ export type SimRunSummary = {
   blocked: number;
   scored: number;
   artifacts: SimArtifact[];
+  openRunName: string;
 };
 
 export function summarizeSim(store: SimStore | null): SimRunSummary | null {
   if (!store) return null;
-  const run = latestSimRun(store);
+  const scoredRun = latestScoredSimRun(store);
+  const latest = latestSimRun(store);
+  const run = scoredRun ?? latest;
   if (!run) return null;
-  const scored = store.results.filter(
-    (result) => result.testRunId === run.id && hubResult(result.status) !== null
-  );
+  const scored = scoredResults(store, run.id);
+  const openRunName = latest && scoredRun && latest.id !== scoredRun.id ? latest.name : "";
   return {
     name: run.name,
     startedAt: run.startedAt,
@@ -263,6 +339,7 @@ export function summarizeSim(store: SimStore | null): SimRunSummary | null {
     blocked: scored.filter((result) => result.status === "blocked").length,
     scored: scored.length,
     artifacts: artifactsOf(store, run),
+    openRunName,
   };
 }
 
@@ -274,7 +351,7 @@ export function buildFromSim(store: SimStore, run: SimRun | null): SoftwareBuild
   const artifacts = artifactsOf(store, run);
   const skyCommand = fileFor(artifacts, "web-ground-control");
   const gcs = fileFor(artifacts, "mission-planner");
-  const autonomyNode = fileFor(artifacts, "tective-simulator");
+  const autonomyNode = fileFor(artifacts, "tective-simulator") || fileFor(artifacts, "autonomy-node");
   if (!skyCommand && !gcs && !autonomyNode) return null;
   const stamp = [skyCommand, gcs, autonomyNode].filter(Boolean).join(" ").replaceAll(/[^a-z0-9]+/gi, "-").slice(0, 56);
   return {
@@ -294,21 +371,14 @@ export function buildFromSim(store: SimStore, run: SimRun | null): SoftwareBuild
   };
 }
 
-function hubResult(status: SimStatus): RunResult | null {
-  if (status === "passed") return "Pass";
-  if (status === "failed") return "Fail";
-  if (status === "blocked") return "Blocked";
-  return null;
-}
-
 function missionOf(id: string) {
   return SUITE.find((item) => item.id === id) ?? null;
 }
 
 export function applySimLastRun(hub: HubState, store: SimStore | null): HubState {
   if (!store) return hub;
-  const run = latestSimRun(store);
-  const build = buildFromSim(store, run);
+  const run = latestScoredSimRun(store);
+  const build = buildFromSim(store, run ?? latestSimRun(store));
   let next = hub;
   if (build) {
     next = {
