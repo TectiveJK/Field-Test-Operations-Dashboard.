@@ -9,7 +9,7 @@ import {
 const RESULTS = ["Pass with observations", "Pass", "Fail", "Aborted", "Pending"] as const;
 const RESULT_PATTERN = RESULTS.map((item) => item.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
 const FLIGHT_HEADING = new RegExp(
-  `(?:^|\\n)\\s*Flight\\s+(\\d+)\\s+[\\u2014\\u2013-]\\s+(${RESULT_PATTERN})\\b`,
+  `(?:^|\\n)\\s*Flight\\s+(\\d+)\\s*[\\u2014\\u2013-]\\s*(${RESULT_PATTERN})\\b`,
   "gi"
 );
 
@@ -25,6 +25,7 @@ const FIELD_LABELS = [
   "Equipment",
   "Weather",
   "Flight Date & Time",
+  "Date / Time",
   "Flight Date",
   "Date",
   "Flight Duration",
@@ -32,6 +33,7 @@ const FIELD_LABELS = [
   "Flight Modes",
   "Flight log",
   "Flight Log",
+  "Wireshark capture",
   "Wireshark",
   "Attachments",
 ];
@@ -85,6 +87,11 @@ function clean(value: string) {
   const text = value.replace(/\r/g, "").replace(/\s+/g, " ").trim();
   if (!text || /^(N\/A|None|None reported)$/i.test(text)) return "";
   return text;
+}
+
+function fileBase(value: string) {
+  if (!value || value === "None") return "";
+  return value.split(/[/\\]/).pop()?.replace(/^evidence\//, "") || value;
 }
 
 function cleanBlock(value: string) {
@@ -158,14 +165,25 @@ function parsePreview(text: string): ReporterStore | null {
     const result = asResult(match[2] || "");
     const duration = clean(grab(block, "Duration").replace(/^Flight Duration:\s*/i, ""));
     const date =
-      grab(block, "Flight Date & Time") || grab(block, "Date") || grab(block, "Flight Date");
+      grab(block, "Flight Date & Time") ||
+      grab(block, "Date / Time") ||
+      grab(block, "Date") ||
+      grab(block, "Flight Date");
     const dateTime = date.replace(/\s+Duration:.*$/, "").trim();
     const anomalies = cleanBlock(
       section(block, "Anomalies / Bugs/Immediate Action") || section(block, "Anomaly / Bug")
     );
     const action = cleanBlock(section(block, "Immediate Action"));
-    const log = clean(grab(block, "Flight log").replace(/^Flight Log:\s*/i, ""));
-    const pcap = clean(grab(block, "Wireshark").replace(/^Wireshark capture:\s*/i, ""));
+    const log = fileBase(
+      clean(grab(block, "Flight log").replace(/^Flight Log:\s*/i, "").replace(/\(attached\)$/i, ""))
+    );
+    const pcap = fileBase(
+      clean(
+        (grab(block, "Wireshark capture") || grab(block, "Wireshark"))
+          .replace(/^Wireshark capture:\s*/i, "")
+          .replace(/\(attached\)$/i, "")
+      )
+    );
     const attachments = equipmentOf(clean(grab(block, "Attachments")));
     const stamp =
       dateTime && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dateTime)
@@ -248,7 +266,7 @@ async function inflate(bytes: Uint8Array) {
   throw lastError ?? new Error("deflate");
 }
 
-export async function extractPdfText(bytes: Uint8Array): Promise<string> {
+async function extractPdfTextNaive(bytes: Uint8Array): Promise<string> {
   const latin = new TextDecoder("latin1").decode(bytes);
   const parts: string[] = [];
   const streamRe = /stream\r?\n([\s\S]*?)\r?\nendstream/g;
@@ -270,10 +288,50 @@ export async function extractPdfText(bytes: Uint8Array): Promise<string> {
   return joined || latin;
 }
 
+async function extractPdfTextPdfJs(bytes: Uint8Array): Promise<string> {
+  const pdfjs = await import("pdfjs-dist");
+  const data = new Uint8Array(bytes);
+  if (typeof window !== "undefined") {
+    pdfjs.GlobalWorkerOptions.workerSrc = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/pdf.worker.min.mjs`;
+  } else {
+    const path = await import("node:path");
+    const url = await import("node:url");
+    const worker = path.join(process.cwd(), "node_modules/pdfjs-dist/build/pdf.worker.min.mjs");
+    pdfjs.GlobalWorkerOptions.workerSrc = url.pathToFileURL(worker).href;
+  }
+  const doc = await pdfjs.getDocument({ data, isEvalSupported: false }).promise;
+  const pages: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    const line: string[] = [];
+    for (const item of content.items) {
+      if (!("str" in item)) continue;
+      line.push(item.str);
+      if ("hasEOL" in item && item.hasEOL) line.push("\n");
+      else line.push(" ");
+    }
+    pages.push(line.join("").replace(/[ \t]+\n/g, "\n").replace(/[ \t]{2,}/g, " ").trim());
+  }
+  return pages.filter(Boolean).join("\n");
+}
+
+export async function extractPdfText(bytes: Uint8Array): Promise<string> {
+  try {
+    const fromPdfJs = await extractPdfTextPdfJs(bytes);
+    if (fromPdfJs && /Flight\s+\d+/i.test(fromPdfJs)) return fromPdfJs;
+    const naive = await extractPdfTextNaive(bytes);
+    return /Flight\s+\d+/i.test(naive) ? naive : fromPdfJs || naive;
+  } catch {
+    return extractPdfTextNaive(bytes);
+  }
+}
+
 export async function reporterStoreFromFile(file: File): Promise<ReporterStore | null> {
   const buffer = new Uint8Array(await file.arrayBuffer());
   const asText = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
-  if (file.name.toLowerCase().endsWith(".pdf") || asText.startsWith("%PDF")) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".pdf") || asText.startsWith("%PDF")) {
     return parseReporterExport(await extractPdfText(buffer));
   }
   return parseReporterExport(asText);

@@ -3,6 +3,7 @@ import { isAirframe, type HubState, type Issue, type RunResult, type TestCase, t
 
 export const REPORTER_STORE_KEY = "dft-reporter-ios-draft-v1";
 export const REPORTER_CACHE_KEY = "tective-ftod-reporter-live-v1";
+export const REPORTER_EXPORT_CHANNEL = "tective-reporter-export";
 
 const ISSUE_PREFIX = "ISS-REP-";
 const RUN_PREFIX = "rep-run-";
@@ -76,13 +77,24 @@ function asResult(raw: unknown): string {
   return (REPORTER_RESULTS as readonly string[]).includes(value) ? value : "Pending";
 }
 
+function fileNameOf(raw: unknown) {
+  const value = String(raw ?? "").trim();
+  if (!value || value === "None" || value === "N/A") return "";
+  const stripped = value.replace(/\s*\(attached\)\s*$/i, "").trim();
+  const base = stripped.split(/[/\\]/).pop() || stripped;
+  return base.replace(/^evidence\//, "");
+}
+
 function headerOf(raw: Record<string, unknown> | ReporterFlight): Pick<
   ReporterFlight,
   (typeof HEADER_FIELDS)[number] | "equipment"
 > {
   const item = raw as Record<string, unknown>;
   const header = {} as Record<string, string>;
-  for (const key of HEADER_FIELDS) header[key] = String(item[key] ?? "").trim();
+  for (const key of HEADER_FIELDS) {
+    const fallback = key === "category" ? item.droneCategory : "";
+    header[key] = String(item[key] ?? fallback ?? "").trim();
+  }
   return {
     ...(header as Pick<ReporterFlight, (typeof HEADER_FIELDS)[number]>),
     equipment: asList(item.equipment ?? item.equipmentHardware),
@@ -94,20 +106,20 @@ function asFlight(raw: unknown, index: number, shared: Record<string, unknown> =
   const item = raw as Record<string, unknown>;
   const merged = { ...shared, ...item };
   const header = headerOf(merged as ReporterFlight);
-  const number = Number(item.number ?? index + 1);
+  const number = Number(item.number ?? item.flightNumber ?? index + 1);
   return {
     number: Number.isFinite(number) && number > 0 ? number : index + 1,
     ...header,
-    dateTime: String(item.dateTime ?? "").trim(),
+    dateTime: String(item.dateTime ?? item.flightDateTime ?? "").trim(),
     duration: String(item.duration ?? "").trim(),
-    modes: asList(item.modes),
-    mission: String(item.mission ?? "").trim(),
+    modes: asList(item.modes ?? item.flightModes),
+    mission: String(item.mission ?? item.missionPerformed ?? "").trim(),
     anomalies: String(item.anomalies ?? "").trim(),
-    action: String(item.action ?? "").trim(),
-    result: asResult(item.result),
-    logName: String(item.logName ?? "").trim(),
-    captureName: String(item.captureName ?? "").trim(),
-    attachments: asList(item.attachments),
+    action: String(item.action ?? item.immediateAction ?? "").trim(),
+    result: asResult(item.result ?? item.flightResult),
+    logName: fileNameOf(item.logName ?? item.flightLogPath),
+    captureName: fileNameOf(item.captureName ?? item.captureFilePath),
+    attachments: asList(item.attachments).map((name) => fileNameOf(name)).filter(Boolean),
   };
 }
 

@@ -92,9 +92,9 @@ function ImportReporterCard() {
       <CardHeader>
         <CardTitle>Import field report</CardTitle>
         <CardDescription>
-          Export / Print PDF and Share in Drone Flight Test Reporter do not write this hub.
-          Paste the Share text or upload that PDF / JSON here. A save in the same laptop
-          browser is still read automatically.
+          Export Report on the Linux reporter writes a Chromium PDF. Upload that PDF here
+          (including 23-Oct-2026.pdf), or paste Share text from the iPhone reporter. A save
+          in the same laptop browser is picked up within a second.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">

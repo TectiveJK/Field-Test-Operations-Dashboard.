@@ -139,6 +139,19 @@ export function snapshotForSync(
   };
 }
 
+export async function publishReporterExport(store: ReporterStore): Promise<void> {
+  const reporter = slimReporterStore(store);
+  if (!reporter) return;
+  const remote = await fetchHubSync().catch(() => null);
+  await publishHubSync({
+    kind: "tective-ftod-hub",
+    updatedAt: new Date().toISOString(),
+    sim: remote?.sim ?? null,
+    reporter,
+    hub: remote?.hub ?? null,
+  });
+}
+
 export async function publishHubSync(payload: HubSyncPayload): Promise<void> {
   const body = JSON.stringify(payload);
   const targets =

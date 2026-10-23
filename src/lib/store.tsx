@@ -30,11 +30,14 @@ import {
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
 import {
   applyReporterDraft,
+  asReporterStore,
   cacheReporterStore,
   isEmptyReporterDraft,
   preferReporter,
   readReporterStore,
+  reporterKey,
   REPORTER_CACHE_KEY,
+  REPORTER_EXPORT_CHANNEL,
   REPORTER_STORE_KEY,
   slimReporterStore,
   SNAPSHOT_REPORTER,
@@ -216,9 +219,30 @@ function attachLiveRefresh() {
     cacheHardware(items, false);
     write((current) => applyHardware(current, items), false);
   });
+  try {
+    const channel = new BroadcastChannel(REPORTER_EXPORT_CHANNEL);
+    channel.addEventListener("message", (event) => {
+      const store = asReporterStore(event.data);
+      if (!store || isEmptyReporterDraft(store)) return;
+      cacheReporterStore(store);
+      lastReporter = slimReporterStore(store) ?? store;
+      write((current) => applyReporterDraft(current, lastReporter));
+    });
+  } catch {
+    /* BroadcastChannel is missing in some WebViews */
+  }
+  window.setInterval(() => {
+    if (document.visibilityState !== "visible") return;
+    const local = readReporterStore();
+    if (local && reporterKey(local) !== reporterKey(lastReporter)) {
+      lastReporter = preferReporter(local, lastReporter);
+      cacheReporterStore(lastReporter);
+      write((current) => applyReporterDraft(current, lastReporter));
+    }
+  }, 1000);
   window.setInterval(() => {
     if (document.visibilityState === "visible") void refreshAll();
-  }, 8000);
+  }, 4000);
 }
 
 async function refreshAll() {
@@ -533,6 +557,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (isEmptyReporterDraft(store)) return;
     cacheReporterStore(store);
     lastReporter = slimReporterStore(store) ?? store;
+    try {
+      new BroadcastChannel(REPORTER_EXPORT_CHANNEL).postMessage(lastReporter);
+    } catch {
+      /* same-tab import still writes the hub */
+    }
     write((current) => applyReporterDraft(current, lastReporter));
   }, []);
 

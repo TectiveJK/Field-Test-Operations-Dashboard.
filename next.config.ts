@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
   images: { unoptimized: true },
+  transpilePackages: ["pdfjs-dist"],
   basePath,
   allowedDevOrigins: ["127.0.0.1"],
   env: {
