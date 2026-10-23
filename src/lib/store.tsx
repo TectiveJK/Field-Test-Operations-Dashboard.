@@ -136,9 +136,28 @@ let memory: HubState = seedState;
 let clientAttached = false;
 let lastSim: SimStore | null = null;
 let lastReporter: ReporterStore | null = SNAPSHOT_REPORTER;
+let reporterLockedKey = "";
 let localUpdatedAt = "";
 let publishTimer: number | null = null;
 let refreshing = false;
+
+function lockReporter(store: ReporterStore) {
+  const next = slimReporterStore(store) ?? store;
+  cacheReporterStore(next);
+  lastReporter = next;
+  reporterLockedKey = reporterKey(next);
+}
+
+function unlockReporterIfPublished(remote: ReporterStore | null) {
+  if (reporterLockedKey && reporterKey(remote) === reporterLockedKey) reporterLockedKey = "";
+}
+
+function liveReporter(local: ReporterStore | null, remote: ReporterStore | null) {
+  if (reporterLockedKey && lastReporter && reporterKey(lastReporter) === reporterLockedKey) {
+    return lastReporter;
+  }
+  return preferReporter(local, remote ?? lastReporter);
+}
 
 function emit() {
   for (const listener of listeners) listener();
@@ -224,8 +243,7 @@ function attachLiveRefresh() {
     channel.addEventListener("message", (event) => {
       const store = asReporterStore(event.data);
       if (!store || isEmptyReporterDraft(store)) return;
-      cacheReporterStore(store);
-      lastReporter = slimReporterStore(store) ?? store;
+      lockReporter(store);
       write((current) => applyReporterDraft(current, lastReporter));
     });
   } catch {
@@ -234,11 +252,11 @@ function attachLiveRefresh() {
   window.setInterval(() => {
     if (document.visibilityState !== "visible") return;
     const local = readReporterStore();
-    if (local && reporterKey(local) !== reporterKey(lastReporter)) {
-      lastReporter = preferReporter(local, lastReporter);
-      cacheReporterStore(lastReporter);
-      write((current) => applyReporterDraft(current, lastReporter));
-    }
+    if (!local || reporterKey(local) === reporterKey(lastReporter)) return;
+    if (reporterLockedKey && reporterKey(lastReporter) === reporterLockedKey) return;
+    lastReporter = preferReporter(local, lastReporter);
+    cacheReporterStore(lastReporter);
+    write((current) => applyReporterDraft(current, lastReporter));
   }, 1000);
   window.setInterval(() => {
     if (document.visibilityState === "visible") void refreshAll();
@@ -266,10 +284,8 @@ async function refreshAll() {
     }
     const [upcoming, hardware, remote] = await restPromise;
     const chosenSim = preferSim(earlySim, remote?.sim ?? null);
-    const chosenReporter = preferReporter(
-      localReporter,
-      remote?.reporter ?? lastReporter
-    );
+    unlockReporterIfPublished(remote?.reporter ?? null);
+    const chosenReporter = liveReporter(localReporter, remote?.reporter ?? lastReporter);
     cacheReporterStore(chosenReporter);
     lastSim = chosenSim;
     lastReporter = chosenReporter;
@@ -287,7 +303,10 @@ async function refreshAll() {
       localUpdatedAt = remote.updatedAt;
       persist(memory);
     }
-    if (shouldPublish(localUpdatedAt, chosenSim, remote, chosenReporter)) {
+    const lockedNeedsPublish = Boolean(
+      reporterLockedKey && reporterKey(remote?.reporter ?? null) !== reporterLockedKey
+    );
+    if (lockedNeedsPublish || shouldPublish(localUpdatedAt, chosenSim, remote, chosenReporter)) {
       schedulePublish(remote);
     }
   } finally {
@@ -310,12 +329,18 @@ async function pushShared(knownRemote?: HubSyncPayload | null) {
     const remote = knownRemote === undefined ? await fetchHubSync().catch(() => null) : knownRemote;
     const deviceSim = preferSim(readSimStore(), lastSim);
     const sim = preferSim(deviceSim, remote?.sim ?? null);
-    const deviceReporter = preferReporter(readReporterStore(), lastReporter);
-    const reporter = preferReporter(deviceReporter, remote?.reporter ?? lastReporter);
+    unlockReporterIfPublished(remote?.reporter ?? null);
+    const deviceReporter = liveReporter(readReporterStore(), lastReporter);
+    const reporter = liveReporter(deviceReporter, remote?.reporter ?? lastReporter);
     cacheReporterStore(reporter);
     lastSim = sim;
     lastReporter = reporter;
-    if (!shouldPublish(localUpdatedAt, deviceSim, remote, deviceReporter)) return;
+    const lockedNeedsPublish = Boolean(
+      reporterLockedKey && reporterKey(remote?.reporter ?? null) !== reporterLockedKey
+    );
+    if (!lockedNeedsPublish && !shouldPublish(localUpdatedAt, deviceSim, remote, deviceReporter)) {
+      return;
+    }
     const updatedAt = localUpdatedAt || new Date().toISOString();
     localUpdatedAt = updatedAt;
     await publishHubSync(snapshotForSync(memory, sim, reporter, updatedAt));
@@ -555,8 +580,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const importReporter = useCallback((store: ReporterStore) => {
     if (isEmptyReporterDraft(store)) return;
-    cacheReporterStore(store);
-    lastReporter = slimReporterStore(store) ?? store;
+    lockReporter(store);
     try {
       new BroadcastChannel(REPORTER_EXPORT_CHANNEL).postMessage(lastReporter);
     } catch {

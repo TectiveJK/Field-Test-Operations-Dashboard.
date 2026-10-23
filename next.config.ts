@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
   turbopack: {
+    resolveAlias: {
+      "pdfjs-dist": "pdfjs-dist/build/pdf.mjs",
+    },
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],

@@ -289,7 +289,7 @@ async function extractPdfTextNaive(bytes: Uint8Array): Promise<string> {
 }
 
 async function extractPdfTextPdfJs(bytes: Uint8Array): Promise<string> {
-  const pdfjs = await import("pdfjs-dist");
+  const pdfjs = await import("pdfjs-dist/build/pdf.mjs");
   const data = new Uint8Array(bytes);
   if (typeof window !== "undefined") {
     pdfjs.GlobalWorkerOptions.workerSrc = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/pdf.worker.min.mjs`;
