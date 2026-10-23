@@ -1,6 +1,6 @@
 {
   "name": "field-test-operations-dashboard",
-  "version": "0.2.26",
+  "version": "0.2.27",
   "private": true,
   "description": "Daily command center for Tective drone field-test operations. Connects reporting, maintenance, planning and simulator testing without replacing those apps.",
   "homepage": "https://tectivejk.github.io/Field-Test-Operations-Dashboard./",

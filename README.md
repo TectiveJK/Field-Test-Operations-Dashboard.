@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.26`
+**Current version:** `0.2.27`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.26**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.26`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.26` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.27** after you publish). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.27`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. **Reports** can import a Drone Flight Test Reporter Share paste or Print PDF. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.27` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.26`. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.27` after you publish. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ Five tools already cover reporting, maintenance, planning, simulator testing and
 
 | Area | Tool | What this hub uses from it |
 | --- | --- | --- |
-| Reporting | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) | Equipment list (ReFly / SkyHive / rotator / packs) and the latest saved multi-flight report (flights, overall result, Fail items). Open this hub on the laptop after you save a report so the iPhone receives it. |
+| Reporting | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) | Equipment list (ReFly / SkyHive / rotator / packs) and the latest multi-flight report (flights, overall result, Fail items). Save in the same laptop browser, or import the Share text / Print PDF on Reports, so the iPhone receives it. |
 | Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Fleet, faults and inspections if that app has any. It currently stores none. |
 | Planning | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) | The live shared board. This hub reads it and can add, edit or remove flights and tests. That app is not modified. |
 | Simulator testing | [SIM Flight Testing](http://127.0.0.1:43147/) ([Gitea](https://git.tective.nl/JohnKokotinis/sim-testing-app)) | The 20 SkyCommand simulator missions, FAIL / BLOCKED items from the last scored run, and `.deb` artifact names. That snapshot is shared between laptop and iPhone. |
@@ -67,11 +67,11 @@ The operations dashboard is the home screen for the day, with the other modules 
 | **Fleet** | Aircraft, hive, rotator and batteries from the Hardware locator list. **Update location** / **Add hardware** writes that company list. Airframes also show available / under test / grounded. **Export PDF** of this page. |
 | **Issues** | Bug tracker: id, severity, drone, build, steps, expected vs actual, assignee, retest. Fail items from the latest field report and FAIL / BLOCKED from the last SIM run. **Export PDF** of this page. |
 | **Deploy** | Pre-departure checklist with live locations; **Update location** on aircraft, packs and rotator. **Export PDF** of this page. |
-| **Reports** | Flight-report index, evidence organizer (ULog / QGC / pcap names), knowledge notes. **Export PDF** writes **every page** into one file. |
+| **Reports** | Flight-report index, **Import field report** (Share paste, Print PDF, or JSON), evidence organizer (ULog / QGC / pcap names), knowledge notes. **Export PDF** writes **every page** into one file. |
 
 A failed simulator or field run can create an issue, keep the ULog against that drone and build, show on Today as an outstanding retest, and later be compared with the next Jenkins build.
 
-When SIM Flight Testing is running on this computer (`http://127.0.0.1:43147/`), FAIL and BLOCKED results from the last scored SIM run are copied into Issues, Tests and Reports. The SIM app also publishes that snapshot to the shared list, so the iPhone receives it. The latest saved [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) campaign is copied the same way when you open this hub on the laptop in the same browser as that app. The 19 Oct 2026 Unmanned Valley / Field 10 campaign is the starting field report when the reporter store has not been read yet. Later saves in the reporter app replace it.
+When SIM Flight Testing is running on this computer (`http://127.0.0.1:43147/`), FAIL and BLOCKED results from the last scored SIM run are copied into Issues, Tests and Reports. The SIM app also publishes that snapshot to the shared list, so the iPhone receives it. The latest [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) campaign is copied when you open this hub on the laptop in the same browser as that app, and when you import a Share paste or Print PDF on Reports. The hub keeps its own copy, so **New Report** in the reporter app does not wipe Today. The 19 Oct 2026 Unmanned Valley / Field 10 campaign is the starting field report until a later save or import replaces it.
 
 Hardware locations use the same Google Sheet the locator app writes. **Update location** on Fleet or Deploy, or **Add hardware** on Fleet, and the locator app shows it. Change a location in the locator and Fleet updates. On GitHub Pages they also share a same-origin cache, so the other tab updates immediately. **Out of service** is shown as grounded.
 
@@ -95,7 +95,7 @@ Every module uses the same objects. That is the foundation for adding more later
 - **Evidence organizer**: attach a filename on the pad even when you cannot upload the file
 - **Test comparison**: two runs of the same mission, including result, configuration and measurements (manual entry now; ULog parsing later)
 - **Update location** on Fleet and Deploy writes the company Hardware locator list. The locator app updates too, and a location change in the locator shows on Fleet. Fleet shows every locator item, not only airframes.
-- **Laptop and iPhone share one live copy** of hub ticks, issues, the latest field report, the last SIM run, and SIM `.deb` artifact names. Hardware locations already use the locator list. **Add flight** / **Add test** on Plan writes the Upcoming board, so that app sees it too. Leave SIM Flight Testing running on the laptop after a scored run so the phone can pick up that snapshot. Open this hub on the laptop after you save a reporter campaign. No login.
+- **Laptop and iPhone share one live copy** of hub ticks, issues, the latest field report, the last SIM run, and SIM `.deb` artifact names. Hardware locations already use the locator list. **Add flight** / **Add test** on Plan writes the Upcoming board, so that app sees it too. Leave SIM Flight Testing running on the laptop after a scored run so the phone can pick up that snapshot. After a reporter save, open this hub on the laptop, or import the Share text / Print PDF on Reports. No login.
 - **Reset to source apps** reloads Reporter equipment and the latest field report, Hardware locator locations, the SIM catalog, the Upcoming flights board, and the last shared SIM FAIL / BLOCKED items. It does not invent a test day.
 - **Export PDF** on Today, Plan, Tests, Fleet, Issues and Deploy writes that page. **Export PDF** on Reports writes all seven pages.
 - Header **weather** for the Delft site: condition, °C, wind m/s and gusts from Open-Meteo. Last reading is kept for offline.
@@ -201,13 +201,13 @@ git push origin main
 
 Hub ticks, the latest field report, the last SIM run, and artifact names are shared with the laptop. Flights and tests you add on Plan write the Upcoming board, so that app and other phones see them.
 
-The iPhone home-screen app cannot read the local SIM Flight Testing server or Drone Flight Test Reporter storage directly. After you score a SIM run, leave SIM Flight Testing running on the laptop while online so it can publish the snapshot. After you save a field report, open this hub on the laptop in the same browser as the reporter. Wait until Today shows **Last field report** and **Last SIM run**. Then reopen FTOD on the iPhone.
+The iPhone home-screen app cannot read the local SIM Flight Testing server or Drone Flight Test Reporter storage directly. After you score a SIM run, leave SIM Flight Testing running on the laptop while online so it can publish the snapshot. After you save a field report, open this hub on the laptop in the same browser as the reporter, or import the Share text / Print PDF on Reports. Wait until Today shows **Last field report** and **Last SIM run**. Then reopen FTOD on the iPhone.
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.26
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.27
 
-Pull down to refresh until the header shows `v0.2.26`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.27`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -231,6 +231,7 @@ src/components/       boards, dialogs, shell
 src/lib/types.ts      shared records
 src/lib/from-apps.ts  Reporter equipment, SIM catalog, Upcoming board, locator
 src/lib/reporter-import.ts  latest Drone Flight Test Reporter campaign → runs, issues, reports
+src/lib/reporter-parse.ts   Share text / Print PDF / JSON import from that reporter app
 src/lib/hardware.ts   Hardware locator list: read and write the existing company sheet
 src/lib/hub-sync.ts   Shared laptop / iPhone snapshot (field report, last SIM run, hub ticks)
 src/components/hardware-dialog.tsx  Update location / Add hardware
@@ -255,7 +256,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.26** reads SIM Flight Testing from the Gitea app on this computer (`http://127.0.0.1:43147/`) and copies the last scored run onto Today, Tests, Issues and Reports. Pass / fail / blocked missions are merged into the shared snapshot. The 19 Oct 2026 Unmanned Valley / Field 10 campaign from Drone Flight Test Reporter stays on the hub; later reporter saves replace it. Header `v0.2.26`. Publish with `git pull && git push github main`.
+**0.2.27** imports a Drone Flight Test Reporter **Share** paste or **Export / Print PDF** on Reports, then copies those flights onto Today, Tests, Issues and Reports. A save in the same laptop browser is still read automatically. The hub keeps its own copy of that campaign, so **New Report** in the reporter app does not wipe it, and a SIM snapshot that omits the field report no longer drops it. The 19 Oct 2026 Unmanned Valley / Field 10 campaign stays until a later save or import replaces it. Header `v0.2.27`. Publish with `git pull && git push github main`.
 
 ## Links
 

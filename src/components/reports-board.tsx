@@ -13,10 +13,134 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/format";
+import { isEmptyReporterDraft, summarizeReporter } from "@/lib/reporter-import";
+import { parseReporterExport, reporterStoreFromFile } from "@/lib/reporter-parse";
 import { caseById, droneById } from "@/lib/selectors";
 import { useHub } from "@/lib/store";
 import { EVIDENCE_KINDS, type EvidenceKind } from "@/lib/types";
+
+function ImportReporterCard() {
+  const { importReporter, lastReporter } = useHub();
+  const [paste, setPaste] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [ok, setOk] = useState("");
+  const current = summarizeReporter(lastReporter);
+
+  async function applyText(text: string, source: string) {
+    const store = parseReporterExport(text);
+    if (!store || isEmptyReporterDraft(store)) {
+      setOk("");
+      setError(
+        `That ${source} has no scored flights. In Drone Flight Test Reporter use Share, then paste the report text here, or upload the Print PDF.`
+      );
+      return;
+    }
+    importReporter(store);
+    const summary = summarizeReporter(store);
+    setError("");
+    setOk(
+      `Imported ${store.flights.length} flights${summary ? ` · ${summary.overall}` : ""} from ${source}. Today, Tests, Issues and Reports now use this campaign.`
+    );
+    setPaste("");
+  }
+
+  async function onPaste() {
+    if (!paste.trim()) {
+      setError("Paste the Share text from the reporter preview first.");
+      setOk("");
+      return;
+    }
+    setBusy(true);
+    try {
+      await applyText(paste, "Share text");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onFile(file: File | undefined) {
+    if (!file) return;
+    setBusy(true);
+    setOk("");
+    setError("");
+    try {
+      const store = await reporterStoreFromFile(file);
+      if (!store || isEmptyReporterDraft(store)) {
+        setError(
+          `Could not read scored flights from ${file.name}. Paste the Share text from the reporter preview instead.`
+        );
+        return;
+      }
+      importReporter(store);
+      const summary = summarizeReporter(store);
+      setOk(
+        `Imported ${store.flights.length} flights${summary ? ` · ${summary.overall}` : ""} from ${file.name}. Today, Tests, Issues and Reports now use this campaign.`
+      );
+      setPaste("");
+    } catch {
+      setError("Could not read that file. Paste the Share text from the reporter preview instead.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="bg-white">
+      <CardHeader>
+        <CardTitle>Import field report</CardTitle>
+        <CardDescription>
+          Export / Print PDF and Share in Drone Flight Test Reporter do not write this hub.
+          Paste the Share text or upload that PDF / JSON here. A save in the same laptop
+          browser is still read automatically.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {current ? (
+          <p className="text-sm text-slate-700">
+            Hub now has {current.location || "the latest campaign"}
+            {current.date ? ` · ${formatDate(current.date)}` : ""} · {current.passed} pass /{" "}
+            {current.observations} observations / {current.failed} fail / {current.aborted} aborted
+            of {current.scored} scored · {current.overall}.
+          </p>
+        ) : (
+          <p className="text-sm text-slate-600">
+            No field report in this hub yet. Import the export from today, or open this hub on
+            the laptop after you save the report in the reporter app.
+          </p>
+        )}
+        <Textarea
+          value={paste}
+          onChange={(event) => setPaste(event.target.value)}
+          placeholder="Paste Share text from Drone Flight Test Reporter…"
+          className="bg-slate-50"
+        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button onClick={() => void onPaste()} disabled={busy}>
+            {busy ? "Importing…" : "Import paste"}
+          </Button>
+          <label className="grid min-w-0 flex-1 gap-1 text-sm font-medium">
+            PDF or JSON
+            <Input
+              type="file"
+              accept=".pdf,.json,.txt,application/pdf,application/json,text/plain"
+              disabled={busy}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                void onFile(file);
+                event.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+        {error ? <p className="text-sm text-red-700">{error}</p> : null}
+        {ok ? <p className="text-sm text-emerald-800">{ok}</p> : null}
+      </CardContent>
+    </Card>
+  );
+}
 
 export function ReportsBoard() {
   const { state, addEvidence } = useHub();
@@ -62,19 +186,23 @@ export function ReportsBoard() {
           <h2 className="text-xl font-semibold tracking-tight">Reports, evidence & knowledge</h2>
           <p className="mt-1 text-sm text-slate-600">
             The latest Drone Flight Test Reporter campaign and the last SIM Flight Testing run
-            are listed here when this hub has seen them on the laptop or iPhone. Export PDF on
-            this page writes every hub page into one file.
+            are listed here when this hub has seen them on the laptop or iPhone. Import a Share
+            paste or Print PDF if Export did not update Today. Export PDF on this page writes
+            every hub page into one file.
           </p>
         </div>
         <ExportPdfButton page="reports" />
       </div>
 
+      <ImportReporterCard />
+
       <section className="grid gap-3">
         {state.reports.length === 0 ? (
           <Card className="bg-white">
             <CardContent className="py-10 text-center text-sm text-slate-600">
-              No field or SIM report in this hub yet. Save a report in Drone Flight Test Reporter,
-              then open this hub on the laptop in the same browser.
+              No field or SIM report in this hub yet. Import the reporter Share text or Print PDF
+              above, or save a report in Drone Flight Test Reporter and open this hub on the
+              laptop in the same browser.
             </CardContent>
           </Card>
         ) : null}

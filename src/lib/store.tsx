@@ -30,9 +30,13 @@ import {
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
 import {
   applyReporterDraft,
+  cacheReporterStore,
+  isEmptyReporterDraft,
   preferReporter,
   readReporterStore,
+  REPORTER_CACHE_KEY,
   REPORTER_STORE_KEY,
+  slimReporterStore,
   SNAPSHOT_REPORTER,
   type ReporterStore,
 } from "@/lib/reporter-import";
@@ -117,6 +121,7 @@ type StoreApi = {
   }) => Promise<void>;
   savePlanEntry: (input: UpcomingInput & { id?: string }) => Promise<void>;
   removePlanEntry: (id: string) => Promise<void>;
+  importReporter: (store: ReporterStore) => void;
   reset: () => void;
 };
 
@@ -201,6 +206,7 @@ function attachLiveRefresh() {
     if (
       event.key === SIM_STORE_KEY ||
       event.key === REPORTER_STORE_KEY ||
+      event.key === REPORTER_CACHE_KEY ||
       event.key === STORAGE_KEY
     ) {
       void refreshAll();
@@ -221,6 +227,7 @@ async function refreshAll() {
   try {
     const localSim = slimSimStore(readSimStore());
     const localReporter = readReporterStore();
+    cacheReporterStore(localReporter);
     const localApiSimPromise = fetchLocalSimStore().catch(() => null);
     const restPromise = Promise.all([
       fetchUpcomingEntries().catch(() => null),
@@ -235,7 +242,11 @@ async function refreshAll() {
     }
     const [upcoming, hardware, remote] = await restPromise;
     const chosenSim = preferSim(earlySim, remote?.sim ?? null);
-    const chosenReporter = preferReporter(localReporter, remote?.reporter ?? null);
+    const chosenReporter = preferReporter(
+      localReporter,
+      remote?.reporter ?? lastReporter
+    );
+    cacheReporterStore(chosenReporter);
     lastSim = chosenSim;
     lastReporter = chosenReporter;
     const remoteHubNewer = Boolean(remote?.updatedAt && remote.updatedAt > (localUpdatedAt || ""));
@@ -252,7 +263,7 @@ async function refreshAll() {
       localUpdatedAt = remote.updatedAt;
       persist(memory);
     }
-    if (shouldPublish(localUpdatedAt, chosenSim, remote, localReporter ?? chosenReporter)) {
+    if (shouldPublish(localUpdatedAt, chosenSim, remote, chosenReporter)) {
       schedulePublish(remote);
     }
   } finally {
@@ -276,7 +287,8 @@ async function pushShared(knownRemote?: HubSyncPayload | null) {
     const deviceSim = preferSim(readSimStore(), lastSim);
     const sim = preferSim(deviceSim, remote?.sim ?? null);
     const deviceReporter = preferReporter(readReporterStore(), lastReporter);
-    const reporter = preferReporter(deviceReporter, remote?.reporter ?? null);
+    const reporter = preferReporter(deviceReporter, remote?.reporter ?? lastReporter);
+    cacheReporterStore(reporter);
     lastSim = sim;
     lastReporter = reporter;
     if (!shouldPublish(localUpdatedAt, deviceSim, remote, deviceReporter)) return;
@@ -517,6 +529,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const importReporter = useCallback((store: ReporterStore) => {
+    if (isEmptyReporterDraft(store)) return;
+    cacheReporterStore(store);
+    lastReporter = slimReporterStore(store) ?? store;
+    write((current) => applyReporterDraft(current, lastReporter));
+  }, []);
+
   const reset = useCallback(() => {
     localUpdatedAt = "";
     lastSim = slimSimStore(readSimStore());
@@ -549,6 +568,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addHardwareItem,
       savePlanEntry,
       removePlanEntry,
+      importReporter,
       reset,
     }),
     [
@@ -569,6 +589,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addHardwareItem,
       savePlanEntry,
       removePlanEntry,
+      importReporter,
       reset,
     ]
   );

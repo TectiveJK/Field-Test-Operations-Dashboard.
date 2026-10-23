@@ -204,6 +204,7 @@ export function shouldPublish(
   if (chosen && simKey(chosen) !== simKey(remote.sim)) return true;
   const localChosen = preferReporter(localReporter, null);
   const chosenReporter = preferReporter(localReporter, remote.reporter);
+  if (!remote.reporter && reporterKey(localChosen)) return true;
   return (
     reporterKey(chosenReporter) !== reporterKey(remote.reporter) &&
     reporterKey(chosenReporter) === reporterKey(localChosen)
