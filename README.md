@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.28** after you publish). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.28`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.28` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.28**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.28`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.28` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.28` after you publish. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.28`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -256,7 +256,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.28** reads the Linux Drone Flight Test Reporter **Export Report** PDF on Reports (the Chromium `23-Oct-2026.pdf` layout, including Date / Time and desktop JSON field names). Share text still works. The hub checks the reporter store every second and republishes the campaign. Header `v0.2.28`. Publish with `git pull && git push github main`.
+**0.2.28** is live. Reports reads the Linux Drone Flight Test Reporter **Export Report** PDF (Chromium `23-Oct-2026.pdf`, including Date / Time and desktop JSON field names). Share text still works. The hub checks the reporter store every second and republishes the campaign. Header `v0.2.28`. Publish later Origin commits with `git pull && git push github main`.
 
 ## Links
 
