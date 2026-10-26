@@ -204,7 +204,7 @@ function storeFromSimPayload(raw: unknown): SimStore | null {
 function localSimUrls() {
   const urls: string[] = [];
   if (typeof window !== "undefined" && window.location.protocol === "http:") {
-    urls.push(`${window.location.origin}/api/sim-local/hub-snapshot`, `${window.location.origin}/api/sim-local/data`);
+    urls.push(`${window.location.origin}/api/sim-local/hub-snapshot/`, `${window.location.origin}/api/sim-local/data/`);
     urls.push(`${SIM_APP_URL}/api/hub-snapshot`, `${SIM_APP_URL}/api/data`);
   }
   return urls;
