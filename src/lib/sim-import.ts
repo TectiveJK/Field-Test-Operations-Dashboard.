@@ -202,22 +202,22 @@ function storeFromSimPayload(raw: unknown): SimStore | null {
 }
 
 function localSimUrls() {
-  return [`${SIM_APP_URL}/api/hub-snapshot`, `${SIM_APP_URL}/api/data`];
+  const urls: string[] = [];
+  if (typeof window !== "undefined" && window.location.protocol === "http:") {
+    urls.push(`${window.location.origin}/api/sim-local/hub-snapshot`, `${window.location.origin}/api/sim-local/data`);
+    urls.push(`${SIM_APP_URL}/api/hub-snapshot`, `${SIM_APP_URL}/api/data`);
+  }
+  return urls;
 }
 
 /** Live results from the Gitea SIM app running on this computer. */
 export async function fetchLocalSimStore(): Promise<SimStore | null> {
   if (typeof window === "undefined") return null;
-  if (window.location.protocol === "https:" && window.location.hostname !== "127.0.0.1" && window.location.hostname !== "localhost") {
-    return null;
-  }
+  const stamp = Date.now();
   for (const url of localSimUrls()) {
     try {
-      const response = await fetch(url, {
-        cache: "no-store",
-        mode: "cors",
-        signal: AbortSignal.timeout(1500),
-      });
+      const target = `${url}${url.includes("?") ? "&" : "?"}t=${stamp}`;
+      const response = await fetch(target, { signal: AbortSignal.timeout(1500) });
       if (!response.ok) continue;
       const store = slimSimStore(storeFromSimPayload(await response.json()));
       if (store) return store;

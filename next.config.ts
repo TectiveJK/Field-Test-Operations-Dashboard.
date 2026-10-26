@@ -27,4 +27,10 @@ const nextConfig: NextConfig = {
   },
 };
 
+if (process.env.NODE_ENV !== "production") {
+  nextConfig.rewrites = async () => [
+    { source: "/api/sim-local/:path*", destination: "http://127.0.0.1:43147/api/:path*" },
+  ];
+}
+
 export default nextConfig;
