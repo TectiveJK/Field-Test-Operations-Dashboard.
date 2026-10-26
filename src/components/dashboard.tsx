@@ -193,7 +193,9 @@ export function Dashboard() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-1 text-xs text-slate-600">No .deb names on that run.</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    No .deb names yet. Save Last successful artifacts in SIM Flight Testing.
+                  </p>
                 )}
               </div>
             </div>

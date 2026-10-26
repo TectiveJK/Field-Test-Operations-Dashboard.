@@ -152,6 +152,19 @@ export async function publishReporterExport(store: ReporterStore): Promise<void>
   });
 }
 
+export async function publishSimExport(store: SimStore): Promise<void> {
+  const sim = slimSimStore(store);
+  if (!sim) return;
+  const remote = await fetchHubSync().catch(() => null);
+  await publishHubSync({
+    kind: "tective-ftod-hub",
+    updatedAt: new Date().toISOString(),
+    sim,
+    reporter: remote?.reporter ?? null,
+    hub: remote?.hub ?? null,
+  });
+}
+
 export async function publishHubSync(payload: HubSyncPayload): Promise<void> {
   const body = JSON.stringify(payload);
   const targets =

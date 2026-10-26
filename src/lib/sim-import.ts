@@ -2,6 +2,8 @@ import { SUITE } from "@/lib/sim-suite";
 import { isAirframe, type HubState, type Issue, type RunResult, type SoftwareBuild, type TestRun } from "@/lib/types";
 
 export const SIM_STORE_KEY = "sim-flight-testing-store-v1";
+export const SIM_CACHE_KEY = "tective-ftod-sim-live-v1";
+export const SIM_EXPORT_CHANNEL = "tective-sim-export";
 
 /** Gitea SIM Flight Testing app on this computer (desktop icon / npm run open). */
 export const SIM_APP_URL = "http://127.0.0.1:43147";
@@ -84,9 +86,11 @@ export function liveArtifacts(store: SimStore): SimArtifact[] {
   return parseArtifacts(run?.artifacts);
 }
 
-function preferArtifactList(left: SimStore, right: SimStore): SimArtifact[] {
-  const a = parseArtifacts(left.artifacts);
-  const b = parseArtifacts(right.artifacts);
+function preferArtifactList(live: SimStore, fallback: SimStore): SimArtifact[] {
+  const a = parseArtifacts(live.artifacts);
+  const b = parseArtifacts(fallback.artifacts);
+  if (a.length && !isCatalogDefaultArtifacts(a)) return a;
+  if (b.length && !isCatalogDefaultArtifacts(b)) return b;
   if (artifactListScore(a) >= artifactListScore(b)) return a.length ? a : b;
   return b;
 }
@@ -161,21 +165,58 @@ export function readSimStore(): SimStore | null {
   }
 }
 
+export function cacheSimStore(store: SimStore | null) {
+  if (typeof window === "undefined") return;
+  const slim = slimSimStore(store);
+  if (!slim) return;
+  try {
+    window.localStorage.setItem(SIM_CACHE_KEY, JSON.stringify(slim));
+  } catch {
+    /* quota */
+  }
+}
+
+export function readCachedSimStore(): SimStore | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(SIM_CACHE_KEY);
+    if (!raw) return null;
+    return slimSimStore(asStore(JSON.parse(raw)));
+  } catch {
+    return null;
+  }
+}
+
+export function artifactKey(store: SimStore | null): string {
+  if (!store) return "";
+  return liveArtifacts(store)
+    .map((item) => `${item.packageName}=${item.filename}`)
+    .sort()
+    .join("|");
+}
+
 function storeFromSimPayload(raw: unknown): SimStore | null {
   if (!raw || typeof raw !== "object") return null;
   const data = raw as { sim?: unknown; store?: unknown };
   return asStore(data.sim) ?? asStore(data.store) ?? asStore(raw);
 }
 
+function localSimUrls() {
+  return [`${SIM_APP_URL}/api/hub-snapshot`, `${SIM_APP_URL}/api/data`];
+}
+
 /** Live results from the Gitea SIM app running on this computer. */
 export async function fetchLocalSimStore(): Promise<SimStore | null> {
   if (typeof window === "undefined") return null;
-  const urls = [`${SIM_APP_URL}/api/hub-snapshot`, `${SIM_APP_URL}/api/data`];
-  for (const url of urls) {
+  if (window.location.protocol === "https:" && window.location.hostname !== "127.0.0.1" && window.location.hostname !== "localhost") {
+    return null;
+  }
+  for (const url of localSimUrls()) {
     try {
       const response = await fetch(url, {
         cache: "no-store",
-        signal: AbortSignal.timeout(2500),
+        mode: "cors",
+        signal: AbortSignal.timeout(1500),
       });
       if (!response.ok) continue;
       const store = slimSimStore(storeFromSimPayload(await response.json()));
@@ -296,9 +337,10 @@ function mergeStores(left: SimStore, right: SimStore): SimStore {
   };
 }
 
-export function preferSim(local: SimStore | null, remote: SimStore | null): SimStore | null {
-  const left = slimSimStore(local);
-  const right = slimSimStore(remote);
+/** First argument is the live SIM save (API or just-written store). Its .deb list wins. */
+export function preferSim(live: SimStore | null, fallback: SimStore | null): SimStore | null {
+  const left = slimSimStore(live);
+  const right = slimSimStore(fallback);
   if (!left) return right;
   if (!right) return left;
   return mergeStores(left, right);
