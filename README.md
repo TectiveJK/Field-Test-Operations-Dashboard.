@@ -8,7 +8,7 @@
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.31** after you publish). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.31`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. A save of **Last successful artifacts** in SIM is copied onto Today and Tests together within a second while that app is running on this computer, then shared with the iPhone. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. A PDF you import stays on Today even if a smaller Share paste was stamped today. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.31` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.31**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.31`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. A save of **Last successful artifacts** in SIM is copied onto Today and Tests together within a second while that app is running on this computer, then shared with the iPhone. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. A PDF you import stays on Today even if a smaller Share paste was stamped today. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.31` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.31` after you publish. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.31`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -256,7 +256,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.31** copies **Last successful artifacts** from SIM Flight Testing onto Today and Tests together the moment you save them. A later in-flight refresh cannot replace that save with an older list. Header `v0.2.31`. Publish with `git pull && git push github main`.
+**0.2.31** is live. Saving **Last successful artifacts** in SIM Flight Testing copies that `.deb` list onto Today and Tests together within a second, then shares it with the iPhone. A later in-flight refresh cannot replace that save with an older list. Header `v0.2.31`. Publish later Origin commits with `git pull && git push github main`.
 
 ## Links
 
