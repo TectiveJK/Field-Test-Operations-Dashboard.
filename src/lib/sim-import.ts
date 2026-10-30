@@ -77,18 +77,76 @@ function artifactListScore(arts: SimArtifact[]): number {
   return updatedFiles * 100 + renamed * 50 + arts.length;
 }
 
+function artifactFingerprint(arts: SimArtifact[]): string {
+  return arts
+    .map((item) => `${item.packageName}:${item.filename}`)
+    .sort()
+    .join("|");
+}
+
+function runArtifactFingerprint(run: SimRun | null | undefined) {
+  return artifactFingerprint(parseArtifacts(run?.artifacts));
+}
+
+function matchesOlderRun(store: SimStore, fingerprint: string, exceptRunId?: string) {
+  if (!fingerprint) return false;
+  return store.runs.some(
+    (run) => run.id !== exceptRunId && runArtifactFingerprint(run) === fingerprint
+  );
+}
+
 export function liveArtifacts(store: SimStore): SimArtifact[] {
   const current = parseArtifacts(store.artifacts);
-  if (current.length) return current;
   const run = latestSimRun(store);
-  return parseArtifacts(run?.artifacts);
+  const runArts = parseArtifacts(run?.artifacts);
+  if (current.length && runArts.length) {
+    const currentFp = artifactFingerprint(current);
+    const runFp = artifactFingerprint(runArts);
+    if (currentFp !== runFp && matchesOlderRun(store, currentFp, run?.id)) {
+      return runArts;
+    }
+    return current;
+  }
+  if (current.length) return current;
+  return runArts;
+}
+
+export function liveArtifactsKey(store: SimStore | null): string {
+  return store ? artifactFingerprint(liveArtifacts(store)) : "";
+}
+
+export function storedArtifactsKey(store: SimStore | null): string {
+  return store ? artifactFingerprint(parseArtifacts(store.artifacts)) : "";
 }
 
 function preferArtifactList(left: SimStore, right: SimStore): SimArtifact[] {
-  const a = parseArtifacts(left.artifacts);
-  const b = parseArtifacts(right.artifacts);
-  if (artifactListScore(a) >= artifactListScore(b)) return a.length ? a : b;
-  return b;
+  const liveA = liveArtifacts(left);
+  const liveB = liveArtifacts(right);
+  if (!liveA.length) return liveB;
+  if (!liveB.length) return liveA;
+
+  const leftRun = latestSimRun(left);
+  const rightRun = latestSimRun(right);
+  const leftTime = Date.parse(leftRun?.startedAt || "") || 0;
+  const rightTime = Date.parse(rightRun?.startedAt || "") || 0;
+  if (leftTime !== rightTime) return leftTime > rightTime ? liveA : liveB;
+
+  const scoreA = artifactListScore(liveA);
+  const scoreB = artifactListScore(liveB);
+  if (scoreA !== scoreB) return scoreA > scoreB ? liveA : liveB;
+
+  const leftStale = matchesOlderRun(left, artifactFingerprint(liveA), leftRun?.id);
+  const rightStale = matchesOlderRun(right, artifactFingerprint(liveB), rightRun?.id);
+  if (leftStale !== rightStale) return leftStale ? liveB : liveA;
+  return liveA;
+}
+
+export function withSimAppArtifacts(base: SimStore | null, simApp: SimStore | null): SimStore | null {
+  if (!simApp) return base;
+  const arts = liveArtifacts(simApp);
+  if (!arts.length) return base ?? simApp;
+  if (!base) return { ...simApp, artifacts: arts };
+  return { ...base, artifacts: arts };
 }
 
 export function asStore(raw: unknown): SimStore | null {

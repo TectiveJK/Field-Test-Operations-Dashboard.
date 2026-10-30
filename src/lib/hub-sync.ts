@@ -7,9 +7,11 @@ import {
 } from "@/lib/reporter-import";
 import {
   asStore,
+  liveArtifactsKey,
   preferSim,
   simKey,
   slimSimStore,
+  storedArtifactsKey,
   type SimStore,
 } from "@/lib/sim-import";
 import type {
@@ -202,6 +204,7 @@ export function shouldPublish(
   if (localUpdatedAt && localUpdatedAt > (remote.updatedAt || "")) return true;
   const chosen = preferSim(localSim, remote.sim);
   if (chosen && simKey(chosen) !== simKey(remote.sim)) return true;
+  if (chosen && liveArtifactsKey(chosen) !== storedArtifactsKey(remote.sim)) return true;
   const localChosen = preferReporter(localReporter, null);
   const chosenReporter = preferReporter(localReporter, remote.reporter);
   return (

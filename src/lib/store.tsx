@@ -44,6 +44,7 @@ import {
   SIM_STORE_KEY,
   simKey,
   slimSimStore,
+  withSimAppArtifacts,
   type SimStore,
 } from "@/lib/sim-import";
 import {
@@ -234,7 +235,7 @@ async function refreshAll() {
       write((current) => applySimLastRun(current, earlySim), false);
     }
     const [upcoming, hardware, remote] = await restPromise;
-    const chosenSim = preferSim(earlySim, remote?.sim ?? null);
+    const chosenSim = withSimAppArtifacts(preferSim(earlySim, remote?.sim ?? null), localApiSim);
     const chosenReporter = preferReporter(localReporter, remote?.reporter ?? null);
     lastSim = chosenSim;
     lastReporter = chosenReporter;
@@ -274,7 +275,10 @@ async function pushShared(knownRemote?: HubSyncPayload | null) {
   try {
     const remote = knownRemote === undefined ? await fetchHubSync().catch(() => null) : knownRemote;
     const deviceSim = preferSim(readSimStore(), lastSim);
-    const sim = preferSim(deviceSim, remote?.sim ?? null);
+    const sim = withSimAppArtifacts(
+      preferSim(deviceSim, remote?.sim ?? null),
+      lastSim
+    );
     const deviceReporter = preferReporter(readReporterStore(), lastReporter);
     const reporter = preferReporter(deviceReporter, remote?.reporter ?? null);
     lastSim = sim;
