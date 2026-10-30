@@ -141,6 +141,32 @@ export function snapshotForSync(
   };
 }
 
+export async function publishReporterExport(store: ReporterStore): Promise<void> {
+  const reporter = slimReporterStore(store);
+  if (!reporter) return;
+  const remote = await fetchHubSync().catch(() => null);
+  await publishHubSync({
+    kind: "tective-ftod-hub",
+    updatedAt: new Date().toISOString(),
+    sim: remote?.sim ?? null,
+    reporter,
+    hub: remote?.hub ?? null,
+  });
+}
+
+export async function publishSimExport(store: SimStore): Promise<void> {
+  const sim = slimSimStore(store);
+  if (!sim) return;
+  const remote = await fetchHubSync().catch(() => null);
+  await publishHubSync({
+    kind: "tective-ftod-hub",
+    updatedAt: new Date().toISOString(),
+    sim,
+    reporter: remote?.reporter ?? null,
+    hub: remote?.hub ?? null,
+  });
+}
+
 export async function publishHubSync(payload: HubSyncPayload): Promise<void> {
   const body = JSON.stringify(payload);
   const targets =
@@ -207,6 +233,7 @@ export function shouldPublish(
   if (chosen && liveArtifactsKey(chosen) !== storedArtifactsKey(remote.sim)) return true;
   const localChosen = preferReporter(localReporter, null);
   const chosenReporter = preferReporter(localReporter, remote.reporter);
+  if (!remote.reporter && reporterKey(localChosen)) return true;
   return (
     reporterKey(chosenReporter) !== reporterKey(remote.reporter) &&
     reporterKey(chosenReporter) === reporterKey(localChosen)

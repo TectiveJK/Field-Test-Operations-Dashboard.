@@ -153,9 +153,10 @@ export function Dashboard() {
                 LAST FIELD REPORT
               </p>
               <p className="mt-1 text-sm text-slate-700">
-                No shared field report yet. After you save a report in Drone Flight Test Reporter,
-                open this hub on the laptop in the same browser (while online). This phone then
-                picks up those flights, Fail items, and the overall result.
+                No shared field report yet. After you save or export in Drone Flight Test Reporter,
+                open this hub on the laptop in the same browser, or import the Share text / Print
+                PDF on Reports. This phone then picks up those flights, Fail items, and the overall
+                result.
               </p>
             </div>
           )}
@@ -192,7 +193,9 @@ export function Dashboard() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-1 text-xs text-slate-600">No .deb names on that run.</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    No .deb names yet. Save Last successful artifacts in SIM Flight Testing.
+                  </p>
                 )}
               </div>
             </div>

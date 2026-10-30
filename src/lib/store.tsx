@@ -23,6 +23,7 @@ import {
   applyRemoteHub,
   fetchHubSync,
   publishHubSync,
+  publishSimExport,
   shouldPublish,
   snapshotForSync,
   type HubSyncPayload,
@@ -30,17 +31,30 @@ import {
 import { STORAGE_KEY, cloneSeed, seedState } from "@/lib/seed";
 import {
   applyReporterDraft,
+  asReporterStore,
+  cacheReporterStore,
+  isEmptyReporterDraft,
   preferReporter,
   readReporterStore,
+  reporterKey,
+  REPORTER_CACHE_KEY,
+  REPORTER_EXPORT_CHANNEL,
   REPORTER_STORE_KEY,
+  slimReporterStore,
   SNAPSHOT_REPORTER,
   type ReporterStore,
 } from "@/lib/reporter-import";
 import {
   applySimLastRun,
+  artifactKey,
+  asStore,
+  cacheSimStore,
   fetchLocalSimStore,
   preferSim,
+  readCachedSimStore,
   readSimStore,
+  SIM_CACHE_KEY,
+  SIM_EXPORT_CHANNEL,
   SIM_STORE_KEY,
   simKey,
   slimSimStore,
@@ -118,10 +132,17 @@ type StoreApi = {
   }) => Promise<void>;
   savePlanEntry: (input: UpcomingInput & { id?: string }) => Promise<void>;
   removePlanEntry: (id: string) => Promise<void>;
+  importReporter: (store: ReporterStore) => void;
   reset: () => void;
 };
 
 const StoreContext = createContext<StoreApi | null>(null);
+
+type StoreView = {
+  state: HubState;
+  lastSim: SimStore | null;
+  lastReporter: ReporterStore | null;
+};
 
 const META_KEY = "tective-ftod-sync-meta-v1";
 const listeners = new Set<() => void>();
@@ -129,11 +150,59 @@ let memory: HubState = seedState;
 let clientAttached = false;
 let lastSim: SimStore | null = null;
 let lastReporter: ReporterStore | null = SNAPSHOT_REPORTER;
+let reporterLockedKey = "";
+let simLockedKey = "";
+let simApplySeq = 0;
 let localUpdatedAt = "";
 let publishTimer: number | null = null;
 let refreshing = false;
+let pullingSim = false;
+const serverView: StoreView = { state: seedState, lastSim: null, lastReporter: SNAPSHOT_REPORTER };
+let view: StoreView = serverView;
+
+function skipHubPublish() {
+  return typeof window !== "undefined" && new URLSearchParams(window.location.search).has("ftod-test");
+}
+
+function lockSim(store: SimStore) {
+  const next = slimSimStore(store) ?? store;
+  cacheSimStore(next);
+  lastSim = next;
+  simLockedKey = artifactKey(next);
+}
+
+function unlockSimIfPublished(remote: SimStore | null) {
+  if (simLockedKey && artifactKey(remote) === simLockedKey) simLockedKey = "";
+}
+
+function liveSim(local: SimStore | null, remote: SimStore | null) {
+  if (simLockedKey && lastSim && artifactKey(lastSim) === simLockedKey) {
+    const merged = preferSim(lastSim, preferSim(local, remote));
+    return merged ? { ...merged, artifacts: lastSim.artifacts ?? merged.artifacts } : lastSim;
+  }
+  return preferSim(local, remote ?? lastSim ?? readCachedSimStore());
+}
+
+function lockReporter(store: ReporterStore) {
+  const next = slimReporterStore(store) ?? store;
+  cacheReporterStore(next);
+  lastReporter = next;
+  reporterLockedKey = reporterKey(next);
+}
+
+function unlockReporterIfPublished(remote: ReporterStore | null) {
+  if (reporterLockedKey && reporterKey(remote) === reporterLockedKey) reporterLockedKey = "";
+}
+
+function liveReporter(local: ReporterStore | null, remote: ReporterStore | null) {
+  if (reporterLockedKey && lastReporter && reporterKey(lastReporter) === reporterLockedKey) {
+    return lastReporter;
+  }
+  return preferReporter(local, remote ?? lastReporter);
+}
 
 function emit() {
+  view = { state: memory, lastSim, lastReporter };
   for (const listener of listeners) listener();
 }
 
@@ -170,7 +239,7 @@ function subscribe(listener: () => void) {
   if (!clientAttached) {
     clientAttached = true;
     readMeta();
-    lastSim = slimSimStore(readSimStore());
+    lastSim = preferSim(readSimStore(), readCachedSimStore());
     lastReporter = preferReporter(readReporterStore(), null);
     const persisted = applyReporterDraft(applySimLastRun(readPersisted(), lastSim), lastReporter);
     const shared = readSharedHardware();
@@ -192,18 +261,24 @@ function subscribe(listener: () => void) {
 
 function attachLiveRefresh() {
   const onVisible = () => {
-    if (document.visibilityState === "visible") void refreshAll();
+    if (document.visibilityState === "visible") {
+      void pullLiveSim();
+      void refreshAll();
+    }
   };
-  window.addEventListener("focus", () => void refreshAll());
-  window.addEventListener("online", () => void refreshAll());
-  window.addEventListener("pageshow", () => void refreshAll());
+  window.addEventListener("focus", onVisible);
+  window.addEventListener("online", onVisible);
+  window.addEventListener("pageshow", onVisible);
   document.addEventListener("visibilitychange", onVisible);
   window.addEventListener("storage", (event) => {
     if (
       event.key === SIM_STORE_KEY ||
+      event.key === SIM_CACHE_KEY ||
       event.key === REPORTER_STORE_KEY ||
+      event.key === REPORTER_CACHE_KEY ||
       event.key === STORAGE_KEY
     ) {
+      void pullLiveSim();
       void refreshAll();
     }
   });
@@ -211,32 +286,123 @@ function attachLiveRefresh() {
     cacheHardware(items, false);
     write((current) => applyHardware(current, items), false);
   });
+  try {
+    const reporterChannel = new BroadcastChannel(REPORTER_EXPORT_CHANNEL);
+    reporterChannel.addEventListener("message", (event) => {
+      const store = asReporterStore(event.data);
+      if (!store || isEmptyReporterDraft(store)) return;
+      lockReporter(store);
+      write((current) => applyReporterDraft(current, lastReporter));
+    });
+  } catch {
+    /* BroadcastChannel is missing in some WebViews */
+  }
+  try {
+    const simChannel = new BroadcastChannel(SIM_EXPORT_CHANNEL);
+    simChannel.addEventListener("message", (event) => {
+      const store = slimSimStore(asStore(event.data));
+      if (!store || !artifactKey(store) || artifactKey(store) === artifactKey(lastSim)) return;
+      applyLockedSim(store);
+    });
+  } catch {
+    /* BroadcastChannel is missing in some WebViews */
+  }
+  window.setInterval(() => {
+    if (document.visibilityState !== "visible") return;
+    const local = readReporterStore();
+    if (!local || reporterKey(local) === reporterKey(lastReporter)) return;
+    if (reporterLockedKey && reporterKey(lastReporter) === reporterLockedKey) return;
+    lastReporter = preferReporter(local, lastReporter);
+    cacheReporterStore(lastReporter);
+    write((current) => applyReporterDraft(current, lastReporter));
+  }, 1000);
+  window.setInterval(() => {
+    if (document.visibilityState === "visible") void pullLiveSim();
+  }, 1000);
   window.setInterval(() => {
     if (document.visibilityState === "visible") void refreshAll();
-  }, 8000);
+  }, 4000);
+}
+
+function applyLockedSim(store: SimStore) {
+  simApplySeq += 1;
+  lockSim(store);
+  write((current) => applySimLastRun(current, lastSim), false);
+  if (!skipHubPublish()) void publishSimExport(store);
+}
+
+async function pullLiveSim() {
+  if (pullingSim) return;
+  pullingSim = true;
+  const started = simApplySeq;
+  try {
+    const apiSim = slimSimStore(await fetchLocalSimStore().catch(() => null));
+    if (started !== simApplySeq) return;
+    const storageSim = slimSimStore(readSimStore()) ?? readCachedSimStore();
+    let next = liveSim(apiSim ?? storageSim, lastSim);
+    if (!apiSim) {
+      const remote = await fetchHubSync().catch(() => null);
+      if (started !== simApplySeq) return;
+      unlockSimIfPublished(remote?.sim ?? null);
+      next = liveSim(storageSim, remote?.sim ?? lastSim);
+    } else if (artifactKey(apiSim) && artifactKey(apiSim) !== artifactKey(lastSim)) {
+      applyLockedSim(apiSim);
+      return;
+    }
+    if (!next || started !== simApplySeq) return;
+    if (simKey(next) === simKey(lastSim) && artifactKey(next) === artifactKey(lastSim)) return;
+    if (artifactKey(next) && artifactKey(next) !== artifactKey(lastSim)) {
+      applyLockedSim(next);
+      return;
+    }
+    lastSim = next;
+    cacheSimStore(next);
+    write((current) => applySimLastRun(current, next), false);
+  } finally {
+    pullingSim = false;
+  }
 }
 
 async function refreshAll() {
   if (refreshing) return;
   refreshing = true;
+  const started = simApplySeq;
   try {
-    const localSim = slimSimStore(readSimStore());
+    const storageSim = slimSimStore(readSimStore()) ?? readCachedSimStore();
     const localReporter = readReporterStore();
+    cacheReporterStore(localReporter);
     const localApiSimPromise = fetchLocalSimStore().catch(() => null);
     const restPromise = Promise.all([
       fetchUpcomingEntries().catch(() => null),
       fetchHardwareItems().catch(() => readSharedHardware()?.items ?? null),
       fetchHubSync().catch(() => null),
     ]);
-    const localApiSim = await localApiSimPromise;
-    const earlySim = preferSim(localSim, localApiSim);
-    if (simKey(earlySim) !== simKey(lastSim)) {
+    const localApiSim = slimSimStore(await localApiSimPromise);
+    const apiIsCurrent = started === simApplySeq;
+    if (
+      apiIsCurrent &&
+      localApiSim &&
+      artifactKey(localApiSim) &&
+      artifactKey(localApiSim) !== artifactKey(lastSim)
+    ) {
+      applyLockedSim(localApiSim);
+    }
+    const earlySim = liveSim(apiIsCurrent ? localApiSim ?? storageSim : lastSim, lastSim);
+    if (apiIsCurrent && simKey(earlySim) !== simKey(lastSim)) {
       lastSim = earlySim;
+      cacheSimStore(earlySim);
       write((current) => applySimLastRun(current, earlySim), false);
     }
     const [upcoming, hardware, remote] = await restPromise;
-    const chosenSim = withSimAppArtifacts(preferSim(earlySim, remote?.sim ?? null), localApiSim);
-    const chosenReporter = preferReporter(localReporter, remote?.reporter ?? null);
+    unlockSimIfPublished(remote?.sim ?? null);
+    const chosenSim = withSimAppArtifacts(
+      liveSim(apiIsCurrent ? localApiSim ?? earlySim : lastSim, remote?.sim ?? null),
+      localApiSim
+    );
+    unlockReporterIfPublished(remote?.reporter ?? null);
+    const chosenReporter = liveReporter(localReporter, remote?.reporter ?? lastReporter);
+    cacheReporterStore(chosenReporter);
+    cacheSimStore(chosenSim);
     lastSim = chosenSim;
     lastReporter = chosenReporter;
     const remoteHubNewer = Boolean(remote?.updatedAt && remote.updatedAt > (localUpdatedAt || ""));
@@ -253,7 +419,14 @@ async function refreshAll() {
       localUpdatedAt = remote.updatedAt;
       persist(memory);
     }
-    if (shouldPublish(localUpdatedAt, chosenSim, remote, localReporter ?? chosenReporter)) {
+    const lockedNeedsPublish = Boolean(
+      reporterLockedKey && reporterKey(remote?.reporter ?? null) !== reporterLockedKey
+    );
+    const simNeedsPublish = Boolean(simLockedKey && artifactKey(remote?.sim ?? null) !== simLockedKey);
+    if (
+      !skipHubPublish() &&
+      (lockedNeedsPublish || simNeedsPublish || shouldPublish(localUpdatedAt, chosenSim, remote, chosenReporter))
+    ) {
       schedulePublish(remote);
     }
   } finally {
@@ -262,7 +435,7 @@ async function refreshAll() {
 }
 
 function schedulePublish(remote?: HubSyncPayload | null) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || skipHubPublish()) return;
   if (publishTimer) window.clearTimeout(publishTimer);
   publishTimer = window.setTimeout(() => {
     publishTimer = null;
@@ -271,19 +444,27 @@ function schedulePublish(remote?: HubSyncPayload | null) {
 }
 
 async function pushShared(knownRemote?: HubSyncPayload | null) {
-  if (!navigator.onLine) return;
+  if (!navigator.onLine || skipHubPublish()) return;
   try {
     const remote = knownRemote === undefined ? await fetchHubSync().catch(() => null) : knownRemote;
-    const deviceSim = preferSim(readSimStore(), lastSim);
-    const sim = withSimAppArtifacts(
-      preferSim(deviceSim, remote?.sim ?? null),
-      lastSim
-    );
-    const deviceReporter = preferReporter(readReporterStore(), lastReporter);
-    const reporter = preferReporter(deviceReporter, remote?.reporter ?? null);
+    const apiSim = slimSimStore(await fetchLocalSimStore().catch(() => null));
+    const deviceSim = liveSim(apiSim ?? readSimStore(), lastSim);
+    const sim = withSimAppArtifacts(liveSim(deviceSim, remote?.sim ?? null), apiSim ?? lastSim);
+    unlockSimIfPublished(remote?.sim ?? null);
+    unlockReporterIfPublished(remote?.reporter ?? null);
+    const deviceReporter = liveReporter(readReporterStore(), lastReporter);
+    const reporter = liveReporter(deviceReporter, remote?.reporter ?? lastReporter);
+    cacheReporterStore(reporter);
+    cacheSimStore(sim);
     lastSim = sim;
     lastReporter = reporter;
-    if (!shouldPublish(localUpdatedAt, deviceSim, remote, deviceReporter)) return;
+    const lockedNeedsPublish = Boolean(
+      reporterLockedKey && reporterKey(remote?.reporter ?? null) !== reporterLockedKey
+    );
+    const simNeedsPublish = Boolean(simLockedKey && artifactKey(remote?.sim ?? null) !== simLockedKey);
+    if (!lockedNeedsPublish && !simNeedsPublish && !shouldPublish(localUpdatedAt, deviceSim, remote, deviceReporter)) {
+      return;
+    }
     const updatedAt = localUpdatedAt || new Date().toISOString();
     localUpdatedAt = updatedAt;
     await publishHubSync(snapshotForSync(memory, sim, reporter, updatedAt));
@@ -294,11 +475,11 @@ async function pushShared(knownRemote?: HubSyncPayload | null) {
 }
 
 function getSnapshot() {
-  return memory;
+  return view;
 }
 
 function getServerSnapshot() {
-  return seedState;
+  return serverView;
 }
 
 function write(updater: (current: HubState) => HubState, sync = true) {
@@ -310,10 +491,11 @@ function write(updater: (current: HubState) => HubState, sync = true) {
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const state = snapshot.state;
   const ready = state !== seedState || clientAttached;
-  const sim = lastSim;
-  const reporter = lastReporter;
+  const sim = snapshot.lastSim;
+  const reporter = snapshot.lastReporter;
 
   const setDecision = useCallback((decision: GoDecision, reason: string) => {
     write((current) => ({ ...current, decision, decisionReason: reason }));
@@ -521,9 +703,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const importReporter = useCallback((store: ReporterStore) => {
+    if (isEmptyReporterDraft(store)) return;
+    lockReporter(store);
+    try {
+      new BroadcastChannel(REPORTER_EXPORT_CHANNEL).postMessage(lastReporter);
+    } catch {
+      /* same-tab import still writes the hub */
+    }
+    write((current) => applyReporterDraft(current, lastReporter));
+  }, []);
+
   const reset = useCallback(() => {
     localUpdatedAt = "";
-    lastSim = slimSimStore(readSimStore());
+    lastSim = preferSim(readSimStore(), readCachedSimStore());
     lastReporter = preferReporter(readReporterStore(), null);
     memory = applyHardware(
       applyReporterDraft(applySimLastRun(cloneSeed(), lastSim), lastReporter),
@@ -553,6 +746,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addHardwareItem,
       savePlanEntry,
       removePlanEntry,
+      importReporter,
       reset,
     }),
     [
@@ -573,6 +767,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addHardwareItem,
       savePlanEntry,
       removePlanEntry,
+      importReporter,
       reset,
     ]
   );

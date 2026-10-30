@@ -2,6 +2,8 @@ import snapshot from "@/lib/reporter-snapshot.json";
 import { isAirframe, type HubState, type Issue, type RunResult, type TestCase, type TestRun } from "@/lib/types";
 
 export const REPORTER_STORE_KEY = "dft-reporter-ios-draft-v1";
+export const REPORTER_CACHE_KEY = "tective-ftod-reporter-live-v1";
+export const REPORTER_EXPORT_CHANNEL = "tective-reporter-export";
 
 const ISSUE_PREFIX = "ISS-REP-";
 const RUN_PREFIX = "rep-run-";
@@ -75,13 +77,24 @@ function asResult(raw: unknown): string {
   return (REPORTER_RESULTS as readonly string[]).includes(value) ? value : "Pending";
 }
 
+function fileNameOf(raw: unknown) {
+  const value = String(raw ?? "").trim();
+  if (!value || value === "None" || value === "N/A") return "";
+  const stripped = value.replace(/\s*\(attached\)\s*$/i, "").trim();
+  const base = stripped.split(/[/\\]/).pop() || stripped;
+  return base.replace(/^evidence\//, "");
+}
+
 function headerOf(raw: Record<string, unknown> | ReporterFlight): Pick<
   ReporterFlight,
   (typeof HEADER_FIELDS)[number] | "equipment"
 > {
   const item = raw as Record<string, unknown>;
   const header = {} as Record<string, string>;
-  for (const key of HEADER_FIELDS) header[key] = String(item[key] ?? "").trim();
+  for (const key of HEADER_FIELDS) {
+    const fallback = key === "category" ? item.droneCategory : "";
+    header[key] = String(item[key] ?? fallback ?? "").trim();
+  }
   return {
     ...(header as Pick<ReporterFlight, (typeof HEADER_FIELDS)[number]>),
     equipment: asList(item.equipment ?? item.equipmentHardware),
@@ -93,20 +106,20 @@ function asFlight(raw: unknown, index: number, shared: Record<string, unknown> =
   const item = raw as Record<string, unknown>;
   const merged = { ...shared, ...item };
   const header = headerOf(merged as ReporterFlight);
-  const number = Number(item.number ?? index + 1);
+  const number = Number(item.number ?? item.flightNumber ?? index + 1);
   return {
     number: Number.isFinite(number) && number > 0 ? number : index + 1,
     ...header,
-    dateTime: String(item.dateTime ?? "").trim(),
+    dateTime: String(item.dateTime ?? item.flightDateTime ?? "").trim(),
     duration: String(item.duration ?? "").trim(),
-    modes: asList(item.modes),
-    mission: String(item.mission ?? "").trim(),
+    modes: asList(item.modes ?? item.flightModes),
+    mission: String(item.mission ?? item.missionPerformed ?? "").trim(),
     anomalies: String(item.anomalies ?? "").trim(),
-    action: String(item.action ?? "").trim(),
-    result: asResult(item.result),
-    logName: String(item.logName ?? "").trim(),
-    captureName: String(item.captureName ?? "").trim(),
-    attachments: asList(item.attachments),
+    action: String(item.action ?? item.immediateAction ?? "").trim(),
+    result: asResult(item.result ?? item.flightResult),
+    logName: fileNameOf(item.logName ?? item.flightLogPath),
+    captureName: fileNameOf(item.captureName ?? item.captureFilePath),
+    attachments: asList(item.attachments).map((name) => fileNameOf(name)).filter(Boolean),
   };
 }
 
@@ -174,10 +187,10 @@ export function isEmptyReporterDraft(store: ReporterStore | null): boolean {
   );
 }
 
-export function readReporterStore(): ReporterStore | null {
+function readStoredReporter(key: string): ReporterStore | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(REPORTER_STORE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return null;
     const parsed = asReporterStore(JSON.parse(raw));
     if (!parsed || isEmptyReporterDraft(parsed)) return null;
@@ -185,6 +198,30 @@ export function readReporterStore(): ReporterStore | null {
   } catch {
     return null;
   }
+}
+
+export function cacheReporterStore(store: ReporterStore | null) {
+  if (typeof window === "undefined") return;
+  const slim = slimReporterStore(store);
+  if (!slim || isEmptyReporterDraft(slim)) return;
+  try {
+    window.localStorage.setItem(REPORTER_CACHE_KEY, JSON.stringify(slim));
+  } catch {
+    /* quota — keep the in-memory copy */
+  }
+}
+
+export function readReporterStore(): ReporterStore | null {
+  const draft = readStoredReporter(REPORTER_STORE_KEY);
+  const cached = readStoredReporter(REPORTER_CACHE_KEY);
+  if (!draft) return cached;
+  if (!cached) {
+    cacheReporterStore(draft);
+    return draft;
+  }
+  const chosen = preferReporter(draft, cached);
+  cacheReporterStore(chosen);
+  return chosen;
 }
 
 function scoredFlights(store: ReporterStore) {
@@ -225,9 +262,16 @@ export function preferReporter(local: ReporterStore | null, remote: ReporterStor
   if (!right) return left;
   const leftTime = latestTime(left);
   const rightTime = latestTime(right);
-  if (leftTime !== rightTime) return leftTime > rightTime ? left : right;
   const leftScored = scoredFlights(left).length;
   const rightScored = scoredFlights(right).length;
+  if (leftTime !== rightTime) {
+    if (leftTime === 0 || rightTime === 0) {
+      if (leftScored !== rightScored) return leftScored > rightScored ? left : right;
+      if (leftTime === 0 && reporterKey(left) !== reporterKey(SNAPSHOT_REPORTER)) return left;
+      if (rightTime === 0 && reporterKey(right) !== reporterKey(SNAPSHOT_REPORTER)) return right;
+    }
+    return leftTime > rightTime ? left : right;
+  }
   if (leftScored !== rightScored) return leftScored > rightScored ? left : right;
   return reporterKey(left).length >= reporterKey(right).length ? left : right;
 }
@@ -278,7 +322,10 @@ function objectiveTypes(flight: ReporterFlight) {
 }
 
 function flightLabel(flight: ReporterFlight) {
-  return flight.objective.trim() || `Flight ${String(flight.number).padStart(2, "0")}`;
+  if (flight.objective.trim()) return flight.objective.trim();
+  const types = objectiveTypes(flight);
+  const number = `Flight ${String(flight.number).padStart(2, "0")}`;
+  return types ? `${types} · ${number}` : number;
 }
 
 function caseIdOf(flight: ReporterFlight) {

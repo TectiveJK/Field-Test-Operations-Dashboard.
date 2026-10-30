@@ -79,7 +79,8 @@ export function TestsBoard() {
             ) : (
               <p>
                 Open this hub on the laptop in the same browser as Drone Flight Test Reporter after
-                you save a report. The iPhone then loads that campaign from the shared list.
+                you save a report, or import the Share text / Print PDF on Reports. The iPhone then
+                loads that campaign from the shared list.
               </p>
             )}
           </CardContent>

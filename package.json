@@ -1,6 +1,6 @@
 {
   "name": "field-test-operations-dashboard",
-  "version": "0.2.27",
+  "version": "0.2.32",
   "private": true,
   "description": "Daily command center for Tective drone field-test operations. Connects reporting, maintenance, planning and simulator testing without replacing those apps.",
   "homepage": "https://tectivejk.github.io/Field-Test-Operations-Dashboard./",
@@ -30,7 +30,8 @@
     "build": "next build",
     "start": "npx --yes serve out --listen tcp://0.0.0.0:43180",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/pdf.worker.min.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -38,6 +39,7 @@
     "cn": "^0.4.0",
     "lucide-react": "^1.57.0",
     "next": "16.4.0",
+    "pdfjs-dist": "^4.10.38",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "shadcn": "^4.21.4",

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # nested clone, not part of this app
 /field-test-dashboard
+
+# copied from pdfjs-dist on npm install
+/public/pdf.worker.min.mjs
