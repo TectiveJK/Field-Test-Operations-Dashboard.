@@ -403,7 +403,7 @@ function fleetSections(state: HubState): PdfSection[] {
               build.jenkins ? `Jenkins ${build.jenkins}` : "SIM packages",
               `PX4: ${blank(build.px4)}`,
               `SkyCommand: ${blank(build.skyCommand)}`,
-              `SkyHive: ${blank(build.skyHive)}`,
+              `skycommand-db: ${blank(build.skyHive)}`,
               `GCS: ${blank(build.gcs)}`,
               `Autonomy: ${blank(build.autonomyNode)}`,
               build.notes ? `Notes: ${build.notes}` : "",

@@ -169,9 +169,9 @@ export function Dashboard() {
                 <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-500">LAST SIM RUN</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{sim.name}</p>
                 <p className="text-xs text-slate-600">
-                  {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
-                  {sim.tester ? ` · ${sim.tester}` : ""}
-                  {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+                  {sim.startedAt
+                    ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}${sim.tester ? ` · ${sim.tester}` : ""} · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`
+                    : "No scored SIM run yet. The four Jenkins .deb names below are from Last successful artifacts."}
                 </p>
                 {sim.openRunName ? (
                   <p className="mt-1 text-xs text-amber-800">

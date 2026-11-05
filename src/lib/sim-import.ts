@@ -50,7 +50,12 @@ const RUN_PREFIX = "simrun-";
 const REPORT_ID = "rep-sim-latest";
 
 const CATALOG_DEFAULT_MARK = "b9c924f";
-const CATALOG_PACKAGE_NAMES = ["web-ground-control", "mission-planner", "tective-simulator"];
+const JENKINS_PACKAGE_NAMES = [
+  "mission-planner",
+  "skycommand-db",
+  "tective-simulator",
+  "web-ground-control",
+] as const;
 
 function asArtifact(raw: unknown): SimArtifact | null {
   if (!raw || typeof raw !== "object") return null;
@@ -72,11 +77,17 @@ export function isCatalogDefaultArtifacts(arts: SimArtifact[]): boolean {
   return arts.length > 0 && arts.every((item) => item.filename.includes(CATALOG_DEFAULT_MARK));
 }
 
+export function isJenkinsArtifacts(arts: SimArtifact[]): boolean {
+  if (arts.length !== JENKINS_PACKAGE_NAMES.length) return false;
+  const names = new Set(arts.map((item) => item.packageName));
+  return JENKINS_PACKAGE_NAMES.every((name) => names.has(name));
+}
+
 function artifactListScore(arts: SimArtifact[]): number {
   if (!arts.length) return 0;
   const updatedFiles = arts.filter((item) => !item.filename.includes(CATALOG_DEFAULT_MARK)).length;
-  const renamed = arts.filter((item) => !CATALOG_PACKAGE_NAMES.includes(item.packageName)).length;
-  return updatedFiles * 100 + renamed * 50 + arts.length;
+  if (isJenkinsArtifacts(arts)) return 10000 + updatedFiles * 100;
+  return updatedFiles * 10 + arts.length;
 }
 
 function artifactFingerprint(arts: SimArtifact[]): string {
@@ -101,6 +112,8 @@ export function liveArtifacts(store: SimStore): SimArtifact[] {
   const current = parseArtifacts(store.artifacts);
   const run = latestSimRun(store);
   const runArts = parseArtifacts(run?.artifacts);
+  if (isJenkinsArtifacts(current)) return current;
+  if (isJenkinsArtifacts(runArts)) return runArts;
   if (current.length && runArts.length) {
     const currentFp = artifactFingerprint(current);
     const runFp = artifactFingerprint(runArts);
@@ -126,6 +139,9 @@ function preferArtifactList(left: SimStore, right: SimStore): SimArtifact[] {
   const liveB = liveArtifacts(right);
   if (!liveA.length) return liveB;
   if (!liveB.length) return liveA;
+  if (isJenkinsArtifacts(liveA) !== isJenkinsArtifacts(liveB)) {
+    return isJenkinsArtifacts(liveA) ? liveA : liveB;
+  }
 
   const leftRun = latestSimRun(left);
   const rightRun = latestSimRun(right);
@@ -425,7 +441,21 @@ export function summarizeSim(store: SimStore | null): SimRunSummary | null {
   const scoredRun = latestScoredSimRun(store);
   const latest = latestSimRun(store);
   const run = scoredRun ?? latest;
-  if (!run) return null;
+  const artifacts = artifactsOf(store, run);
+  if (!run) {
+    if (!artifacts.length) return null;
+    return {
+      name: "Last successful artifacts",
+      startedAt: "",
+      tester: "",
+      passed: 0,
+      failed: 0,
+      blocked: 0,
+      scored: 0,
+      artifacts,
+      openRunName: "",
+    };
+  }
   const scored = scoredResults(store, run.id);
   const openRunName = latest && scoredRun && latest.id !== scoredRun.id ? latest.name : "";
   return {
@@ -436,7 +466,7 @@ export function summarizeSim(store: SimStore | null): SimRunSummary | null {
     failed: scored.filter((result) => result.status === "failed").length,
     blocked: scored.filter((result) => result.status === "blocked").length,
     scored: scored.length,
-    artifacts: artifactsOf(store, run),
+    artifacts,
     openRunName,
   };
 }
@@ -450,15 +480,16 @@ export function buildFromSim(store: SimStore, run: SimRun | null): SoftwareBuild
   const skyCommand = fileFor(artifacts, "web-ground-control");
   const gcs = fileFor(artifacts, "mission-planner");
   const autonomyNode = fileFor(artifacts, "tective-simulator") || fileFor(artifacts, "autonomy-node");
-  if (!skyCommand && !gcs && !autonomyNode) return null;
-  const stamp = [skyCommand, gcs, autonomyNode].filter(Boolean).join(" ").replaceAll(/[^a-z0-9]+/gi, "-").slice(0, 56);
+  const skyHive = fileFor(artifacts, "skycommand-db");
+  if (!skyCommand && !gcs && !autonomyNode && !skyHive) return null;
+  const stamp = [skyCommand, gcs, autonomyNode, skyHive].filter(Boolean).join(" ").replaceAll(/[^a-z0-9]+/gi, "-").slice(0, 56);
   return {
     id: `sim-${stamp || "packages"}`,
     label: "SIM Flight Testing packages",
     jenkins: "",
     px4: "",
     skyCommand,
-    skyHive: "",
+    skyHive,
     gcs,
     autonomyNode,
     notes: run

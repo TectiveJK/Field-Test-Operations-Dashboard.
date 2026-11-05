@@ -95,9 +95,9 @@ export function TestsBoard() {
             {sim ? (
               <div className="grid gap-2">
                 <p>
-                  {sim.startedAt ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}` : "Time not set"}
-                  {sim.tester ? ` · ${sim.tester}` : ""}
-                  {` · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`}
+                  {sim.startedAt
+                    ? `${formatDate(sim.startedAt)} ${formatTime(sim.startedAt)}${sim.tester ? ` · ${sim.tester}` : ""} · ${sim.passed} pass / ${sim.failed} fail / ${sim.blocked} blocked of ${sim.scored} scored`
+                    : "No scored SIM run yet. Jenkins .deb names below are from Last successful artifacts."}
                 </p>
                 {sim.openRunName ? (
                   <p className="text-xs text-amber-800">

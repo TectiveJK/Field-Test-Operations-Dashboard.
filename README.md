@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.32`
+**Current version:** `0.2.33`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.32**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.32`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. Last successful `.deb` names follow that SIM app, even if an older shared snapshot still has the previous packages. A save of **Last successful artifacts** in SIM is copied onto Today and Tests together within a second while that app is running on this computer, then shared with the iPhone. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. A PDF you import stays on Today even if a smaller Share paste was stamped today. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.32` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.33**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.33`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. Last successful `.deb` names are the four Jenkins packages from that SIM app (`mission-planner`, `skycommand-db`, `tective-simulator`, `web-ground-control`). A save of **Last successful artifacts** in SIM is copied onto Today and Tests together within a second while that app is running on this computer, then shared with the iPhone. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. A PDF you import stays on Today even if a smaller Share paste was stamped today. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.33` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -31,7 +31,7 @@ It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the fir
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.32`. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.33`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ Five tools already cover reporting, maintenance, planning, simulator testing and
 | Reporting | [Drone Flight Test Reporter](https://tectivejk.github.io/drone-flight-test-reporter/) | Equipment list (ReFly / SkyHive / rotator / packs) and the latest multi-flight report (flights, overall result, Fail items). Import the Export Report PDF, Share text, or JSON on Reports. A save in the same laptop browser is read within a second. |
 | Maintenance | [Drone Maintenance Assistant](https://tectivejk.github.io/drone-maintenance-assistant/) | Fleet, faults and inspections if that app has any. It currently stores none. |
 | Planning | [Upcoming flights & tests](https://tectivejk.github.io/Upcoming-Test-Flights/) | The live shared board. This hub reads it and can add, edit or remove flights and tests. That app is not modified. |
-| Simulator testing | [SIM Flight Testing](http://127.0.0.1:43147/) ([Gitea](https://git.tective.nl/JohnKokotinis/sim-testing-app)) | The 20 SkyCommand simulator missions, FAIL / BLOCKED items from the last scored run, and `.deb` names from **Last successful artifacts**. A save there is copied onto this hub immediately and shared with the iPhone. |
+| Simulator testing | [SIM Flight Testing](http://127.0.0.1:43147/) ([Gitea](https://git.tective.nl/JohnKokotinis/sim-testing-app)) | The 20 SkyCommand simulator missions, FAIL / BLOCKED items from the last scored run, and the four Jenkins `.deb` names from **Last successful artifacts** (`mission-planner`, `skycommand-db`, `tective-simulator`, `web-ground-control`). A save there is copied onto this hub immediately and shared with the iPhone. |
 | Locations | [Hardware locator](https://tectivejk.github.io/Updating-hardware/) | Live company list. Change a location here or in the locator; both apps update. |
 
 The operations dashboard is the home screen for the day, with the other modules sharing the same records.
@@ -82,7 +82,7 @@ Every module uses the same objects. That is the foundation for adding more later
 | Record | Holds |
 | --- | --- |
 | **Drone** | Id, family (ReFly IBB / SF, SkyHive, rotator, battery), status, hardware, location, holder, gimbal, parameters, current build |
-| **SoftwareBuild** | Jenkins number, PX4, SkyCommand, SkyHive, GCS package, autonomy-node |
+| **SoftwareBuild** | Jenkins number, PX4, SkyCommand (`web-ground-control`), SkyHive (`skycommand-db`), GCS (`mission-planner`), autonomy-node (`tective-simulator`) |
 | **TestCase** | Numbered steps, mission type, field / simulator |
 | **TestRun** | Result (pass / fail / blocked / not-run / aborted / observations), measurements, links to drone + build + issues + evidence |
 | **Issue** | Unique id, severity, reproduce steps, expected vs actual, retest result |
@@ -205,9 +205,9 @@ The iPhone home-screen app cannot read the local SIM Flight Testing server or Dr
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.32
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.33
 
-Pull down to refresh until the header shows `v0.2.32`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.33`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -256,7 +256,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.32** copies Last successful `.deb` names from the Gitea SIM Flight Testing app onto Today, even when an older shared snapshot still has the previous packages. Saving **Last successful artifacts** in SIM copies that list onto Today and Tests within a second, then shares it with the iPhone. Header `v0.2.32`. Publish with `git pull && git push github main`.
+**0.2.33** copies the four Jenkins `.deb` names from SIM Flight Testing (`mission-planner`, `skycommand-db`, `tective-simulator`, `web-ground-control`) onto Today and Tests. An older seven-package snapshot is not kept. Header `v0.2.33`. Publish with `git pull && git push github main`.
 
 ## Links
 

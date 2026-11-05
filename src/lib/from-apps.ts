@@ -84,15 +84,15 @@ export const EXISTING_APPS = [
 ] as const;
 
 const simBuild: SoftwareBuild = {
-  id: "sim-b9c924f",
+  id: "sim-a3cec06",
   label: "SIM Flight Testing packages",
   jenkins: "",
   px4: "",
-  skyCommand: "web-ground-control_0.0.1-b9c924f.deb",
-  skyHive: "",
-  gcs: "mission-planner_1.0.0+b9c924f-b29_amd64.deb",
-  autonomyNode: "tective-simulator_0.1.0+b9c924f.b29_amd64.deb",
-  notes: "Default .deb artifacts from SIM Flight Testing.",
+  skyCommand: "web-ground-control_0.0.1-c7b3d1f.deb",
+  skyHive: "skycommand-db_1.0.0+7a8e078-b5_amd64.deb",
+  gcs: "mission-planner_1.0.0+a3cec06-b68_amd64.deb",
+  autonomyNode: "tective-simulator_0.1.0+a3cec06.b68_amd64.deb",
+  notes: "Four Jenkins .deb artifacts from SIM Flight Testing.",
 };
 
 function dronesFromReporter(): Drone[] {
@@ -161,7 +161,7 @@ function checklistFromReporter(): ChecklistItem[] {
   const gcs: ChecklistItem[] = [
     { id: "s1", group: "GCS", label: "QGC + joysticks + cables", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
     { id: "s2", group: "GCS", label: "SIM / GCS laptop", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
-    { id: "s3", group: "GCS", label: "SIM packages (web-ground-control, mission-planner, tective-simulator)", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
+    { id: "s3", group: "GCS", label: "SIM packages (mission-planner, skycommand-db, tective-simulator, web-ground-control)", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
   ];
   const site: ChecklistItem[] = [
     { id: "t1", group: "Site", label: "Weather, NOTAM, range brief", done: false, by: "", at: null, location: "", holder: "", locatorNote: "" },
