@@ -5,6 +5,7 @@ import {
   slimReporterStore,
   type ReporterStore,
 } from "@/lib/reporter-import";
+import { readJsonResponse } from "@/lib/json-payload";
 import {
   asStore,
   liveArtifactsKey,
@@ -100,7 +101,7 @@ export async function fetchHubSync(): Promise<HubSyncPayload | null> {
         lastError = new Error("Shared hub list could not be loaded.");
         continue;
       }
-      return asPayload(await response.json());
+      return asPayload(await readJsonResponse(response));
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("Shared hub list could not be loaded.");
     }

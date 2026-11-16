@@ -1,3 +1,4 @@
+import { readJsonResponse } from "@/lib/json-payload";
 import type { PlanItem } from "@/lib/types";
 import snapshot from "@/lib/upcoming-snapshot.json";
 
@@ -114,7 +115,7 @@ export async function fetchUpcomingBoard(): Promise<UpcomingBoard> {
         cache: "no-store",
         signal: AbortSignal.timeout(8000),
       });
-      if (response.ok) return boardFromRaw(await response.json());
+      if (response.ok) return boardFromRaw(await readJsonResponse(response));
       lastError = new Error("Upcoming flights board could not be loaded.");
     } catch (error) {
       lastError =
