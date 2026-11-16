@@ -45,7 +45,7 @@ export function Dashboard() {
   const skipped = skippedPlanCarryover(state);
   const runs = todayRuns(state);
   const issues = openIssues(state);
-  const actions = nextActions(state);
+  const nextIssues = nextActions(state).filter((action) => !action.planId);
   const summary = dailySummary(state);
   const drones = state.drones.filter(isAirframe);
   const sim = summarizeSim(lastSim);
@@ -57,7 +57,7 @@ export function Dashboard() {
         <div className="min-w-0 flex-1">
           <h2 className="text-xl font-semibold tracking-tight">Today</h2>
           <p className="mt-1 text-sm text-slate-600">
-            GO / NO-GO, last field report, last SIM run, and the three questions for the day.
+            GO / NO-GO, last field report, last SIM run, open issues, and what to test next.
           </p>
         </div>
         <ExportPdfButton page="today" />
@@ -230,10 +230,34 @@ export function Dashboard() {
         ))}
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-3">
+      <section className="grid gap-4 xl:grid-cols-2">
+        <QuestionCard index="1" title="What is still unresolved?" href="/issues">
+          {issues.length === 0 ? (
+            <Empty>
+              {field || sim
+                ? "Last field report and SIM run left no open Fail / BLOCKED items. Maintenance Assistant still has none stored."
+                : "No open issues from the last field report, SIM run, or Maintenance Assistant."}
+            </Empty>
+          ) : (
+            <ul className="divide-y">
+              {issues.map((issue) => (
+                <li key={issue.id} className="py-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-xs">{issue.id}</span>
+                    <StatusBadge value={issue.severity} />
+                    <StatusBadge value={issue.status} />
+                  </div>
+                  <p className="mt-1 text-sm font-medium text-slate-900">{issue.title}</p>
+                  <p className="text-xs text-slate-600">{issue.retestResult || issue.actual}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </QuestionCard>
+
         <QuestionCard
-          index="1"
-          title="What do I need to test today?"
+          index="2"
+          title="What should we test next?"
           href="/plan"
           extra={
             <>
@@ -243,8 +267,8 @@ export function Dashboard() {
             </>
           }
         >
-          {plan.length === 0 ? (
-            <Empty>Nothing left to test today. Past Done items are in Test history; skipped items move to question 3.</Empty>
+          {plan.length === 0 && skipped.length === 0 && nextIssues.length === 0 ? (
+            <Empty>Nothing queued to test next. Add a flight or test, or open Test history for past Done items.</Empty>
           ) : (
             <ul className="divide-y">
               {plan.map((item) => {
@@ -272,44 +296,6 @@ export function Dashboard() {
                   </li>
                 );
               })}
-            </ul>
-          )}
-        </QuestionCard>
-
-        <QuestionCard index="2" title="What is still unresolved?" href="/issues">
-          {issues.length === 0 ? (
-            <Empty>
-              {field || sim
-                ? "Last field report and SIM run left no open Fail / BLOCKED items. Maintenance Assistant still has none stored."
-                : "No open issues from the last field report, SIM run, or Maintenance Assistant."}
-            </Empty>
-          ) : (
-            <ul className="divide-y">
-              {issues.map((issue) => (
-                <li key={issue.id} className="py-2.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs">{issue.id}</span>
-                    <StatusBadge value={issue.severity} />
-                    <StatusBadge value={issue.status} />
-                  </div>
-                  <p className="mt-1 text-sm font-medium text-slate-900">{issue.title}</p>
-                  <p className="text-xs text-slate-600">{issue.retestResult || issue.actual}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </QuestionCard>
-
-        <QuestionCard
-          index="3"
-          title="What should we test next?"
-          href="/tests"
-          extra={<PlanDialog mode="add" defaultKind="test" />}
-        >
-          {skipped.length === 0 && actions.length === 0 ? (
-            <Empty>No recommended next step.</Empty>
-          ) : (
-            <ul className="divide-y">
               {skipped.map((item) => {
                 const drone = droneById(state, item.droneId);
                 return (
@@ -338,37 +324,29 @@ export function Dashboard() {
                   </li>
                 );
               })}
-              {actions.map((action) => {
-                const planItem = action.planId
-                  ? state.plan.find((item) => item.id === action.planId)
-                  : undefined;
-                return (
-                  <li key={action.title} className="py-2.5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <StatusBadge
-                            tone={
-                              action.priority === "now"
-                                ? "fail"
-                                : action.priority === "blocked"
-                                  ? "watch"
-                                  : "pending"
-                            }
-                          >
-                            {action.priority}
-                          </StatusBadge>
-                        </div>
-                        <p className="mt-1 text-sm font-medium text-slate-900">{action.title}</p>
-                        <p className="text-xs text-slate-600">{action.why}</p>
+              {nextIssues.map((action) => (
+                <li key={action.title} className="py-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <StatusBadge
+                          tone={
+                            action.priority === "now"
+                              ? "fail"
+                              : action.priority === "blocked"
+                                ? "watch"
+                                : "pending"
+                          }
+                        >
+                          {action.priority}
+                        </StatusBadge>
                       </div>
-                      {planItem ? (
-                        <PlanDialog mode="edit" item={planItem} triggerLabel="Edit title" titleOnly />
-                      ) : null}
+                      <p className="mt-1 text-sm font-medium text-slate-900">{action.title}</p>
+                      <p className="text-xs text-slate-600">{action.why}</p>
                     </div>
-                  </li>
-                );
-              })}
+                  </div>
+                </li>
+              ))}
             </ul>
           )}
         </QuestionCard>

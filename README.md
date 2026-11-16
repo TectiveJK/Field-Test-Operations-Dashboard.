@@ -2,13 +2,13 @@
 
 [![CI](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml/badge.svg)](https://github.com/TectiveJK/Field-Test-Operations-Dashboard./actions/workflows/ci.yml)
 
-**Current version:** `0.2.35`
+**Current version:** `0.2.36`
 
 ## Open the app
 
 **[Open Field Test Operations Dashboard](https://tectivejk.github.io/Field-Test-Operations-Dashboard./)**
 
-That is the live GitHub Pages app (**0.2.35**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.35`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. Last successful `.deb` names are the four Jenkins packages currently saved in that SIM app (`mission-planner_1.0.0+92a96e6-b100_amd64.deb`, `skycommand-db_1.0.0+0b42dc1-b4_amd64.deb`, `tective-simulator_0.1.0+92a96e6.b100_amd64.deb`, `web-ground-control_0.0.1-0b42dc1.deb`). A save of **Last successful artifacts** in SIM is copied onto Today and Tests together within a second while that app is running on this computer, then shared with the iPhone. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. A PDF you import stays on Today even if a smaller Share paste was stamped today. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.35` Safari link under iPhone / iPad.
+That is the live GitHub Pages app (**0.2.36**). GitHub `main` and Origin are on the same commit after `git push github main`. Use it in a desktop browser, or in **Safari** on iPhone / iPad (Share → Add to Home Screen). The header shows `v0.2.36`. Today shows the last **scored** SIM run from the Gitea SIM Flight Testing app on this computer, next to the latest field report. Last successful `.deb` names are the four Jenkins packages currently saved in that SIM app (`mission-planner_1.0.0+92a96e6-b100_amd64.deb`, `skycommand-db_1.0.0+0b42dc1-b4_amd64.deb`, `tective-simulator_0.1.0+92a96e6.b100_amd64.deb`, `web-ground-control_0.0.1-0b42dc1.deb`). A save of **Last successful artifacts** in SIM is copied onto Today and Tests together within a second while that app is running on this computer, then shared with the iPhone. **Reports** reads the Linux reporter Export Report PDF (the `23-Oct-2026.pdf` Chromium format) and Share text. A PDF you import stays on Today even if a smaller Share paste was stamped today. Every page has **Export PDF**; Reports writes all pages into one file. If the iPhone home-screen copy looks old, open the `?ftod=0.2.36` Safari link under iPhone / iPad.
 
 Daily command center for Tective field-test operations. Built for a Field Test Engineer / Operator working with **SkyCommand**, **SkyHive**, **PX4**, **QGroundControl** and **ReFly**.
 
@@ -23,15 +23,14 @@ This hub does **not** invent a test day. It only shows records that already exis
 
 This app does **not** replace the existing tools. It connects them into one workspace so you can open it in the morning and immediately answer:
 
-1. **What do I need to test today?**
-2. **What problems are still unresolved?**
-3. **What should we test next, based on previous flights?**
+1. **What problems are still unresolved?**
+2. **What should we test next?**
 
 It is a responsive web app for **iPhone**, **iPad** and **Linux**. After the first load it works **offline**, so you can record results on the range without internet.
 
 ## Repositories
 
-The same codebase lives in two places. They are in sync at `0.2.35`. Publish later Origin commits with `git push github main`.
+The same codebase lives in two places. They are in sync at `0.2.36`. Publish later Origin commits with `git push github main`.
 
 | Copy | URL | Role |
 | --- | --- | --- |
@@ -61,8 +60,8 @@ The operations dashboard is the home screen for the day, with the other modules 
 
 | Screen | What you use it for |
 | --- | --- |
-| **Today** | GO / CONDITIONAL / NO-GO, **Last field report** (Unmanned Valley flights, overall result, equipment), **Last SIM run** (score and `.deb` names), the three questions, **Edit title** next to each flight or test on questions 1 and 3, **Add flight** / **Add test**, **Test history** of Done items after their day, skipped items carried into “What should we test next?”, **Latest results** from today’s reporter flights, daily summary, fleet snapshot, **Export PDF** of this page |
-| **Plan** | Shared Upcoming board. **Add flight** / **Add test**, edit or remove, and mark Planned / In progress / Done / Skipped. Below that, **What should we test next?** lists the same skipped / next items as Today question 3. **Export PDF** of this page. |
+| **Today** | GO / CONDITIONAL / NO-GO, **Last field report** (Unmanned Valley flights, overall result, equipment), **Last SIM run** (score and `.deb` names), open issues, **What should we test next?** with **Edit title**, **Add flight** / **Add test**, **Test history** of Done items after their day, skipped items carried into that list, **Latest results** from today’s reporter flights, daily summary, fleet snapshot, **Export PDF** of this page |
+| **Plan** | Shared Upcoming board. **Add flight** / **Add test**, edit or remove, and mark Planned / In progress / Done / Skipped. Below that, **What should we test next?** lists skipped / retest items that are not still on the Upcoming board. **Export PDF** of this page. |
 | **Tests** | Field flights from Drone Flight Test Reporter plus the SIM Flight Testing catalog. Record a run here if you want it on this hub. **Export PDF** of this page. |
 | **Fleet** | Aircraft, hive, rotator and batteries from the Hardware locator list. **Update location** / **Add hardware** writes that company list. Airframes also show available / under test / grounded. **Export PDF** of this page. |
 | **Issues** | Bug tracker: id, severity, drone, build, steps, expected vs actual, assignee, retest. Fail items from the latest field report and FAIL / BLOCKED from the last SIM run. **Export PDF** of this page. |
@@ -205,9 +204,9 @@ The iPhone home-screen app cannot read the local SIM Flight Testing server or Dr
 
 Safari keeps a home-screen copy of the app. After GitHub Actions is green, open this URL **in Safari** (not Chrome, and not the home-screen icon first):
 
-https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.35
+https://tectivejk.github.io/Field-Test-Operations-Dashboard./?ftod=0.2.36
 
-Pull down to refresh until the header shows `v0.2.35`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
+Pull down to refresh until the header shows `v0.2.36`. Then tap the menu (top left) → **Reset to source apps**. After that, open the **FTOD** home-screen icon. If it is still old:
 
 1. Swipe FTOD out of the app switcher, then open it again.
 2. Last resort: delete the home-screen icon and Add to Home Screen from Safari again.
@@ -256,7 +255,7 @@ npm run typecheck
 
 ## Status
 
-**0.2.35** copies the current SIM Last successful artifacts onto Today and Tests (`92a96e6-b100` / `0b42dc1-b4` / `92a96e6.b100` / `0b42dc1`). The SIM app can publish that list to the shared hub again. Header `v0.2.35`. Publish with `git pull && git push github main`.
+**0.2.36** removes Today question “What do I need to test today?”. Planned flights and tests stay on **What should we test next?**. Header `v0.2.36`. Publish with `git pull && git push github main`.
 
 ## Links
 

@@ -96,8 +96,8 @@ export function PlanBoard() {
           <div>
             <h2 className="text-xl font-semibold tracking-tight">What should we test next?</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Same list as Today question 3: skipped flights and tests, plus any retest that is not
-              still on the Upcoming board above.
+              Same list as Today: skipped flights and tests, plus any retest that is not still on
+              the Upcoming board above.
             </p>
           </div>
           <PlanDialog mode="add" defaultKind="test" />
@@ -106,7 +106,7 @@ export function PlanBoard() {
         {nextPlan.length === 0 && nextIssues.length === 0 ? (
           <Card className="bg-white">
             <CardContent className="py-12 text-center text-sm text-slate-600">
-              Nothing extra from Today question 3. Upcoming items above are the live board.
+              Nothing extra from Today. Upcoming items above are the live board.
             </CardContent>
           </Card>
         ) : (

@@ -169,44 +169,39 @@ function todaySections(
     },
     ...reporterSections(lastReporter),
     ...simSections(lastSim),
-    plan.length
-      ? {
-          heading: "Question 1 — What do I need to test today?",
-          records: plan.map((item) => ({
-            title: `${item.date} ${item.window}  ${planLabel(item, state)}`,
-            lines: [
-              `${item.kind === "flight" ? "Flight" : "Test"}  ·  ${item.status}`,
-              `Airframe: ${blank(droneById(state, item.droneId)?.name)}`,
-              `Owner: ${blank(item.owner)}`,
-              `Notes: ${blank(item.notes)}`,
-            ],
-          })),
-        }
-      : {
-          heading: "Question 1 — What do I need to test today?",
-          empty: "Nothing left to test today. Past Done items are in Test history; skipped items move to question 3.",
-        },
     issues.length
       ? {
-          heading: "Question 2 — What is still unresolved?",
+          heading: "Question 1 — What is still unresolved?",
           records: issues.map((issue) => ({
             title: `${issue.id}  ${issue.severity}  ${issue.status}`,
             lines: [issue.title, blank(issue.retestResult || issue.actual)],
           })),
         }
       : {
-          heading: "Question 2 — What is still unresolved?",
+          heading: "Question 1 — What is still unresolved?",
           empty: "No open issues from the last SIM run or Maintenance Assistant.",
         },
   ];
 
-  if (skipped.length === 0 && actions.length === 0) {
+  const nextIssueActions = actions.filter((action) => !action.planId);
+  if (plan.length === 0 && skipped.length === 0 && nextIssueActions.length === 0) {
     sections.push({
-      heading: "Question 3 — What should we test next?",
-      empty: "No recommended next step.",
+      heading: "Question 2 — What should we test next?",
+      empty: "Nothing queued to test next.",
     });
   } else {
     const records: { title: string; lines: string[] }[] = [];
+    for (const item of plan) {
+      records.push({
+        title: `${item.date} ${item.window}  ${planLabel(item, state)}`,
+        lines: [
+          `${item.kind === "flight" ? "Flight" : "Test"}  ·  ${item.status}`,
+          `Airframe: ${blank(droneById(state, item.droneId)?.name)}`,
+          `Owner: ${blank(item.owner)}`,
+          `Notes: ${blank(item.notes)}`,
+        ],
+      });
+    }
     for (const item of skipped) {
       records.push({
         title: `${item.date} ${item.window}  ${planLabel(item, state)}`,
@@ -218,13 +213,13 @@ function todaySections(
         ],
       });
     }
-    for (const action of actions) {
+    for (const action of nextIssueActions) {
       records.push({
         title: `${action.priority.toUpperCase()}  ${action.title}`,
         lines: [action.why],
       });
     }
-    sections.push({ heading: "Question 3 — What should we test next?", records });
+    sections.push({ heading: "Question 2 — What should we test next?", records });
   }
 
   sections.push(
@@ -289,7 +284,7 @@ function planSections(state: HubState): PdfSection[] {
   if (nextPlan.length === 0 && nextIssues.length === 0) {
     sections.push({
       heading: "What should we test next?",
-      empty: "Nothing extra from Today question 3.",
+      empty: "Nothing extra from Today. Upcoming items above are the live board.",
     });
   } else {
     sections.push({
