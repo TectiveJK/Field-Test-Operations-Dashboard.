@@ -84,14 +84,14 @@ export const EXISTING_APPS = [
 ] as const;
 
 const simBuild: SoftwareBuild = {
-  id: "sim-a3cec06",
+  id: "sim-92a96e6",
   label: "SIM Flight Testing packages",
   jenkins: "",
   px4: "",
-  skyCommand: "web-ground-control_0.0.1-c7b3d1f.deb",
-  skyHive: "skycommand-db_1.0.0+7a8e078-b5_amd64.deb",
-  gcs: "mission-planner_1.0.0+a3cec06-b68_amd64.deb",
-  autonomyNode: "tective-simulator_0.1.0+a3cec06.b68_amd64.deb",
+  skyCommand: "web-ground-control_0.0.1-0b42dc1.deb",
+  skyHive: "skycommand-db_1.0.0+0b42dc1-b4_amd64.deb",
+  gcs: "mission-planner_1.0.0+92a96e6-b100_amd64.deb",
+  autonomyNode: "tective-simulator_0.1.0+92a96e6.b100_amd64.deb",
   notes: "Four Jenkins .deb artifacts from SIM Flight Testing.",
 };
 
