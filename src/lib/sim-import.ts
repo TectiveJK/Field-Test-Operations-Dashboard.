@@ -114,6 +114,22 @@ export function simLogFileUrl(rel: string) {
   return `${SIM_APP_URL}/api/sim-logs/file?${query}`;
 }
 
+export async function downloadSimLog(rel: string, filename: string) {
+  const response = await fetch(simLogFileUrl(rel));
+  if (!response.ok) {
+    throw new Error(`Could not download ${filename || "log"}`);
+  }
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename || "sim.log";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
 export function isCatalogDefaultArtifacts(arts: SimArtifact[]): boolean {
   return arts.length > 0 && arts.every((item) => item.filename.includes(CATALOG_DEFAULT_MARK));
 }

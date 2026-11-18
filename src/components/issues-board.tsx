@@ -12,9 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatClock } from "@/lib/format";
 import { buildById, droneById } from "@/lib/selectors";
-import { simLogFileUrl } from "@/lib/sim-import";
+import { downloadSimLog } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { ISSUE_STATUSES, type IssueStatus } from "@/lib/types";
 
@@ -156,19 +158,31 @@ export function IssuesBoard() {
                                 .trim();
                               return (
                                 <div key={item.id} className="rounded-md border border-slate-200 bg-slate-50 p-2">
-                                  <p className="font-mono text-xs text-slate-800">{item.filename}</p>
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="min-w-0 truncate font-mono text-xs text-slate-800" title={item.filename}>
+                                      {item.filename}
+                                    </p>
+                                    {rel ? (
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="xs"
+                                        className="bg-white"
+                                        onClick={() => {
+                                          void downloadSimLog(rel, item.filename).catch(() => {
+                                            window.alert(
+                                              "Could not download that log. Leave SIM Flight Testing running on this computer.",
+                                            );
+                                          });
+                                        }}
+                                      >
+                                        <Download data-icon="inline-start" />
+                                        Download
+                                      </Button>
+                                    ) : null}
+                                  </div>
                                   {rel ? (
                                     <p className="truncate text-[11px] text-slate-500">{rel}</p>
-                                  ) : null}
-                                  {rel ? (
-                                    <a
-                                      className="mt-1 inline-block text-xs font-medium text-blue-700 underline"
-                                      href={simLogFileUrl(rel)}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                    >
-                                      Open log
-                                    </a>
                                   ) : null}
                                   {snippet ? (
                                     <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap font-mono text-[10px] leading-snug text-slate-600">
