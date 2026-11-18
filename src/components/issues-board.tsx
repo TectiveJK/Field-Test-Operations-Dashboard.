@@ -12,11 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SimLogDownloadButton } from "@/components/sim-log-download-button";
 import { formatClock } from "@/lib/format";
 import { buildById, droneById } from "@/lib/selectors";
-import { downloadSimLog } from "@/lib/sim-import";
+import { simLogRelFromNotes } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { ISSUE_STATUSES, type IssueStatus } from "@/lib/types";
 
@@ -145,12 +144,7 @@ export function IssuesBoard() {
                           <dt className="text-xs font-medium text-slate-500">SIM log on this computer</dt>
                           <dd className="mt-1 grid gap-2">
                             {logs.map((item) => {
-                              const rel =
-                                item.notes
-                                  .split("\n")
-                                  .find((line) => line.startsWith("path: "))
-                                  ?.slice(6)
-                                  .trim() || "";
+                              const rel = simLogRelFromNotes(item.notes);
                               const snippet = item.notes
                                 .split("\n")
                                 .filter((line) => !line.startsWith("path: ") && !line.includes(" · "))
@@ -162,24 +156,7 @@ export function IssuesBoard() {
                                     <p className="min-w-0 truncate font-mono text-xs text-slate-800" title={item.filename}>
                                       {item.filename}
                                     </p>
-                                    {rel ? (
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="xs"
-                                        className="bg-white"
-                                        onClick={() => {
-                                          void downloadSimLog(rel, item.filename).catch(() => {
-                                            window.alert(
-                                              "Could not download that log. Leave SIM Flight Testing running on this computer.",
-                                            );
-                                          });
-                                        }}
-                                      >
-                                        <Download data-icon="inline-start" />
-                                        Download
-                                      </Button>
-                                    ) : null}
+                                    <SimLogDownloadButton rel={rel} filename={item.filename} />
                                   </div>
                                   {rel ? (
                                     <p className="truncate text-[11px] text-slate-500">{rel}</p>

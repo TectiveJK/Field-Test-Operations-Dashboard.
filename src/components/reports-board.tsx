@@ -14,10 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { SimLogDownloadButton } from "@/components/sim-log-download-button";
 import { formatDate } from "@/lib/format";
 import { isEmptyReporterDraft, summarizeReporter } from "@/lib/reporter-import";
 import { parseReporterExport, reporterStoreFromFile } from "@/lib/reporter-parse";
 import { caseById, droneById } from "@/lib/selectors";
+import { simLogRelFromNotes } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { EVIDENCE_KINDS, type EvidenceKind } from "@/lib/types";
 
@@ -323,14 +325,17 @@ export function ReportsBoard() {
           ) : (
             <ul className="divide-y rounded-lg border">
               {evidence.map((item) => (
-                <li key={item.id} className="grid gap-1 px-3 py-2 sm:grid-cols-[7rem_1fr_auto]">
+                <li key={item.id} className="grid items-center gap-2 px-3 py-2 sm:grid-cols-[7rem_minmax(0,1fr)_auto]">
                   <StatusBadge tone="mute">{item.kind}</StatusBadge>
                   <div className="min-w-0">
-                    <p className="truncate font-mono text-sm">{item.filename}</p>
+                    <p className="truncate font-mono text-sm" title={item.filename}>
+                      {item.filename}
+                    </p>
                     <p className="truncate text-xs text-slate-500">
                       {item.droneId} · {item.buildId} · {item.notes}
                     </p>
                   </div>
+                  <SimLogDownloadButton rel={simLogRelFromNotes(item.notes)} filename={item.filename} />
                 </li>
               ))}
             </ul>

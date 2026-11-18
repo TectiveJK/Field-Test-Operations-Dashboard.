@@ -106,6 +106,16 @@ function parseLogs(raw: unknown): SimLogHit[] {
   return raw.map(asLog).filter((item): item is SimLogHit => item !== null);
 }
 
+export function simLogRelFromNotes(notes: string): string {
+  return (
+    notes
+      .split("\n")
+      .find((line) => line.startsWith("path: "))
+      ?.slice(6)
+      .trim() || ""
+  );
+}
+
 export function simLogFileUrl(rel: string) {
   const query = `rel=${encodeURIComponent(rel)}`;
   if (typeof window !== "undefined" && window.location.protocol === "http:") {
