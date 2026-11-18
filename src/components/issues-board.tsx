@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { formatClock } from "@/lib/format";
 import { buildById, droneById } from "@/lib/selectors";
+import { simLogFileUrl } from "@/lib/sim-import";
 import { useHub } from "@/lib/store";
 import { ISSUE_STATUSES, type IssueStatus } from "@/lib/types";
 
@@ -49,6 +50,7 @@ export function IssuesBoard() {
           <p className="mt-1 text-sm text-slate-600">
             Fail flights from the latest Drone Flight Test Reporter campaign and FAIL / BLOCKED
             missions from the last SIM run (shared with the iPhone), plus anything you log here.
+            Failed SIM tests on this computer also pick up the matching PX4 / autonomy log file.
             Maintenance Assistant still has no stored faults.
           </p>
         </div>
@@ -91,6 +93,9 @@ export function IssuesBoard() {
             const drone = droneById(state, issue.droneId);
             const build = buildById(state, issue.buildId);
             const run = state.runs.find((item) => item.id === issue.testRunId);
+            const logs = state.evidence.filter(
+              (item) => item.issueId === issue.id && (item.kind === "SIM log" || item.id.startsWith("ev-sim-")),
+            );
             return (
               <Card key={issue.id} className="bg-white">
                 <CardContent className="grid gap-3 pt-4 lg:grid-cols-[minmax(0,1fr)_13rem]">
@@ -133,6 +138,49 @@ export function IssuesBoard() {
                       <p className="text-xs text-slate-500">
                         Logged {formatClock(new Date(issue.createdAt))}
                       </p>
+                      {logs.length ? (
+                        <div>
+                          <dt className="text-xs font-medium text-slate-500">SIM log on this computer</dt>
+                          <dd className="mt-1 grid gap-2">
+                            {logs.map((item) => {
+                              const rel =
+                                item.notes
+                                  .split("\n")
+                                  .find((line) => line.startsWith("path: "))
+                                  ?.slice(6)
+                                  .trim() || "";
+                              const snippet = item.notes
+                                .split("\n")
+                                .filter((line) => !line.startsWith("path: ") && !line.includes(" · "))
+                                .join("\n")
+                                .trim();
+                              return (
+                                <div key={item.id} className="rounded-md border border-slate-200 bg-slate-50 p-2">
+                                  <p className="font-mono text-xs text-slate-800">{item.filename}</p>
+                                  {rel ? (
+                                    <p className="truncate text-[11px] text-slate-500">{rel}</p>
+                                  ) : null}
+                                  {rel ? (
+                                    <a
+                                      className="mt-1 inline-block text-xs font-medium text-blue-700 underline"
+                                      href={simLogFileUrl(rel)}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      Open log
+                                    </a>
+                                  ) : null}
+                                  {snippet ? (
+                                    <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap font-mono text-[10px] leading-snug text-slate-600">
+                                      {snippet}
+                                    </pre>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </dd>
+                        </div>
+                      ) : null}
                     </dl>
                   </div>
                   <label className="grid h-fit gap-1 text-sm font-medium">

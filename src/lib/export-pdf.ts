@@ -433,7 +433,13 @@ function issuesSections(state: HubState): PdfSection[] {
             `Assignee: ${blank(issue.assignee)}`,
             `Retest: ${blank(issue.retestResult)}`,
             `Logged: ${when(issue.createdAt)}`,
-          ],
+            state.evidence.some((item) => item.issueId === issue.id)
+              ? `SIM log: ${state.evidence
+                  .filter((item) => item.issueId === issue.id)
+                  .map((item) => item.filename)
+                  .join(", ")}`
+              : "",
+          ].filter(Boolean),
         };
       }),
     },

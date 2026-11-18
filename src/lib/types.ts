@@ -30,6 +30,7 @@ export type PlanStatus = (typeof PLAN_STATUSES)[number];
 
 export const EVIDENCE_KINDS = [
   "ULog",
+  "SIM log",
   "QGC screenshot",
   "Wireshark",
   "Video",

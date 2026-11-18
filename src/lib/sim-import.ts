@@ -1,5 +1,5 @@
 import { SUITE } from "@/lib/sim-suite";
-import { isAirframe, type HubState, type Issue, type RunResult, type SoftwareBuild, type TestRun } from "@/lib/types";
+import { isAirframe, type Evidence, type HubState, type Issue, type RunResult, type SoftwareBuild, type TestRun } from "@/lib/types";
 
 export const SIM_STORE_KEY = "sim-flight-testing-store-v1";
 export const SIM_CACHE_KEY = "tective-ftod-sim-live-v1";
@@ -29,6 +29,16 @@ export type SimRun = {
   artifacts?: SimArtifact[];
 };
 
+export type SimLogHit = {
+  drone?: string;
+  service?: string;
+  filename: string;
+  rel?: string;
+  startedAt?: string;
+  size?: number;
+  snippet?: string;
+};
+
 export type SimResult = {
   id: string;
   testRunId: string;
@@ -37,6 +47,7 @@ export type SimResult = {
   notes?: string;
   executedAt?: string;
   tester?: string;
+  logs?: SimLogHit[];
 };
 
 export type SimStore = {
@@ -47,6 +58,7 @@ export type SimStore = {
 
 const ISSUE_PREFIX = "ISS-SIM-";
 const RUN_PREFIX = "simrun-";
+const EVIDENCE_PREFIX = "ev-sim-";
 const REPORT_ID = "rep-sim-latest";
 
 const CATALOG_DEFAULT_MARK = "b9c924f";
@@ -71,6 +83,35 @@ function asArtifact(raw: unknown): SimArtifact | null {
 function parseArtifacts(raw: unknown): SimArtifact[] {
   if (!Array.isArray(raw)) return [];
   return raw.map(asArtifact).filter((item): item is SimArtifact => item !== null);
+}
+
+function asLog(raw: unknown): SimLogHit | null {
+  if (!raw || typeof raw !== "object") return null;
+  const item = raw as Partial<SimLogHit>;
+  const filename = String(item.filename ?? "").trim();
+  if (!filename) return null;
+  return {
+    drone: String(item.drone ?? "").trim(),
+    service: String(item.service ?? "").trim(),
+    filename,
+    rel: String(item.rel ?? "").trim(),
+    startedAt: String(item.startedAt ?? "").trim(),
+    size: Number(item.size) || 0,
+    snippet: String(item.snippet ?? ""),
+  };
+}
+
+function parseLogs(raw: unknown): SimLogHit[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(asLog).filter((item): item is SimLogHit => item !== null);
+}
+
+export function simLogFileUrl(rel: string) {
+  const query = `rel=${encodeURIComponent(rel)}`;
+  if (typeof window !== "undefined" && window.location.protocol === "http:") {
+    return `${window.location.origin}/api/sim-local/sim-logs/file/?${query}`;
+  }
+  return `${SIM_APP_URL}/api/sim-logs/file?${query}`;
 }
 
 export function isCatalogDefaultArtifacts(arts: SimArtifact[]): boolean {
@@ -184,6 +225,7 @@ export function asStore(raw: unknown): SimStore | null {
       ...result,
       status: asStatus(result.status),
       notes: result.notes ?? "",
+      logs: parseLogs(result.logs),
     })),
   };
 }
@@ -217,6 +259,7 @@ export function slimSimStore(store: SimStore | null): SimStore | null {
       notes: result.notes,
       executedAt: result.executedAt,
       tester: result.tester,
+      logs: parseLogs(result.logs),
     })),
   };
 }
@@ -351,7 +394,11 @@ export function simKey(store: SimStore | null): string {
   const artifacts = liveArtifacts(store)
     .map((item) => item.filename)
     .join("|");
-  return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored.length}|${statusMark(store, run?.id)}|${artifacts}`;
+  const logs = scored
+    .flatMap((result) => result.logs ?? [])
+    .map((item) => item.filename)
+    .join("|");
+  return `${run?.startedAt ?? ""}|${run?.id ?? ""}|${scored.length}|${statusMark(store, run?.id)}|${artifacts}|${logs}`;
 }
 
 function resultRank(status: string | undefined) {
@@ -371,13 +418,16 @@ function mergeResults(left: SimResult[], right: SimResult[]): SimResult[] {
     }
     const nextRank = resultRank(result.status);
     const prevRank = resultRank(previous.status);
+    const logs = parseLogs(result.logs).length ? result.logs : previous.logs;
     if (nextRank > prevRank) {
-      map.set(key, result);
+      map.set(key, { ...result, logs });
       continue;
     }
     if (nextRank === prevRank && (result.executedAt || "") > (previous.executedAt || "")) {
-      map.set(key, result);
+      map.set(key, { ...result, logs });
+      continue;
     }
+    map.set(key, { ...previous, logs });
   }
   return [...map.values()];
 }
@@ -530,7 +580,29 @@ export function applySimLastRun(hub: HubState, store: SimStore | null): HubState
     (result) => result.status === "failed" || result.status === "blocked"
   );
 
+  const simEvidence: Evidence[] = problems.flatMap((result) =>
+    (result.logs ?? []).map((log, index) => ({
+      id: `${EVIDENCE_PREFIX}${result.testCaseId}-${index}`,
+      kind: "SIM log" as const,
+      filename: log.filename,
+      droneId: null,
+      testRunId: `${RUN_PREFIX}${run.id}-${result.testCaseId}`,
+      issueId: `${ISSUE_PREFIX}${result.testCaseId}`,
+      buildId,
+      notes: [
+        log.rel ? `path: ${log.rel}` : "",
+        [log.drone, log.service].filter(Boolean).join(" · "),
+        log.snippet?.trim() || "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    })),
+  );
+
   const simRuns: TestRun[] = scored.map((result) => {
+    const evidenceIds = simEvidence
+      .filter((item) => item.testRunId === `${RUN_PREFIX}${run.id}-${result.testCaseId}`)
+      .map((item) => item.id);
     return {
       id: `${RUN_PREFIX}${run.id}-${result.testCaseId}`,
       testCaseId: result.testCaseId,
@@ -554,7 +626,7 @@ export function applySimLastRun(hub: HubState, store: SimStore | null): HubState
         result.status === "failed" || result.status === "blocked"
           ? [`${ISSUE_PREFIX}${result.testCaseId}`]
           : [],
-      evidenceIds: [],
+      evidenceIds,
       reportId: REPORT_ID,
     };
   });
@@ -578,11 +650,17 @@ export function applySimLastRun(hub: HubState, store: SimStore | null): HubState
         mission?.procedure ?? "Fly the mission in SkyCommand, then record the result in SIM Flight Testing.",
       ]).join("\n"),
       expected: testCase?.expected || mission?.expectedBehavior || "",
-      actual:
+      actual: [
         result.notes?.trim() ||
-        (failed
-          ? "FAIL in the last SIM Flight Testing run. No notes were written."
-          : "BLOCKED in the last SIM Flight Testing run. No notes were written."),
+          (failed
+            ? "FAIL in the last SIM Flight Testing run. No notes were written."
+            : "BLOCKED in the last SIM Flight Testing run. No notes were written."),
+        (result.logs ?? []).length
+          ? `Matched SIM log: ${(result.logs ?? []).map((item) => item.filename).join(", ")}.`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
       assignee: result.tester || run.tester || next.operator,
       retestResult: failed
         ? `Retest ${testCase?.name ?? result.testCaseId} on the next SIM run.`
@@ -620,5 +698,6 @@ export function applySimLastRun(hub: HubState, store: SimStore | null): HubState
     runs: [...simRuns, ...next.runs.filter((item) => !item.id.startsWith(RUN_PREFIX))],
     issues: [...simIssues, ...next.issues.filter((item) => !item.id.startsWith(ISSUE_PREFIX))],
     reports: [report, ...next.reports.filter((item) => item.id !== REPORT_ID)],
+    evidence: [...simEvidence, ...next.evidence.filter((item) => !item.id.startsWith(EVIDENCE_PREFIX))],
   };
 }
