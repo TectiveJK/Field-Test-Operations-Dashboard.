@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ["pdfjs-dist"],
   basePath,
   allowedDevOrigins: ["127.0.0.1"],
+  experimental: {
+    agentUpgrade: "security",
+  },
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
