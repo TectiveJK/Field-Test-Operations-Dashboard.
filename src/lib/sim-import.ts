@@ -358,7 +358,7 @@ export async function fetchLocalSimStore(): Promise<SimStore | null> {
   for (const url of localSimUrls()) {
     try {
       const target = `${url}${url.includes("?") ? "&" : "?"}t=${stamp}`;
-      const response = await fetch(target, { signal: AbortSignal.timeout(1500) });
+      const response = await fetch(target, { signal: AbortSignal.timeout(8000) });
       if (!response.ok) continue;
       const store = slimSimStore(storeFromSimPayload(await response.json()));
       if (store) return store;
@@ -606,7 +606,7 @@ export function applySimLastRun(hub: HubState, store: SimStore | null): HubState
     (result) => result.status === "failed" || result.status === "blocked"
   );
 
-  const simEvidence: Evidence[] = problems.flatMap((result) =>
+  const incomingEvidence: Evidence[] = problems.flatMap((result) =>
     (result.logs ?? []).map((log, index) => ({
       id: `${EVIDENCE_PREFIX}${result.testCaseId}-${index}`,
       kind: "SIM log" as const,
@@ -624,6 +624,12 @@ export function applySimLastRun(hub: HubState, store: SimStore | null): HubState
         .join("\n"),
     })),
   );
+  const sameRun = next.runs.some((item) => item.id.startsWith(`${RUN_PREFIX}${run.id}-`));
+  const simEvidence = incomingEvidence.length
+    ? incomingEvidence
+    : sameRun
+      ? next.evidence.filter((item) => item.id.startsWith(EVIDENCE_PREFIX))
+      : [];
 
   const simRuns: TestRun[] = scored.map((result) => {
     const evidenceIds = simEvidence
