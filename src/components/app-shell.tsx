@@ -14,6 +14,7 @@ import {
   Menu,
   RotateCcw,
 } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { LogIssueDialog } from "@/components/log-issue-dialog";
 import { OfflineBanner } from "@/components/offline-banner";
 import { WeatherWidget } from "@/components/weather-widget";
@@ -57,11 +58,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <PwaRegister />
       <aside className="hidden w-[15.5rem] shrink-0 flex-col border-r border-slate-300/80 bg-[#eef1f5] md:flex">
         <div className="border-b border-slate-300/80 px-4 py-5">
-          <p className="text-[11px] font-semibold tracking-[0.22em] text-slate-500">TECTIVE</p>
-          <h1 className="mt-1 text-base font-semibold leading-tight text-slate-900">
-            Field Test Operations
-          </h1>
-          <p className="mt-1 text-xs text-slate-600">Daily hub · SkyCommand / PX4 / ReFly</p>
+          <div className="flex items-start gap-3">
+            <BrandMark />
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold tracking-[0.22em] text-slate-500">TECTIVE</p>
+              <h1 className="mt-1 text-base font-semibold leading-tight text-slate-900">
+                Field Test Operations
+              </h1>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-slate-600">Daily hub · SkyCommand / PX4 / ReFly</p>
           <p className="mt-1 font-mono text-[11px] text-slate-500">v{APP_VERSION}</p>
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">
@@ -119,8 +125,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SheetTrigger>
               <SheetContent side="left" className="w-72 bg-[#eef1f5]">
                 <SheetHeader>
-                  <SheetTitle>TECTIVE</SheetTitle>
-                  <SheetDescription>Field Test Operations</SheetDescription>
+                  <div className="flex items-center gap-3">
+                    <BrandMark className="size-9" />
+                    <div className="min-w-0">
+                      <SheetTitle>TECTIVE</SheetTitle>
+                      <SheetDescription>Field Test Operations</SheetDescription>
+                    </div>
+                  </div>
                 </SheetHeader>
                 <nav className="flex flex-col gap-1 px-3">
                   {nav.map((item) => {
